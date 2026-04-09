@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+const PROXY_URL = import.meta.env.VITE_PROXY_URL;
 
 const SYSTEM_PROMPT = `Fransk tutor for norsk nybegynner (A1/A2) med dysleksi.
 
@@ -90,9 +90,9 @@ export default function App() {
     setMessages(next); setLoading(true); setSessionMsgs(s => s + 1);
     const wordCtx = learned.length > 0 ? `\nKan allerede: ${learned.join(", ")}` : "";
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch(PROXY_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": API_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 800,
