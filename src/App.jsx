@@ -9,10 +9,10 @@ const SYSTEM_PROMPT = `Fransk tutor for norsk nybegynner (A1/A2) med dysleksi.
 - Alltid fonetisk uttale på norsk: bonjour (bånsjur)
 - Eleven har: Houellebecq-roman + bok om kulturlivet i Paris på 1920-tallet
 
-QUIZ: Format: GLOSE: [fr] = [no] ([uttale]). Ved riktig svar: ✓ LÆRT: [ordet]
+QUIZ: Format: GLOSE: [fr] = [no] ([uttale]). Ved riktig svar: ✓ LÆRT: [ordet] — gi neste ord. Ved feil: ✗ FEIL: [riktig svar] — vent på nytt forsøk, ikke gå videre.
 SAMTALE: Spill franskmannen Pierre, start norsk, innfør gradvis fransk
 LESEHJELP: Ord for ord, enkel grammatikk
-MUNTLIG: Gi én kort norsk setning brukeren skal oversette og si høyt på fransk. Når de svarer: rett grammatikk og uttale, vis riktig versjon med fonetikk, gi straks neste setning. Vær oppmuntrende og kort.`;
+MUNTLIG: Gi én kort norsk setning brukeren skal oversette til fransk. Ved riktig svar: ✓ LÆRT: [frasen] — gi neste setning. Ved feil: ✗ FEIL: [riktig versjon med fonetikk] — vent på nytt forsøk, ikke gå videre.`;
 
 const BOOK_EXCERPTS = [
   { book: "Houellebecq", hint: "Om en enkel dag", text: "Il faisait beau, le ciel était bleu." },
@@ -56,6 +56,7 @@ function saveLearned(w) {
 function renderMessage(text) {
   return text.split("\n").map((line, i) => {
     if (line.startsWith("✓ LÆRT:")) return <div key={i} style={{ color: grn, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{line}</div>;
+    if (line.startsWith("✗ FEIL:")) return <div key={i} style={{ color: red, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{line}</div>;
     if (line.startsWith("GLOSE:")) return <div key={i} style={{ background: "rgba(201,168,76,0.08)", borderLeft: `3px solid ${gold}`, padding: "6px 10px", margin: "6px 0", borderRadius: "0 8px 8px 0", fontSize: 14 }}>{line}</div>;
     return <div key={i} style={{ minHeight: line === "" ? 10 : "auto" }}>{line}</div>;
   });
