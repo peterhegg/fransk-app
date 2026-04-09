@@ -108,8 +108,8 @@ export default function App() {
     recognition.interimResults = false;
     recognition.onresult = (e) => {
       const transcript = e.results[0][0].transcript;
-      setInput(transcript);
       setListening(false);
+      send(transcript);
     };
     recognition.onerror = () => setListening(false);
     recognition.onend = () => setListening(false);
@@ -144,7 +144,8 @@ export default function App() {
         }),
       });
       const data = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || "Noe gikk galt.";
+      const reply = data.content?.find(b => b.type === "text")?.text
+        || (data.error ? `Feil: ${data.error.message}` : "Noe gikk galt.");
       setMessages([...next, { role: "assistant", content: reply }]);
     } catch {
       setMessages([...next, { role: "assistant", content: "Kunne ikke koble til. Prøv igjen." }]);
