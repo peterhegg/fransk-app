@@ -11,7 +11,8 @@ const SYSTEM_PROMPT = `Fransk tutor for norsk nybegynner (A1/A2) med dysleksi.
 
 QUIZ: Format: GLOSE: [fr] = [no] ([uttale]). Ved riktig svar: ✓ LÆRT: [ordet]
 SAMTALE: Spill franskmannen Pierre, start norsk, innfør gradvis fransk
-LESEHJELP: Ord for ord, enkel grammatikk`;
+LESEHJELP: Ord for ord, enkel grammatikk
+MUNTLIG: Gi én kort norsk setning brukeren skal oversette og si høyt på fransk. Når de svarer: rett grammatikk og uttale, vis riktig versjon med fonetikk, gi straks neste setning. Vær oppmuntrende og kort.`;
 
 const BOOK_EXCERPTS = [
   { book: "Houellebecq", hint: "Om en enkel dag", text: "Il faisait beau, le ciel était bleu." },
@@ -24,15 +25,22 @@ const BOOK_EXCERPTS = [
 const MODES = [
   { id: "quiz", label: "Glosekort", icon: "◈", desc: "Test deg selv på ord og fraser" },
   { id: "samtale", label: "Samtale", icon: "◉", desc: "Øv med en virtuell franskmann" },
+  { id: "muntlig", label: "Muntlig", icon: "◎", desc: "Snakk fransk — få direkte korreksjon" },
   { id: "lesehjelp", label: "Lesehjelp", icon: "◫", desc: "Forstå setninger fra bøkene dine" },
-  { id: "fri", label: "Spør fritt", icon: "◎", desc: "Still spørsmål om fransk" },
+  { id: "fri", label: "Spør fritt", icon: "✦", desc: "Still spørsmål om fransk" },
 ];
 
 const STARTER = {
   quiz: "Vil du øve på hverdagsord, mat og drikke, Paris på 1920-tallet, eller skal jeg velge?",
   samtale: "Bonjour! (bånsjur) Jeg er Pierre. Vi starter på norsk, men jeg innfører gradvis mer fransk. Fortell meg litt om deg selv!",
+  muntlig: "La oss øve på å snakke! Jeg gir deg en norsk setning — du oversetter og sier den på fransk. Trykk på mikrofonen og si svaret høyt.\n\nFørste setning: «Jeg heter Peter og jeg bor i Norge.»",
   lesehjelp: "Lim inn en setning fra en av bøkene dine, eller velg en fra boksamlingen nedenfor.",
   fri: "Hva lurer du på om fransk?",
+};
+
+const SPEECH_LANG = {
+  samtale: "fr-FR",
+  muntlig: "fr-FR",
 };
 
 const gold = "#C9A84C", dark = "#0F0E0B", cream = "#F5F0E8", card = "#1A1810", brd = "#2E2B22", grn = "#4CAF7A", red = "#C47A5A";
@@ -64,10 +72,21 @@ export default function App() {
   const [showBooks, setShowBooks] = useState(false);
   const [sessionMsgs, setSessionMsgs] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [listening, setListening] = useState(false);
   const bottomRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => { saveLearned(learned); }, [learned]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+
+  useEffect(() => {
+    const on = () => setIsOnline(true);
+    const off = () => setIsOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
 
   useEffect(() => {
     messages.forEach(msg => {
@@ -79,6 +98,30 @@ export default function App() {
       }
     });
   }, [messages]);
+
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Nettleseren din støtter ikke talegjenkjenning. Prøv Chrome."); return; }
+    const recognition = new SR();
+    recognition.lang = SPEECH_LANG[mode?.id] || "nb-NO";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setInput(transcript);
+      setListening(false);
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setListening(true);
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setListening(false);
+  };
 
   const startMode = (m) => { setMode(m); setMessages([{ role: "assistant", content: STARTER[m.id] }]); setScreen("chat"); setShowBooks(false); };
 
@@ -115,6 +158,22 @@ export default function App() {
     if (!learned.length) return;
     navigator.clipboard.writeText("Mine franske ord:\n" + learned.map(w => "✓ " + w).join("\n")).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
+
+  const offlineBanner = !isOnline && (
+    <div style={{ background: "#3a2a10", borderBottom: `1px solid ${gold}44`, padding: "8px 16px", fontSize: 13, color: gold, textAlign: "center", letterSpacing: 1 }}>
+      Ingen internettforbindelse — Claude er ikke tilgjengelig
+    </div>
+  );
+
+  const micBtn = (
+    <button
+      onClick={listening ? stopListening : startListening}
+      style={{ background: listening ? gold : "none", border: `1px solid ${listening ? gold : brd}`, borderRadius: 10, color: listening ? dark : cream, fontSize: 18, padding: "10px 14px", cursor: "pointer", transition: "all 0.2s", flexShrink: 0 }}
+      title={listening ? "Stopp" : "Snakk"}
+    >
+      {listening ? "⏹" : "🎙"}
+    </button>
+  );
 
   const S = {
     page: { display: "flex", flexDirection: "column", height: "100dvh", background: dark, fontFamily: "'Georgia', serif", color: cream },
@@ -173,6 +232,7 @@ export default function App() {
         <div style={S.title}><span style={{ color: gold }}>{mode?.icon}</span><span>{mode?.label}</span></div>
         <button onClick={() => setShowWords(true)} style={S.badge}>◈ {learned.length}</button>
       </div>
+      {offlineBanner}
       {mode?.id === "lesehjelp" && (
         <button onClick={() => setShowBooks(b => !b)} style={{ background: "rgba(201,168,76,0.06)", border: "none", borderBottom: `1px solid ${brd}`, color: gold, fontFamily: "'Georgia', serif", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", letterSpacing: 1, width: "100%" }}>
           {showBooks ? "▲ Lukk boksamling" : "▼ Velg setning fra bøkene dine"}
@@ -188,6 +248,11 @@ export default function App() {
           ))}
         </div>
       )}
+      {mode?.id === "muntlig" && (
+        <div style={{ background: "rgba(201,168,76,0.06)", borderBottom: `1px solid ${brd}`, padding: "10px 16px", fontSize: 12, color: gold, letterSpacing: 1, textAlign: "center" }}>
+          🎙 Trykk på mikrofonen og si svaret på fransk
+        </div>
+      )}
       <div style={S.msgs}>
         {messages.map((msg, i) => (
           <div key={i} style={msg.role === "user" ? S.user : S.ai}>
@@ -199,7 +264,8 @@ export default function App() {
         <div ref={bottomRef} />
       </div>
       <div style={S.inputArea}>
-        <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder="Skriv her..." style={S.textarea} rows={2} />
+        {micBtn}
+        <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder={listening ? "Lytter..." : "Skriv eller snakk..."} style={{ ...S.textarea, borderColor: listening ? gold : brd }} rows={2} />
         <button onClick={() => send()} disabled={loading || !input.trim()} style={S.sendBtn(loading || !input.trim())}>Send</button>
       </div>
     </div>
@@ -207,6 +273,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100dvh", background: dark, color: cream, fontFamily: "'Georgia', serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "0 16px 40px", position: "relative", overflow: "hidden" }}>
+      {offlineBanner}
       <div style={{ position: "fixed", top: -100, right: -100, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "fixed", bottom: -80, left: -80, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ textAlign: "center", paddingTop: 48, paddingBottom: 32 }}>
