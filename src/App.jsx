@@ -23,7 +23,9 @@ PROGRESJON:
 
 SAMTALE: Spill franskmannen Pierre. Start på norsk, innfør gradvis mer og mer fransk. Bruk *kursiv* for handlinger som *Pierre smiler*. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3] — naturlige korte svar eleven kan trykke på.
 LESEHJELP: Bryt ned setningen ord for ord med oversettelse og enkel grammatikk.
-MUNTLIG: Gi én kort norsk setning eleven skal oversette til fransk. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste setning. Ved feil: ✗ FEIL: [riktig versjon med fonetikk] — vent på nytt forsøk, ikke gå videre.`;
+MUNTLIG: Gi én kort norsk setning eleven skal oversette til fransk. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste setning. Ved feil: ✗ FEIL: [riktig versjon med fonetikk] — vent på nytt forsøk, ikke gå videre.
+GRAMMATIKK: Undervis progressiv fransk grammatikk én regel om gangen. Rekkefølge: 1) être (jeg er/du er/han er…) 2) avoir (jeg har…) 3) Kjønn — le/la/un/une 4) Enkle setninger med adjektiv 5) -er verb 6) Negasjon ne…pas 7) Spørsmål 8) Passé composé 9) Adjektivbøying 10) Futur proche. For hvert emne: forklar regelen kort på norsk → vis eksempler med fonetikk → gi én konkret øvingsoppgave → vent på svar → gi tilbakemelding. Bruk ordbanken aktivt — bygg eksempler rundt ord eleven allerede kan. Merk lærte strukturer med ✓ LÆRT: [struktur] = [forklaring]. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3].
+ARTIKKEL: Eleven limer inn en tekst på fransk. Gjør i denne rekkefølgen: 1) Norsk sammendrag (2-3 setninger). 2) Oversett avsnitt for avsnitt — vis original + oversettelse. 3) Plukk ut 3-5 grammatiske mønstre fra teksten og forklar dem enkelt med eksempel fra teksten. 4) Merk nye nyttige ord med ✓ LÆRT: [fr] = [no] ([uttale]). Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3].`;
 
 const BOOK_EXCERPTS = [
   { book: "Houellebecq", hint: "Om en enkel dag", text: "Il faisait beau, le ciel était bleu." },
@@ -149,17 +151,21 @@ function checkQuizAnswer(input, card) {
 
 const MODES = [
   { id: "quiz", label: "Glosekort", icon: "◈", desc: "Nye ord + repeter det du har lært" },
+  { id: "grammatikk", label: "Grammatikk", icon: "◑", desc: "Setningsoppbygging trinn for trinn" },
   { id: "samtale", label: "Samtale", icon: "◉", desc: "Øv med en virtuell franskmann" },
   { id: "muntlig", label: "Muntlig", icon: "◎", desc: "Snakk fransk — få direkte korreksjon" },
   { id: "lesehjelp", label: "Lesehjelp", icon: "◫", desc: "Forstå setninger fra bøkene dine" },
+  { id: "artikkel", label: "Artikkelleser", icon: "◰", desc: "Lim inn fransk tekst — oversettelse og grammatikk" },
   { id: "fri", label: "Spør fritt", icon: "✦", desc: "Still spørsmål om fransk" },
 ];
 
 const STARTER = {
   quiz: "Vil du øve på hverdagsord, mat og drikke, Paris på 1920-tallet, eller skal jeg velge?",
+  grammatikk: "La oss lære fransk grammatikk trinn for trinn.\n\nVi starter helt fra bunnen: hvordan man sier «jeg er», «du er», «han er» på fransk — og hvordan det henger sammen med resten av setningen.",
   samtale: "Bonjour! (bånsjur) Jeg er Pierre. Vi starter på norsk, men jeg innfører gradvis mer fransk. Fortell meg litt om deg selv!",
   muntlig: "La oss øve på å snakke! Jeg gir deg en norsk setning — du oversetter og sier den på fransk. Trykk på mikrofonen og si svaret høyt.\n\nFørste setning: «Jeg heter Peter og jeg bor i Norge.»",
   lesehjelp: "Lim inn en setning fra en av bøkene dine, eller velg en fra boksamlingen nedenfor.",
+  artikkel: "Lim inn en fransk tekst eller nettartikkel nedenfor.\n\nJeg gir deg: norsk sammendrag → oversettelse avsnitt for avsnitt → grammatiske mønstre fra teksten → nye ord.",
   fri: "Hva lurer du på om fransk?",
 };
 
@@ -374,7 +380,7 @@ export default function App() {
 setMode(m); setScreen("chat"); setShowBooks(false);
 
     // For modes that use progression, fetch a personalized opener from Claude
-    if (["samtale", "muntlig"].includes(m.id) && words.length > 0) {
+    if (["samtale", "muntlig", "grammatikk"].includes(m.id) && words.length > 0) {
       setLoading(true);
       setMessages([]);
       const wordCtx = `\n\nElevens ordbank (${words.length} ord lagret på enheten):\n` +
@@ -765,7 +771,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, width: "100%", maxWidth: 420, marginBottom: 20 }}>
         {MODES.map(m => (
-          <button key={m.id} onClick={() => startMode(m)} style={{ background: card, border: `1px solid ${m.id === "quiz" && dueCount > 0 ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative" }}>
+          <button key={m.id} onClick={() => startMode(m)} style={{ background: card, border: `1px solid ${m.id === "quiz" && dueCount > 0 ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", gridColumn: MODES.indexOf(m) === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
             <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
             <div style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 1 }}>{m.label}</div>
             <div style={{ fontSize: 12, color: "rgba(245,240,232,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
