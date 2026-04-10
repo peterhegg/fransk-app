@@ -599,9 +599,9 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
             <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8 }}>{quizCard.fr}</div>
             {quizCard.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({quizCard.phonetic})</div>}
-            <div style={{ display: "flex", gap: 10, marginTop: 4, justifyContent: "center" }}>
-              <button onClick={() => speak(quizCard.fr)} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 8, color: speaking ? gold : `${gold}88`, fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>{speaking ? "⏹" : "🔊 Normal"}</button>
-              <button onClick={() => speak(quizCard.fr, 0.4)} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 8, color: speaking ? gold : `${gold}88`, fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>{speaking ? "⏹" : "🔊 Sakte"}</button>
+            <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center", alignItems: "center" }}>
+              <button onClick={() => speak(quizCard.fr)} title="Normal hastighet" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", opacity: speaking ? 1 : 0.6, lineHeight: 1 }}>🔊</button>
+              <button onClick={() => speak(quizCard.fr, 0.4)} title="Sakte" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", opacity: speaking ? 1 : 0.6, lineHeight: 1 }}>🐢</button>
             </div>
           </div>
 
