@@ -125,11 +125,26 @@ const VOCAB_LIST = [
 ];
 
 function normalizeAnswer(s) {
-  return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
 }
+function levenshtein(a, b) {
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[a.length][b.length];
+}
+// Returns "correct" | "close" | "wrong"
 function checkQuizAnswer(input, card) {
   const inp = normalizeAnswer(input);
-  return card.no.split(/\s*\/\s*/).some(part => normalizeAnswer(part) === inp);
+  const variants = card.no.split(/\s*\/\s*/).map(normalizeAnswer);
+  if (variants.some(v => v === inp)) return "correct";
+  const minDist = Math.min(...variants.map(v => levenshtein(inp, v)));
+  const threshold = Math.max(1, Math.floor(Math.max(...variants.map(v => v.length)) / 5));
+  return minDist <= threshold ? "close" : "wrong";
 }
 
 const MODES = [
@@ -252,7 +267,7 @@ export default function App() {
   const [quizCard, setQuizCard] = useState(null);
   const [quizInput, setQuizInput] = useState("");
   const [quizChecked, setQuizChecked] = useState(false);
-  const [quizCorrect, setQuizCorrect] = useState(false);
+  const [quizResult, setQuizResult] = useState("");
   const [quizStats, setQuizStats] = useState({ correct: 0, wrong: 0 });
   // Manual word adding
   const [addWordOpen, setAddWordOpen] = useState(false);
@@ -351,7 +366,7 @@ export default function App() {
       setQuizCard(queue[0]);
       setQuizInput("");
       setQuizChecked(false);
-      setQuizCorrect(false);
+      setQuizResult("");
       setQuizStats({ correct: 0, wrong: 0 });
       setScreen("quiz");
       return;
@@ -545,15 +560,16 @@ setMode(m); setScreen("chat"); setShowBooks(false);
 
     const submitQuiz = () => {
       if (!quizInput.trim()) return;
-      const correct = checkQuizAnswer(quizInput, quizCard);
+      const result = checkQuizAnswer(quizInput, quizCard);
+      const passed = result !== "wrong";
       setQuizChecked(true);
-      setQuizCorrect(correct);
-      setQuizStats(s => ({ correct: s.correct + (correct ? 1 : 0), wrong: s.wrong + (correct ? 0 : 1) }));
+      setQuizResult(result);
+      setQuizStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
       if (isFromBank) {
-        const { level: newLevel, nextReview } = scheduleNext(quizCard.level, correct);
+        const { level: newLevel, nextReview } = scheduleNext(quizCard.level, passed);
         setWords(prev => prev.map(w => w.id === quizCard.id ? { ...w, level: newLevel, nextReview } : w));
       } else {
-        const newWord = { id: Date.now() + Math.random(), fr: quizCard.fr, no: quizCard.no, phonetic: quizCard.phonetic, level: correct ? 1 : 0, nextReview: Date.now() + SR_INTERVALS[correct ? 1 : 0] * 86400000, added: Date.now() };
+        const newWord = { id: Date.now() + Math.random(), fr: quizCard.fr, no: quizCard.no, phonetic: quizCard.phonetic, level: passed ? 1 : 0, nextReview: Date.now() + SR_INTERVALS[passed ? 1 : 0] * 86400000, added: Date.now() };
         setWords(prev => prev.some(w => w.fr === newWord.fr) ? prev : [...prev, newWord]);
       }
     };
@@ -565,7 +581,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       setQuizCard(remaining[0]);
       setQuizInput("");
       setQuizChecked(false);
-      setQuizCorrect(false);
+      setQuizResult("");
     };
 
     return (
@@ -599,16 +615,30 @@ setMode(m); setScreen("chat"); setShowBooks(false);
                 <button onClick={submitQuiz} disabled={!quizInput.trim()} style={{ background: quizInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: quizInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
               </div>
             : <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
-                <div style={{ background: quizCorrect ? "rgba(76,175,122,0.12)" : "rgba(196,122,90,0.12)", border: `1px solid ${quizCorrect ? grn : red}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
-                  <div style={{ fontSize: 14, color: quizCorrect ? grn : red, letterSpacing: 1, marginBottom: 6, textTransform: "uppercase", fontWeight: "bold" }}>{quizCorrect ? "✓ Riktig!" : "✗ Feil"}</div>
-                  {!quizCorrect && (
-                    <>
-                      <div style={{ fontSize: 12, color: `${cream}66`, marginBottom: 4 }}>Du svarte: <em>{quizInput}</em></div>
-                      <div style={{ fontSize: 18, color: cream }}>{quizCard.no}</div>
-                    </>
-                  )}
-                  {!isFromBank && quizCorrect && <div style={{ fontSize: 12, color: `${grn}aa`, marginTop: 4 }}>Lagt til i ordbanken din ✦</div>}
-                </div>
+                {quizResult === "correct" && (
+                  <div style={{ background: "rgba(76,175,122,0.12)", border: `1px solid ${grn}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
+                    <div style={{ fontSize: 16, color: grn, fontWeight: "bold", marginBottom: 4 }}>✓ Riktig!</div>
+                    {!isFromBank && <div style={{ fontSize: 12, color: `${grn}aa`, marginTop: 4 }}>Lagt til i ordbanken din ✦</div>}
+                  </div>
+                )}
+                {quizResult === "close" && (
+                  <div style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${gold}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
+                    <div style={{ fontSize: 16, color: gold, fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
+                    <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{quizInput}</em></div>
+                    <div style={{ fontSize: 15, color: cream }}>Riktig stavemåte: <strong>{quizCard.no}</strong></div>
+                    {quizCard.phonetic && <div style={{ fontSize: 13, color: gold, opacity: 0.8, marginTop: 6 }}>Uttale: {quizCard.phonetic} — si det høyt!</div>}
+                    {!isFromBank && <div style={{ fontSize: 11, color: `${gold}88`, marginTop: 6 }}>Lagt til i ordbanken ✦</div>}
+                  </div>
+                )}
+                {quizResult === "wrong" && (
+                  <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
+                    <div style={{ fontSize: 16, color: red, fontWeight: "bold", marginBottom: 6 }}>Ikke helt — prøv igjen neste gang</div>
+                    <div style={{ fontSize: 13, color: `${cream}66`, marginBottom: 6 }}>Du svarte: <em>{quizInput}</em></div>
+                    <div style={{ fontSize: 18, color: cream, marginBottom: 4 }}>{quizCard.no}</div>
+                    {quizCard.phonetic && <div style={{ fontSize: 13, color: gold, opacity: 0.8, marginBottom: 6 }}>({quizCard.phonetic})</div>}
+                    <div style={{ fontSize: 12, color: `${cream}55`, fontStyle: "italic" }}>Si det høyt et par ganger — det hjelper!</div>
+                  </div>
+                )}
                 <button onClick={nextQuiz} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer", letterSpacing: 1 }}>
                   {quizQueue.length <= 1 ? "Ferdig!" : "Neste ord →"}
                 </button>
