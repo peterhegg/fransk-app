@@ -152,8 +152,16 @@ export default function App() {
   // Review state
   const [reviewQueue, setReviewQueue] = useState([]);
   const [currentCard, setCurrentCard] = useState(null);
-  const [cardRevealed, setCardRevealed] = useState(false);
   const [reviewStats, setReviewStats] = useState({ correct: 0, wrong: 0 });
+  const [reviewInput, setReviewInput] = useState("");
+  const [reviewChecked, setReviewChecked] = useState(false);
+  // Manual word adding
+  const [addWordOpen, setAddWordOpen] = useState(false);
+  const [addWordFr, setAddWordFr] = useState("");
+  const [addWordNo, setAddWordNo] = useState("");
+  const [addWordPhonetic, setAddWordPhonetic] = useState("");
+  // Recent lesehjelp texts
+  const [recentTexts, setRecentTexts] = useState(() => { try { return JSON.parse(localStorage.getItem("fransk-recent-texts") || "[]"); } catch { return []; } });
   const bottomRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -216,7 +224,6 @@ export default function App() {
       if (due.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
       setReviewQueue(due);
       setCurrentCard(due[0]);
-      setCardRevealed(false);
       setReviewStats({ correct: 0, wrong: 0 });
       setScreen("review");
       return;
@@ -277,7 +284,17 @@ export default function App() {
         }),
       });
       const data = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || (data.error ? `Feil: ${data.error.message}` : "Noe gikk galt.");
+      const budgetHit = data.error?.message?.toLowerCase().includes("budget") || data.error?.message?.toLowerCase().includes("daily");
+      const reply = data.content?.find(b => b.type === "text")?.text ||
+        (budgetHit ? "Daglig grense er nådd. Appen åpner igjen ved midnatt (UTC). Kom tilbake i morgen!" :
+          data.error ? `Feil: ${data.error.message}` : "Noe gikk galt.");
+      if (mode?.id === "lesehjelp" && text) {
+        setRecentTexts(prev => {
+          const next2 = [text, ...prev.filter(t => t !== text)].slice(0, 5);
+          localStorage.setItem("fransk-recent-texts", JSON.stringify(next2));
+          return next2;
+        });
+      }
       setMessages([...next, { role: "assistant", content: reply }]);
     } catch {
       setMessages([...next, { role: "assistant", content: "Kunne ikke koble til. Prøv igjen." }]);
@@ -295,10 +312,17 @@ export default function App() {
     if (remaining.length === 0) { setScreen("home"); return; }
     setReviewQueue(remaining);
     setCurrentCard(remaining[0]);
-    setCardRevealed(false);
+    setReviewInput("");
+    setReviewChecked(false);
   };
 
   const clearWords = () => { setWords([]); localStorage.removeItem(WORDS_KEY); localStorage.removeItem("fransk-laering-ord"); };
+  const addWordManually = () => {
+    if (!addWordFr.trim()) return;
+    const newWord = { id: Date.now() + Math.random(), fr: addWordFr.trim(), no: addWordNo.trim(), phonetic: addWordPhonetic.trim(), level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now() };
+    setWords(prev => prev.some(w => w.fr === newWord.fr) ? prev : [...prev, newWord]);
+    setAddWordFr(""); setAddWordNo(""); setAddWordPhonetic(""); setAddWordOpen(false);
+  };
   const copyWords = () => {
     if (!words.length) return;
     navigator.clipboard.writeText("Mine franske ord:\n" + words.map(w => `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""}`).join("\n"))
@@ -343,8 +367,16 @@ export default function App() {
       <div style={S.header}>
         <button onClick={() => setShowWords(false)} style={S.backBtn}>← Tilbake</button>
         <div style={S.title}><span style={{ color: gold }}>◈</span> Ordsamlingen din</div>
-        <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 1 }}>{words.length} ord</div>
+        <button onClick={() => setAddWordOpen(o => !o)} style={{ background: addWordOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addWordOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>+ Legg til</button>
       </div>
+      {addWordOpen && (
+        <div style={{ background: "#1a1a10", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <input placeholder="Fransk ord *" value={addWordFr} onChange={e => setAddWordFr(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <input placeholder="Norsk oversettelse" value={addWordNo} onChange={e => setAddWordNo(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <input placeholder="Uttale (f.eks. bånsjur)" value={addWordPhonetic} onChange={e => setAddWordPhonetic(e.target.value)} onKeyDown={e => e.key === "Enter" && addWordManually()} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <button onClick={addWordManually} disabled={!addWordFr.trim()} style={{ background: addWordFr.trim() ? gold : `${gold}44`, border: "none", borderRadius: 8, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 14, padding: "10px", cursor: addWordFr.trim() ? "pointer" : "default" }}>Lagre ord</button>
+        </div>
+      )}
       <div style={{ padding: "24px 16px", flex: 1, overflowY: "auto" }}>
         {words.length === 0
           ? <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "50vh" }}>
@@ -352,19 +384,27 @@ export default function App() {
               <p style={{ color: "rgba(245,240,232,0.35)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Glosekort, så lagres ordene automatisk her.</p>
             </div>
           : <>
-              <p style={{ fontSize: 12, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase", marginBottom: 16 }}>Lagret på denne enheten ✦</p>
+              <div style={{ display: "flex", gap: 16, marginBottom: 16, fontSize: 11, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase" }}>
+                <span><span style={{ color: grn }}>●</span> Mestret ({words.filter(w => w.level >= 3).length})</span>
+                <span><span style={{ color: gold }}>●</span> I læring ({words.filter(w => w.level > 0 && w.level < 3).length})</span>
+                <span><span style={{ color: `${cream}44` }}>●</span> Ny ({words.filter(w => w.level === 0).length})</span>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-                {words.map((w, i) => (
-                  <div key={i} style={{ background: card, border: `1px solid ${brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <span style={{ color: grn, marginRight: 6 }}>✓</span>
-                      <span style={{ fontSize: 14 }}>{w.fr}</span>
-                      {w.no && <span style={{ color: `${cream}66`, fontSize: 13 }}> = {w.no}</span>}
-                      {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
+                {words.map((w, i) => {
+                  const statusColor = w.level >= 3 ? grn : w.level > 0 ? gold : `${cream}44`;
+                  const statusLabel = w.level >= 3 ? "mestret" : w.level > 0 ? "i læring" : "ny";
+                  return (
+                    <div key={i} style={{ background: card, border: `1px solid ${brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <span style={{ color: grn, marginRight: 6 }}>✓</span>
+                        <span style={{ fontSize: 14 }}>{w.fr}</span>
+                        {w.no && <span style={{ color: `${cream}66`, fontSize: 13 }}> = {w.no}</span>}
+                        {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
+                      </div>
+                      <div style={{ fontSize: 10, color: statusColor, letterSpacing: 1, textTransform: "uppercase" }}>{statusLabel}</div>
                     </div>
-                    <div style={{ fontSize: 10, color: `${gold}55`, letterSpacing: 1 }}>niv. {w.level}</div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
         }
@@ -403,20 +443,37 @@ export default function App() {
             <button onClick={() => speak(currentCard.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer", marginTop: 8 }}>🔊</button>
           </div>
 
-          {!cardRevealed
-            ? <button onClick={() => setCardRevealed(true)} style={{ background: "none", border: `1px solid ${gold}66`, borderRadius: 10, color: gold, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px 40px", cursor: "pointer", letterSpacing: 1 }}>
-                Vis svar
-              </button>
-            : <>
-                <div style={{ background: "#1a2a1a", border: `1px solid ${grn}44`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
-                  <div style={{ fontSize: 13, color: grn, letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" }}>Svar</div>
-                  <div style={{ fontSize: 22, color: cream }}>{currentCard.no || "—"}</div>
-                </div>
-                <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 340 }}>
-                  <button onClick={() => answerCard(false)} style={{ flex: 1, background: "none", border: `1px solid ${red}88`, borderRadius: 10, color: red, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px", cursor: "pointer" }}>✗ Feil</button>
-                  <button onClick={() => answerCard(true)} style={{ flex: 1, background: grn, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px", cursor: "pointer", fontWeight: "bold" }}>✓ Riktig</button>
-                </div>
-              </>
+          {!reviewChecked
+            ? <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
+                <input
+                  value={reviewInput}
+                  onChange={e => setReviewInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && reviewInput.trim() && setReviewChecked(true)}
+                  placeholder={currentCard.no ? "Skriv norsk oversettelse..." : "Skriv hva ordet betyr..."}
+                  style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
+                  autoFocus
+                />
+                <button onClick={() => setReviewChecked(true)} disabled={!reviewInput.trim()} style={{ background: reviewInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: reviewInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
+              </div>
+            : (() => {
+                const correct = currentCard.no
+                  ? reviewInput.trim().toLowerCase() === currentCard.no.toLowerCase()
+                  : false;
+                const answerColor = correct ? grn : red;
+                return (
+                  <>
+                    <div style={{ background: correct ? "rgba(76,175,122,0.12)" : "rgba(196,122,90,0.12)", border: `1px solid ${answerColor}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
+                      <div style={{ fontSize: 13, color: answerColor, letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>{correct ? "✓ Riktig!" : "✗ Feil"}</div>
+                      <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{reviewInput}</em></div>
+                      {!correct && <div style={{ fontSize: 18, color: cream, fontWeight: "bold" }}>Riktig: {currentCard.no || "—"}</div>}
+                    </div>
+                    <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 340 }}>
+                      <button onClick={() => answerCard(false)} style={{ flex: 1, background: "none", border: `1px solid ${red}88`, borderRadius: 10, color: red, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px", cursor: "pointer" }}>✗ Husket ikke</button>
+                      <button onClick={() => answerCard(true)} style={{ flex: 1, background: grn, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px", cursor: "pointer", fontWeight: "bold" }}>✓ Kunne det</button>
+                    </div>
+                  </>
+                );
+              })()
           }
 
           <div style={{ display: "flex", gap: 8 }}>
@@ -444,7 +501,18 @@ export default function App() {
         </button>
       )}
       {showBooks && (
-        <div style={{ background: card, borderBottom: `1px solid ${brd}`, padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 220, overflowY: "auto" }}>
+        <div style={{ background: card, borderBottom: `1px solid ${brd}`, padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 260, overflowY: "auto" }}>
+          {recentTexts.length > 0 && (
+            <>
+              <div style={{ fontSize: 10, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase" }}>Nylig brukt</div>
+              {recentTexts.map((t, i) => (
+                <button key={`r${i}`} onClick={() => { setInput(t); setShowBooks(false); }} style={{ background: dark, border: `1px solid ${gold}33`, borderRadius: 8, padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "'Georgia', serif", outline: "none" }}>
+                  <div style={{ fontSize: 13, color: cream, fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{t}"</div>
+                </button>
+              ))}
+              <div style={{ height: 1, background: brd, margin: "4px 0" }} />
+            </>
+          )}
           {BOOK_EXCERPTS.map((ex, i) => (
             <button key={i} onClick={() => { setInput(ex.text); setShowBooks(false); }} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "'Georgia', serif", outline: "none" }}>
               <div style={{ fontSize: 11, color: gold, letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>{ex.book} · {ex.hint}</div>
