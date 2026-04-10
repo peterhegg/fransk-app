@@ -21,8 +21,8 @@ PROGRESJON:
 - Bruk ord og temaer fra Houellebecq og Paris på 1920-tallet aktivt
 - Målet er at eleven skal kunne lese disse bøkene på egenhånd
 
-QUIZ: Format: GLOSE: [fr] = [no] ([uttale]). Still spørsmål, gi tilbakemelding. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste ord. Ved feil: ✗ FEIL: [riktig svar] — vent på nytt forsøk, ikke gå videre.
-SAMTALE: Spill franskmannen Pierre. Start på norsk, innfør gradvis mer og mer fransk.
+QUIZ: Format: GLOSE: [fr] = [no] ([uttale]). Still spørsmål, gi tilbakemelding. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste ord. Ved feil: ✗ FEIL: [riktig svar] — vent på nytt forsøk, ikke gå videre. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3] — korteste mulige svaralternativer eleven kan trykke på.
+SAMTALE: Spill franskmannen Pierre. Start på norsk, innfør gradvis mer og mer fransk. Bruk *kursiv* for handlinger som *Pierre smiler*. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3] — naturlige korte svar eleven kan trykke på.
 LESEHJELP: Bryt ned setningen ord for ord med oversettelse og enkel grammatikk.
 MUNTLIG: Gi én kort norsk setning eleven skal oversette til fransk. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste setning. Ved feil: ✗ FEIL: [riktig versjon med fonetikk] — vent på nytt forsøk, ikke gå videre.`;
 
@@ -100,12 +100,37 @@ function parseLearnLine(line) {
   return { fr: line.replace(/✓ LÆRT:\s*/, "").trim(), no: "", phonetic: "" };
 }
 
+function parseInline(text) {
+  const parts = [];
+  const re = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  let last = 0, m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m[2]) parts.push(<strong key={m.index}>{m[2]}</strong>);
+    else if (m[3]) parts.push(<em key={m.index} style={{ fontStyle: "italic", opacity: 0.75 }}>{m[3]}</em>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+function extractSuggestions(text) {
+  const m = text.match(/FORSLAG:\s*(.+)/);
+  if (!m) return [];
+  return m[1].split("|").map(s => s.trim()).filter(Boolean);
+}
+
+function stripSuggestions(text) {
+  return text.replace(/\nFORSLAG:.*$/s, "").trimEnd();
+}
+
 function renderMessage(text) {
   return text.split("\n").map((line, i) => {
-    if (line.startsWith("✓ LÆRT:")) return <div key={i} style={{ color: grn, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{line}</div>;
-    if (line.startsWith("✗ FEIL:")) return <div key={i} style={{ color: red, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{line}</div>;
-    if (line.startsWith("GLOSE:")) return <div key={i} style={{ background: "rgba(201,168,76,0.08)", borderLeft: `3px solid ${gold}`, padding: "6px 10px", margin: "6px 0", borderRadius: "0 8px 8px 0", fontSize: 14 }}>{line}</div>;
-    return <div key={i} style={{ minHeight: line === "" ? 10 : "auto" }}>{line}</div>;
+    if (line.startsWith("✓ LÆRT:")) return <div key={i} style={{ color: grn, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{parseInline(line)}</div>;
+    if (line.startsWith("✗ FEIL:")) return <div key={i} style={{ color: red, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{parseInline(line)}</div>;
+    if (line.startsWith("GLOSE:")) return <div key={i} style={{ background: "rgba(201,168,76,0.08)", borderLeft: `3px solid ${gold}`, padding: "6px 10px", margin: "6px 0", borderRadius: "0 8px 8px 0", fontSize: 14 }}>{parseInline(line)}</div>;
+    if (line === "---") return <hr key={i} style={{ border: "none", borderTop: `1px solid ${brd}`, margin: "8px 0" }} />;
+    return <div key={i} style={{ minHeight: line === "" ? 10 : "auto" }}>{parseInline(line)}</div>;
   });
 }
 
@@ -185,7 +210,7 @@ export default function App() {
 
   const stopListening = () => { recognitionRef.current?.stop(); setListening(false); };
 
-  const startMode = (m) => {
+  const startMode = async (m) => {
     if (m.id === "repetisjon") {
       const due = getDue(words);
       if (due.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
@@ -196,7 +221,36 @@ export default function App() {
       setScreen("review");
       return;
     }
-    setMode(m); setMessages([{ role: "assistant", content: STARTER[m.id] }]); setScreen("chat"); setShowBooks(false);
+    setMode(m); setScreen("chat"); setShowBooks(false);
+
+    // For modes that use progression, fetch a personalized opener from Claude
+    if (["quiz", "samtale", "muntlig"].includes(m.id) && words.length > 0) {
+      setLoading(true);
+      setMessages([]);
+      const wordCtx = `\n\nElevens ordbank (${words.length} ord lagret på enheten):\n` +
+        words.map(w => `- ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [nivå ${w.level}]`).join("\n") +
+        `\n\nDisse ordene KAN eleven. Ikke re-introduser dem som nye. Bygg heller setninger, spørsmål og samtaler der disse ordene inngår naturlig. Introduser nye ord gradvis VED SIDEN AV det kjente.`;
+      try {
+        const res = await fetch(PROXY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 600,
+            system: SYSTEM_PROMPT + wordCtx + `\nModus: ${m.label.toUpperCase()}`,
+            messages: [{ role: "user", content: `Start en ny økt. Eleven har ${words.length} ord i ordbanken. Ønsker dem velkommen tilbake, nevn kort hva de kan (bruk noen av de kjente ordene), og start direkte med neste steg i læringen.` }],
+          }),
+        });
+        const data = await res.json();
+        const reply = data.content?.find(b => b.type === "text")?.text || STARTER[m.id];
+        setMessages([{ role: "assistant", content: reply }]);
+      } catch {
+        setMessages([{ role: "assistant", content: STARTER[m.id] }]);
+      }
+      setLoading(false);
+    } else {
+      setMessages([{ role: "assistant", content: STARTER[m.id] }]);
+    }
   };
 
   const send = async (override) => {
@@ -206,7 +260,11 @@ export default function App() {
     if (sessionMsgs === 0) setStreak(touchStreak());
     const next = [...messages, { role: "user", content: text }];
     setMessages(next); setLoading(true); setSessionMsgs(s => s + 1);
-    const wordCtx = words.length > 0 ? `\nKan allerede: ${words.map(w => w.fr).join(", ")}` : "";
+    const wordCtx = words.length > 0
+      ? `\n\nElevens ordbank (${words.length} ord lagret på enheten):\n` +
+        words.map(w => `- ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [nivå ${w.level}]`).join("\n") +
+        `\n\nDisse ordene KAN eleven. Ikke re-introduser dem som nye. Bygg heller setninger, spørsmål og samtaler der disse ordene inngår naturlig. Introduser nye ord gradvis VED SIDEN AV det kjente.`
+      : "";
     try {
       const res = await fetch(PROXY_URL, {
         method: "POST",
@@ -402,19 +460,31 @@ export default function App() {
       )}
       <div style={S.msgs}>
         {messages.map((msg, i) => (
-          <div key={i} style={msg.role === "user" ? S.user : S.ai}>
+          <div key={i} style={msg.role === "user" ? S.user : msg.content.includes("✓ LÆRT:") ? { ...S.ai, border: `1px solid ${grn}66`, background: "rgba(76,175,122,0.08)" } : S.ai}>
             {msg.role === "assistant" && (
               <div style={S.aiLabel}>
                 <span>Claude ✦</span>
                 <button onClick={() => speak(msg.content)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>🔊</button>
               </div>
             )}
-            <div style={S.bubbleTxt}>{renderMessage(msg.content)}</div>
+            <div style={S.bubbleTxt}>{renderMessage(msg.role === "assistant" ? stripSuggestions(msg.content) : msg.content)}</div>
           </div>
         ))}
         {loading && <div style={S.ai}><div style={S.aiLabel}><span>Claude ✦</span></div><div style={{ display: "flex", gap: 6, fontSize: 28, color: gold, opacity: 0.5 }}><span>·</span><span>·</span><span>·</span></div></div>}
         <div ref={bottomRef} />
       </div>
+      {(() => {
+        const last = [...messages].reverse().find(m => m.role === "assistant");
+        const suggestions = last && !loading ? extractSuggestions(last.content) : [];
+        if (!suggestions.length) return null;
+        return (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "8px 16px 0", background: card, borderTop: `1px solid ${brd}` }}>
+            {suggestions.map((s, i) => (
+              <button key={i} onClick={() => send(s)} style={{ background: "none", border: `1px solid ${gold}55`, borderRadius: 20, color: gold, fontFamily: "'Georgia', serif", fontSize: 13, padding: "6px 14px", cursor: "pointer", letterSpacing: 0.5 }}>{s}</button>
+            ))}
+          </div>
+        );
+      })()}
       <div style={S.inputArea}>
         {micBtn}
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder={listening ? "Lytter..." : "Skriv eller snakk..."} style={{ ...S.textarea, borderColor: listening ? gold : brd }} rows={2} />
