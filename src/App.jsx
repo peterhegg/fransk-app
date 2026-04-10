@@ -150,6 +150,7 @@ function checkQuizAnswer(input, card) {
 }
 
 const MODES = [
+  { id: "dagens", label: "Dagens øvelse", icon: "◆", desc: "5 nye ord + 10 produksjonsoppgaver" },
   { id: "quiz", label: "Glosekort", icon: "◈", desc: "Nye ord + repeter det du har lært" },
   { id: "grammatikk", label: "Grammatikk", icon: "◑", desc: "Setningsoppbygging trinn for trinn" },
   { id: "samtale", label: "Samtale", icon: "◉", desc: "Øv med en virtuell franskmann" },
@@ -173,6 +174,22 @@ const SPEECH_LANG = { samtale: "fr-FR", muntlig: "fr-FR" };
 const SR_INTERVALS = [1, 2, 4, 8, 16, 32];
 const WORDS_KEY = "fransk-laering-ord-v2";
 const STREAK_KEY = "fransk-streak";
+const DAGENS_KEY = "fransk-dagens-ovelse";
+
+function todayStr() { return new Date().toISOString().split("T")[0]; }
+function getTodaysWords(words) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DAGENS_KEY) || "{}");
+    if (saved.date === todayStr()) return saved;
+  } catch {}
+  const learnedFr = new Set(words.map(w => w.fr));
+  const newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
+  const due = getDue(words).slice(0, Math.max(0, 5 - newVocab.length));
+  const selected = [...newVocab, ...due].slice(0, 5);
+  const exercise = { date: todayStr(), words: selected, phase1done: false, phase2done: false };
+  localStorage.setItem(DAGENS_KEY, JSON.stringify(exercise));
+  return exercise;
+}
 
 const gold = "#C9A84C", dark = "#0F0E0B", cream = "#F5F0E8", card = "#1A1810", brd = "#2E2B22", grn = "#4CAF7A", red = "#C47A5A";
 
@@ -268,6 +285,15 @@ export default function App() {
   const [listening, setListening] = useState(false);
   const [noWordsMsg, setNoWordsMsg] = useState(false);
   // Review state
+  // Dagens øvelse state
+  const [dagensPhase, setDagensPhase] = useState(0); // 1=fase1, 2=fase2, 3=ferdig
+  const [dagensWords, setDagensWords] = useState([]);
+  const [dagensQueue, setDagensQueue] = useState([]);
+  const [dagensCard, setDagensCard] = useState(null);
+  const [dagensInput, setDagensInput] = useState("");
+  const [dagensChecked, setDagensChecked] = useState(false);
+  const [dagensResult, setDagensResult] = useState("");
+  const [dagensStats, setDagensStats] = useState({ correct: 0, wrong: 0 });
   // Local quiz state
   const [quizQueue, setQuizQueue] = useState([]);
   const [quizCard, setQuizCard] = useState(null);
@@ -362,6 +388,26 @@ export default function App() {
   const stopListening = () => { recognitionRef.current?.stop(); setListening(false); };
 
   const startMode = async (m) => {
+    if (m.id === "dagens") {
+      const ex = getTodaysWords(words);
+      if (ex.words.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
+      const phase = ex.phase2done ? 3 : ex.phase1done ? 2 : 1;
+      setDagensWords(ex.words);
+      setDagensStats({ correct: 0, wrong: 0 });
+      setDagensInput(""); setDagensChecked(false); setDagensResult("");
+      if (phase === 1) {
+        setDagensQueue([...ex.words]);
+        setDagensCard(ex.words[0]);
+      } else if (phase === 2) {
+        const bankFill = words.filter(w => !ex.words.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
+        const p2 = [...ex.words, ...bankFill].map(w => ({ ...w, reverse: true }));
+        setDagensQueue(p2);
+        setDagensCard(p2[0]);
+      }
+      setDagensPhase(phase);
+      setScreen("dagens");
+      return;
+    }
     if (m.id === "quiz") {
       const learnedFr = new Set(words.map(w => w.fr));
       const due = getDue(words);
@@ -557,6 +603,138 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       )}
     </div>
   );
+
+  // --- Dagens øvelse screen ---
+  if (screen === "dagens") {
+    const totalCards = dagensPhase === 1 ? dagensWords.length : dagensWords.length + 5;
+    const done = totalCards - dagensQueue.length;
+    const isReverse = dagensCard?.reverse;
+
+    const submitDagens = () => {
+      if (!dagensInput.trim()) return;
+      const result = checkQuizAnswer(dagensInput, dagensCard);
+      const passed = result !== "wrong";
+      setDagensChecked(true);
+      setDagensResult(result);
+      setDagensStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+      if (dagensCard.id) {
+        const { level: newLevel, nextReview } = scheduleNext(dagensCard.level, passed);
+        setWords(prev => prev.map(w => w.id === dagensCard.id ? { ...w, level: newLevel, nextReview } : w));
+      } else if (passed) {
+        const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now() };
+        setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
+      }
+    };
+
+    const nextDagens = () => {
+      const remaining = dagensQueue.slice(1);
+      setDagensInput(""); setDagensChecked(false); setDagensResult("");
+      if (remaining.length === 0) {
+        const saved = JSON.parse(localStorage.getItem(DAGENS_KEY) || "{}");
+        if (dagensPhase === 1) {
+          localStorage.setItem(DAGENS_KEY, JSON.stringify({ ...saved, phase1done: true }));
+          const bankFill = words.filter(w => !dagensWords.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
+          const p2 = [...dagensWords, ...bankFill].map(w => ({ ...w, reverse: true }));
+          setDagensQueue(p2);
+          setDagensCard(p2[0]);
+          setDagensPhase(2);
+          setDagensStats({ correct: 0, wrong: 0 });
+        } else {
+          localStorage.setItem(DAGENS_KEY, JSON.stringify({ ...saved, phase2done: true }));
+          setDagensPhase(3);
+          setStreak(touchStreak());
+        }
+        return;
+      }
+      setDagensQueue(remaining);
+      setDagensCard(remaining[0]);
+    };
+
+    if (dagensPhase === 3) return (
+      <div style={S.page}>
+        <div style={S.header}>
+          <button onClick={() => setScreen("home")} style={S.backBtn}>← Tilbake</button>
+          <div style={S.title}><span style={{ color: gold }}>◆</span> Dagens øvelse</div>
+          <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 1 }}>Fullført ✦</div>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", gap: 20, textAlign: "center" }}>
+          <div style={{ fontSize: 48 }}>✦</div>
+          <div style={{ fontSize: 22, color: gold, fontStyle: "italic" }}>Dagens øvelse fullført!</div>
+          <div style={{ fontSize: 14, color: `${cream}88`, lineHeight: 1.8 }}>Du har øvd på {dagensWords.length} ord i begge retninger.<br />Kom tilbake i morgen for 5 nye ord.</div>
+          <div style={{ background: card, border: `1px solid ${brd}`, borderRadius: 12, padding: "16px 24px", marginTop: 8 }}>
+            {dagensWords.map((w, i) => (
+              <div key={i} style={{ fontSize: 14, color: cream, padding: "4px 0", borderBottom: i < dagensWords.length - 1 ? `1px solid ${brd}` : "none" }}>
+                <span style={{ color: grn }}>✓</span> <strong>{w.fr}</strong> = {w.no}
+                {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
+              </div>
+            ))}
+          </div>
+          <button onClick={() => setScreen("home")} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>Tilbake til hjem</button>
+        </div>
+      </div>
+    );
+
+    const phaseLabel = dagensPhase === 1 ? "Del 1 — gjenkjenning (fr → no)" : "Del 2 — produksjon (no → fr)";
+    const prompt = isReverse ? dagensCard?.no : dagensCard?.fr;
+    const phonetic = !isReverse && dagensCard?.phonetic;
+
+    return (
+      <div style={S.page}>
+        <div style={S.header}>
+          <button onClick={() => setScreen("home")} style={S.backBtn}>← Tilbake</button>
+          <div style={S.title}><span style={{ color: gold }}>◆</span> Dagens øvelse</div>
+          <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 1 }}>{done}/{totalCards}</div>
+        </div>
+        <div style={{ height: 3, background: brd }}><div style={{ height: "100%", background: gold, width: `${(done / totalCards) * 100}%`, transition: "width 0.3s" }} /></div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
+          <div style={{ fontSize: 10, color: `${gold}66`, letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>{phaseLabel}</div>
+          <div style={{ background: card, border: `1px solid ${brd}`, borderRadius: 16, padding: "28px 36px", textAlign: "center", width: "100%", maxWidth: 340 }}>
+            <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+              {isReverse ? "Skriv på fransk:" : "Hva betyr dette?"}
+            </div>
+            <div style={{ fontSize: 32, color: cream, fontStyle: isReverse ? "normal" : "italic", marginBottom: 8 }}>{prompt}</div>
+            {phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({phonetic})</div>}
+            {!isReverse && <button onClick={() => speak(dagensCard.fr)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 20, cursor: "pointer" }}>🔊</button>}
+          </div>
+
+          {!dagensChecked
+            ? <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
+                <input value={dagensInput} onChange={e => setDagensInput(e.target.value)} onKeyDown={e => e.key === "Enter" && submitDagens()}
+                  placeholder={isReverse ? "Skriv det franske ordet..." : "Skriv norsk oversettelse..."}
+                  style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }} autoFocus />
+                <button onClick={submitDagens} disabled={!dagensInput.trim()} style={{ background: dagensInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: dagensInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
+              </div>
+            : <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
+                {dagensResult === "correct" && <div style={{ background: "rgba(76,175,122,0.12)", border: `1px solid ${grn}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%", fontSize: 16, color: grn, fontWeight: "bold" }}>✓ Riktig!</div>}
+                {dagensResult === "close" && (
+                  <div style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${gold}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
+                    <div style={{ fontSize: 15, color: gold, fontWeight: "bold", marginBottom: 4 }}>~ Nesten!</div>
+                    <div style={{ fontSize: 14, color: cream }}>{isReverse ? dagensCard.fr : dagensCard.no}</div>
+                    {dagensCard.phonetic && <div style={{ fontSize: 12, color: `${gold}88`, marginTop: 4 }}>{dagensCard.phonetic}</div>}
+                  </div>
+                )}
+                {dagensResult === "wrong" && (
+                  <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
+                    <div style={{ fontSize: 14, color: red, marginBottom: 6 }}>Ikke helt — riktig svar:</div>
+                    <div style={{ fontSize: 18, color: cream, fontWeight: "bold" }}>{isReverse ? dagensCard.fr : dagensCard.no}</div>
+                    {dagensCard.phonetic && <div style={{ fontSize: 13, color: gold, marginTop: 4 }}>({dagensCard.phonetic}) — si det høyt!</div>}
+                  </div>
+                )}
+                <button onClick={nextDagens} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+                  {dagensQueue.length <= 1 && dagensPhase === 2 ? "Fullfør!" : dagensQueue.length <= 1 ? "Del 2 →" : "Neste →"}
+                </button>
+              </div>
+          }
+
+          <div style={{ display: "flex", gap: 6 }}>
+            {Array.from({ length: totalCards }).map((_, i) => (
+              <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: i < dagensStats.correct ? grn : i < done ? red : brd }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // --- Local quiz screen ---
   if (screen === "quiz" && quizCard) {
@@ -770,16 +948,19 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, width: "100%", maxWidth: 420, marginBottom: 20 }}>
-        {MODES.map(m => (
-          <button key={m.id} onClick={() => startMode(m)} style={{ background: card, border: `1px solid ${m.id === "quiz" && dueCount > 0 ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", gridColumn: MODES.indexOf(m) === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
-            <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 1 }}>{m.label}</div>
-            <div style={{ fontSize: 12, color: "rgba(245,240,232,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
-            {m.id === "quiz" && dueCount > 0 && (
-              <div style={{ position: "absolute", top: 10, right: 10, background: gold, color: dark, borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 6px" }}>{dueCount}</div>
-            )}
-          </button>
-        ))}
+        {(() => {
+          const dagensDone = (() => { try { const s = JSON.parse(localStorage.getItem(DAGENS_KEY) || "{}"); return s.date === todayStr() && s.phase2done; } catch { return false; } })();
+          return MODES.map((m, idx) => (
+            <button key={m.id} onClick={() => startMode(m)}
+              style={{ background: card, border: `1px solid ${(m.id === "quiz" && dueCount > 0) || (m.id === "dagens" && !dagensDone) ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
+              <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
+              <div style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 1 }}>{m.label}</div>
+              <div style={{ fontSize: 12, color: "rgba(245,240,232,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
+              {m.id === "quiz" && dueCount > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: gold, color: dark, borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 6px" }}>{dueCount}</div>}
+              {m.id === "dagens" && dagensDone && <div style={{ position: "absolute", top: 10, right: 10, color: grn, fontSize: 14 }}>✓</div>}
+            </button>
+          ));
+        })()}
       </div>
 
       {noWordsMsg && (
