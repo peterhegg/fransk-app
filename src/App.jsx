@@ -133,12 +133,11 @@ function checkQuizAnswer(input, card) {
 }
 
 const MODES = [
-  { id: "quiz", label: "Glosekort", icon: "◈", desc: "Test deg selv på ord og fraser" },
+  { id: "quiz", label: "Glosekort", icon: "◈", desc: "Nye ord + repeter det du har lært" },
   { id: "samtale", label: "Samtale", icon: "◉", desc: "Øv med en virtuell franskmann" },
   { id: "muntlig", label: "Muntlig", icon: "◎", desc: "Snakk fransk — få direkte korreksjon" },
   { id: "lesehjelp", label: "Lesehjelp", icon: "◫", desc: "Forstå setninger fra bøkene dine" },
   { id: "fri", label: "Spør fritt", icon: "✦", desc: "Still spørsmål om fransk" },
-  { id: "repetisjon", label: "Repetisjon", icon: "↻", desc: "Øv på ord du er i ferd med å glemme" },
 ];
 
 const STARTER = {
@@ -248,11 +247,6 @@ export default function App() {
   const [listening, setListening] = useState(false);
   const [noWordsMsg, setNoWordsMsg] = useState(false);
   // Review state
-  const [reviewQueue, setReviewQueue] = useState([]);
-  const [currentCard, setCurrentCard] = useState(null);
-  const [reviewStats, setReviewStats] = useState({ correct: 0, wrong: 0 });
-  const [reviewInput, setReviewInput] = useState("");
-  const [reviewChecked, setReviewChecked] = useState(false);
   // Local quiz state
   const [quizQueue, setQuizQueue] = useState([]);
   const [quizCard, setQuizCard] = useState(null);
@@ -339,16 +333,7 @@ export default function App() {
       setScreen("quiz");
       return;
     }
-    if (m.id === "repetisjon") {
-      const due = getDue(words);
-      if (due.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
-      setReviewQueue(due);
-      setCurrentCard(due[0]);
-      setReviewStats({ correct: 0, wrong: 0 });
-      setScreen("review");
-      return;
-    }
-    setMode(m); setScreen("chat"); setShowBooks(false);
+setMode(m); setScreen("chat"); setShowBooks(false);
 
     // For modes that use progression, fetch a personalized opener from Claude
     if (["samtale", "muntlig"].includes(m.id) && words.length > 0) {
@@ -422,19 +407,6 @@ export default function App() {
     setLoading(false);
   };
 
-  const answerCard = (correct) => {
-    const { level: newLevel, nextReview } = scheduleNext(currentCard.level, correct);
-    setWords(prev => prev.map(w => w.id === currentCard.id ? { ...w, level: newLevel, nextReview } : w));
-    const newStats = { correct: reviewStats.correct + (correct ? 1 : 0), wrong: reviewStats.wrong + (correct ? 0 : 1) };
-    setReviewStats(newStats);
-    if (sessionMsgs === 0 && newStats.correct + newStats.wrong === 1) setStreak(touchStreak());
-    const remaining = reviewQueue.slice(1);
-    if (remaining.length === 0) { setScreen("home"); return; }
-    setReviewQueue(remaining);
-    setCurrentCard(remaining[0]);
-    setReviewInput("");
-    setReviewChecked(false);
-  };
 
   const clearWords = () => { setWords([]); localStorage.removeItem(WORDS_KEY); localStorage.removeItem("fransk-laering-ord"); };
   const addWordManually = () => {
@@ -541,70 +513,6 @@ export default function App() {
       )}
     </div>
   );
-
-  // --- Review screen ---
-  if (screen === "review" && currentCard) {
-    const total = reviewStats.correct + reviewStats.wrong + reviewQueue.length;
-    const done = reviewStats.correct + reviewStats.wrong;
-    return (
-      <div style={S.page}>
-        <div style={S.header}>
-          <button onClick={() => setScreen("home")} style={S.backBtn}>← Tilbake</button>
-          <div style={S.title}><span style={{ color: gold }}>↻</span> Repetisjon</div>
-          <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 1 }}>{done}/{total}</div>
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-          <div style={{ fontSize: 11, color: `${gold}66`, letterSpacing: 2, textTransform: "uppercase" }}>
-            {currentCard.no ? "Hva er norsk for:" : "Hva betyr:"}
-          </div>
-          <div style={{ background: card, border: `1px solid ${brd}`, borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340 }}>
-            <div style={{ fontSize: 32, color: cream, fontStyle: "italic", marginBottom: 8 }}>{currentCard.fr}</div>
-            {currentCard.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7 }}>({currentCard.phonetic})</div>}
-            <button onClick={() => speak(currentCard.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer", marginTop: 8 }}>🔊</button>
-          </div>
-
-          {!reviewChecked
-            ? <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
-                <input
-                  value={reviewInput}
-                  onChange={e => setReviewInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && reviewInput.trim() && setReviewChecked(true)}
-                  placeholder={currentCard.no ? "Skriv norsk oversettelse..." : "Skriv hva ordet betyr..."}
-                  style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
-                  autoFocus
-                />
-                <button onClick={() => setReviewChecked(true)} disabled={!reviewInput.trim()} style={{ background: reviewInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: reviewInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
-              </div>
-            : (() => {
-                const correct = currentCard.no
-                  ? reviewInput.trim().toLowerCase() === currentCard.no.toLowerCase()
-                  : false;
-                const answerColor = correct ? grn : red;
-                return (
-                  <>
-                    <div style={{ background: correct ? "rgba(76,175,122,0.12)" : "rgba(196,122,90,0.12)", border: `1px solid ${answerColor}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
-                      <div style={{ fontSize: 13, color: answerColor, letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>{correct ? "✓ Riktig!" : "✗ Feil"}</div>
-                      <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{reviewInput}</em></div>
-                      {!correct && <div style={{ fontSize: 18, color: cream, fontWeight: "bold" }}>Riktig: {currentCard.no || "—"}</div>}
-                    </div>
-                    <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 340 }}>
-                      <button onClick={() => answerCard(false)} style={{ flex: 1, background: "none", border: `1px solid ${red}88`, borderRadius: 10, color: red, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px", cursor: "pointer" }}>✗ Husket ikke</button>
-                      <button onClick={() => answerCard(true)} style={{ flex: 1, background: grn, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontSize: 15, padding: "14px", cursor: "pointer", fontWeight: "bold" }}>✓ Kunne det</button>
-                    </div>
-                  </>
-                );
-              })()
-          }
-
-          <div style={{ display: "flex", gap: 8 }}>
-            {Array.from({ length: total }).map((_, i) => (
-              <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < reviewStats.correct ? grn : i < done ? red : `${brd}` }} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // --- Local quiz screen ---
   if (screen === "quiz" && quizCard) {
@@ -801,11 +709,11 @@ export default function App() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, width: "100%", maxWidth: 420, marginBottom: 20 }}>
         {MODES.map(m => (
-          <button key={m.id} onClick={() => startMode(m)} style={{ background: card, border: `1px solid ${m.id === "repetisjon" && dueCount > 0 ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative" }}>
+          <button key={m.id} onClick={() => startMode(m)} style={{ background: card, border: `1px solid ${m.id === "quiz" && dueCount > 0 ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative" }}>
             <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
             <div style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 1 }}>{m.label}</div>
             <div style={{ fontSize: 12, color: "rgba(245,240,232,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
-            {m.id === "repetisjon" && dueCount > 0 && (
+            {m.id === "quiz" && dueCount > 0 && (
               <div style={{ position: "absolute", top: 10, right: 10, background: gold, color: dark, borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 6px" }}>{dueCount}</div>
             )}
           </button>
@@ -814,7 +722,7 @@ export default function App() {
 
       {noWordsMsg && (
         <div style={{ color: `${cream}88`, fontSize: 13, textAlign: "center", marginBottom: 12 }}>
-          Ingen ord til repetisjon ennå — øv på Glosekort først
+          Alle ord er mestret! Kom tilbake i morgen for neste runde.
         </div>
       )}
 
