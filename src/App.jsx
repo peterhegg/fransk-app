@@ -291,12 +291,17 @@ export default function App() {
     });
   }, [messages]);
 
-  const speak = (text) => {
+  const [speaking, setSpeaking] = useState(false);
+
+  const speak = (text, lang = "fr-FR") => {
     if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
+    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
     const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = "fr-FR";
+    utt.lang = lang;
     utt.rate = 0.85;
+    utt.onstart = () => setSpeaking(true);
+    utt.onend = () => setSpeaking(false);
+    utt.onerror = () => setSpeaking(false);
     window.speechSynthesis.speak(utt);
   };
 
@@ -560,7 +565,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
             <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8 }}>{quizCard.fr}</div>
             {quizCard.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({quizCard.phonetic})</div>}
-            <button onClick={() => speak(quizCard.fr)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 18, cursor: "pointer" }}>🔊</button>
+            <button onClick={() => speak(quizCard.fr)} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}66`, fontSize: 18, cursor: "pointer" }}>{speaking ? "⏹" : "🔊"}</button>
           </div>
 
           {!quizChecked
@@ -648,7 +653,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             {msg.role === "assistant" && (
               <div style={S.aiLabel}>
                 <span>Claude ✦</span>
-                <button onClick={() => speak(msg.content)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>🔊</button>
+                <button onClick={() => speak(stripSuggestions(msg.content), "nb-NO")} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>{speaking ? "⏹" : "🔊"}</button>
               </div>
             )}
             <div style={S.bubbleTxt}>{renderMessage(msg.role === "assistant" ? stripSuggestions(msg.content) : msg.content)}</div>
