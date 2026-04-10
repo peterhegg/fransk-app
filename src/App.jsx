@@ -293,16 +293,34 @@ export default function App() {
 
   const [speaking, setSpeaking] = useState(false);
 
-  const speak = (text, lang = "fr-FR") => {
+  const speak = (text) => {
     if (!window.speechSynthesis) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = lang;
-    utt.rate = 0.85;
-    utt.onstart = () => setSpeaking(true);
-    utt.onend = () => setSpeaking(false);
-    utt.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utt);
+
+    const cleanLine = t => t
+      .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
+      .replace(/[✓✗].*?:/g, '').replace(/GLOSE:/g, '').trim();
+
+    const detectLang = line => {
+      if (/[øå]/.test(line)) return "nb-NO";
+      if (/[éèêëàâùûôîœç]/i.test(line)) return "fr-FR";
+      if (/\b(jeg|og|er|til|av|for|men|ikke|her|fra|med|har|som|når|deg|meg|vil|kan|skal|det|disse|norsk|hva|hvem|hvor)\b/i.test(line)) return "nb-NO";
+      return "fr-FR";
+    };
+
+    const lines = text.split('\n')
+      .map(l => ({ text: cleanLine(l), lang: detectLang(l) }))
+      .filter(l => l.text.length > 1);
+
+    if (!lines.length) return;
+    setSpeaking(true);
+    lines.forEach((l, i) => {
+      const utt = new SpeechSynthesisUtterance(l.text);
+      utt.lang = l.lang;
+      utt.rate = 0.85;
+      if (i === lines.length - 1) { utt.onend = () => setSpeaking(false); utt.onerror = () => setSpeaking(false); }
+      window.speechSynthesis.speak(utt);
+    });
   };
 
   const startListening = () => {
@@ -653,7 +671,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             {msg.role === "assistant" && (
               <div style={S.aiLabel}>
                 <span>Claude ✦</span>
-                <button onClick={() => speak(stripSuggestions(msg.content), "nb-NO")} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>{speaking ? "⏹" : "🔊"}</button>
+                <button onClick={() => speak(stripSuggestions(msg.content))} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>{speaking ? "⏹" : "🔊"}</button>
               </div>
             )}
             <div style={S.bubbleTxt}>{renderMessage(msg.role === "assistant" ? stripSuggestions(msg.content) : msg.content)}</div>
