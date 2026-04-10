@@ -308,7 +308,7 @@ export default function App() {
 
   const [speaking, setSpeaking] = useState(false);
 
-  const speak = (text) => {
+  const speak = (text, rate = 0.85) => {
     if (!window.speechSynthesis) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
 
@@ -332,7 +332,7 @@ export default function App() {
     lines.forEach((l, i) => {
       const utt = new SpeechSynthesisUtterance(l.text);
       utt.lang = l.lang;
-      utt.rate = 0.85;
+      utt.rate = rate;
       if (i === lines.length - 1) { utt.onend = () => setSpeaking(false); utt.onerror = () => setSpeaking(false); }
       window.speechSynthesis.speak(utt);
     });
@@ -599,7 +599,10 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
             <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8 }}>{quizCard.fr}</div>
             {quizCard.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({quizCard.phonetic})</div>}
-            <button onClick={() => speak(quizCard.fr)} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}66`, fontSize: 18, cursor: "pointer" }}>{speaking ? "⏹" : "🔊"}</button>
+            <div style={{ display: "flex", gap: 10, marginTop: 4, justifyContent: "center" }}>
+              <button onClick={() => speak(quizCard.fr)} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 8, color: speaking ? gold : `${gold}88`, fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>{speaking ? "⏹" : "🔊 Normal"}</button>
+              <button onClick={() => speak(quizCard.fr, 0.4)} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 8, color: speaking ? gold : `${gold}88`, fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>{speaking ? "⏹" : "🔊 Sakte"}</button>
+            </div>
           </div>
 
           {!quizChecked
