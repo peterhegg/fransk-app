@@ -191,7 +191,7 @@ function getTodaysWords(words) {
   return exercise;
 }
 
-const gold = "#C9A84C", dark = "#0F0E0B", cream = "#F5F0E8", card = "#1A1810", brd = "#2E2B22", grn = "#4CAF7A", red = "#C47A5A";
+const gold = "#9B6820", dark = "#F5EDD8", cream = "#1D1610", card = "#FFFDF6", brd = "#D9CCAF", grn = "#3D7850", red = "#9C4238";
 
 // --- Storage helpers ---
 function loadWords() {
@@ -534,8 +534,8 @@ setMode(m); setScreen("chat"); setShowBooks(false);
     title: { display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 },
     badge: { background: "none", border: `1px solid ${gold}44`, borderRadius: 20, color: gold, fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "'Georgia', serif", letterSpacing: 1 },
     msgs: { flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16 },
-    ai: { alignSelf: "flex-start", maxWidth: "88%", background: card, border: `1px solid ${brd}`, borderRadius: "4px 16px 16px 16px", padding: "12px 16px" },
-    user: { alignSelf: "flex-end", maxWidth: "80%", background: "#1E1C12", border: `1px solid ${gold}33`, borderRadius: "16px 4px 16px 16px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 },
+    ai: { alignSelf: "flex-start", maxWidth: "88%", background: "#F0E8D5", border: `1px solid ${brd}`, borderRadius: "4px 16px 16px 16px", padding: "12px 16px" },
+    user: { alignSelf: "flex-end", maxWidth: "80%", background: "#E8DECA", border: `1px solid ${gold}44`, borderRadius: "16px 4px 16px 16px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 },
     aiLabel: { fontSize: 10, color: gold, letterSpacing: 2, marginBottom: 6, textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center" },
     bubbleTxt: { fontSize: 15, lineHeight: 1.75, color: cream },
     inputArea: { display: "flex", gap: 10, padding: "12px 16px", borderTop: `1px solid ${brd}`, background: card, alignItems: "flex-end" },
@@ -552,7 +552,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         <button onClick={() => setAddWordOpen(o => !o)} style={{ background: addWordOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addWordOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>+ Legg til</button>
       </div>
       {addWordOpen && (
-        <div style={{ background: "#1a1a10", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           <input placeholder="Fransk ord *" value={addWordFr} onChange={e => setAddWordFr(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
           <input placeholder="Norsk oversettelse" value={addWordNo} onChange={e => setAddWordNo(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
           <input placeholder="Uttale (f.eks. bånsjur)" value={addWordPhonetic} onChange={e => setAddWordPhonetic(e.target.value)} onKeyDown={e => e.key === "Enter" && addWordManually()} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
@@ -563,7 +563,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         {words.length === 0
           ? <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "50vh" }}>
               <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 16 }}>◎</div>
-              <p style={{ color: "rgba(245,240,232,0.35)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Glosekort, så lagres ordene automatisk her.</p>
+              <p style={{ color: "rgba(29,22,16,0.4)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Glosekort, så lagres ordene automatisk her.</p>
             </div>
           : <>
               <div style={{ display: "flex", gap: 16, marginBottom: 16, fontSize: 11, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase" }}>
@@ -919,31 +919,29 @@ setMode(m); setScreen("chat"); setShowBooks(false);
 
   // --- Home screen ---
   return (
-    <div style={{ minHeight: "100dvh", background: dark, color: cream, fontFamily: "'Georgia', serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "0 16px 40px", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100dvh", background: dark, color: cream, fontFamily: "'Georgia', serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "0 16px 40px" }}>
       {offlineBanner}
-      <div style={{ position: "fixed", top: -100, right: -100, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ position: "fixed", bottom: -80, left: -80, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ textAlign: "center", paddingTop: 48, paddingBottom: 32 }}>
-        <div style={{ color: gold, fontSize: 14, letterSpacing: 8, marginBottom: 16, opacity: 0.7 }}>✦ ✦ ✦</div>
-        <h1 style={{ fontSize: 44, fontWeight: "normal", letterSpacing: 6, color: cream, margin: "0 0 10px", fontStyle: "italic" }}>Mon Français</h1>
-        <p style={{ fontSize: 13, color: gold, letterSpacing: 3, textTransform: "uppercase", margin: "0 0 24px", opacity: 0.85 }}>Lær fransk på din måte</p>
-        <div style={{ width: 120, height: 1, background: `linear-gradient(to right, transparent, ${gold}, transparent)`, margin: "0 auto" }} />
+      <div style={{ textAlign: "center", paddingTop: 52, paddingBottom: 32 }}>
+        <div style={{ color: gold, fontSize: 11, letterSpacing: 7, marginBottom: 18, opacity: 0.6, textTransform: "uppercase" }}>Paris · Aujourd'hui</div>
+        <h1 style={{ fontSize: 48, fontWeight: "normal", letterSpacing: 5, color: cream, margin: "0 0 8px", fontStyle: "italic" }}>Mon Français</h1>
+        <p style={{ fontSize: 12, color: gold, letterSpacing: 4, textTransform: "uppercase", margin: "0 0 24px", opacity: 0.75 }}>Lær fransk på din måte</p>
+        <div style={{ width: 80, height: 1, background: `linear-gradient(to right, transparent, ${gold}88, transparent)`, margin: "0 auto" }} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", background: card, border: `1px solid ${brd}`, borderRadius: 12, padding: "12px 24px", marginBottom: 24, gap: 0, width: "100%", maxWidth: 420 }}>
         <button onClick={() => setShowWords(true)} style={{ background: "none", border: "none", cursor: "pointer", textAlign: "center", flex: 1, padding: 0 }}>
           <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{words.length}</div>
-          <div style={{ fontSize: 11, color: "rgba(245,240,232,0.4)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>ord lært</div>
+          <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>ord lært</div>
         </button>
         <div style={{ width: 1, height: 36, background: brd }} />
         <div style={{ textAlign: "center", flex: 1 }}>
           <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{streak}</div>
-          <div style={{ fontSize: 11, color: "rgba(245,240,232,0.4)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>🔥 dager</div>
+          <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>🔥 dager</div>
         </div>
         <div style={{ width: 1, height: 36, background: brd }} />
         <div style={{ textAlign: "center", flex: 1 }}>
           <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{sessionMsgs}</div>
-          <div style={{ fontSize: 11, color: "rgba(245,240,232,0.4)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>svar i dag</div>
+          <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>svar i dag</div>
         </div>
       </div>
 
@@ -955,7 +953,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
               style={{ background: card, border: `1px solid ${(m.id === "quiz" && dueCount > 0) || (m.id === "dagens" && !dagensDone) ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
               <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
               <div style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 1 }}>{m.label}</div>
-              <div style={{ fontSize: 12, color: "rgba(245,240,232,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
+              <div style={{ fontSize: 12, color: "rgba(29,22,16,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
               {m.id === "quiz" && dueCount > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: gold, color: dark, borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 6px" }}>{dueCount}</div>}
               {m.id === "dagens" && dagensDone && <div style={{ position: "absolute", top: 10, right: 10, color: grn, fontSize: 14 }}>✓</div>}
             </button>
@@ -971,7 +969,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
 
       <div style={{ textAlign: "center", width: "100%", maxWidth: 420, marginTop: 8 }}>
         <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${brd}, transparent)`, marginBottom: 14 }} />
-        <p style={{ fontSize: 11, letterSpacing: 4, color: "rgba(201,168,76,0.3)", textTransform: "uppercase", margin: 0 }}>Paris · 1920 · Aujourd'hui</p>
+        <p style={{ fontSize: 11, letterSpacing: 4, color: `${gold}66`, textTransform: "uppercase", margin: 0 }}>1920 · Paris · Maintenant</p>
       </div>
     </div>
   );
