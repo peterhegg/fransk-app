@@ -21,7 +21,6 @@ PROGRESJON:
 - Bruk ord og temaer fra Houellebecq og Paris på 1920-tallet aktivt
 - Målet er at eleven skal kunne lese disse bøkene på egenhånd
 
-QUIZ: Format: GLOSE: [fr] = [no] ([uttale]). Still spørsmål, gi tilbakemelding. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste ord. Ved feil: ✗ FEIL: [riktig svar] — vent på nytt forsøk, ikke gå videre. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3] — korteste mulige svaralternativer eleven kan trykke på.
 SAMTALE: Spill franskmannen Pierre. Start på norsk, innfør gradvis mer og mer fransk. Bruk *kursiv* for handlinger som *Pierre smiler*. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3] — naturlige korte svar eleven kan trykke på.
 LESEHJELP: Bryt ned setningen ord for ord med oversettelse og enkel grammatikk.
 MUNTLIG: Gi én kort norsk setning eleven skal oversette til fransk. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste setning. Ved feil: ✗ FEIL: [riktig versjon med fonetikk] — vent på nytt forsøk, ikke gå videre.`;
@@ -33,6 +32,105 @@ const BOOK_EXCERPTS = [
   { book: "Paris 1920", hint: "Paris som kunstnerby", text: "Paris était la capitale du monde de l'art dans les années vingt." },
   { book: "Paris 1920", hint: "Jazzens ankomst", text: "Le jazz américain est arrivé à Paris après la guerre." },
 ];
+
+const VOCAB_LIST = [
+  // Hilsener og grunnleggende
+  { fr: "bonjour", no: "hallo / god dag", phonetic: "bånsjur" },
+  { fr: "bonsoir", no: "god kveld", phonetic: "bånswår" },
+  { fr: "au revoir", no: "ha det bra", phonetic: "o rəvwår" },
+  { fr: "merci", no: "takk", phonetic: "merssi" },
+  { fr: "s'il vous plaît", no: "vær så snill", phonetic: "sil vu plæ" },
+  { fr: "oui", no: "ja", phonetic: "wi" },
+  { fr: "non", no: "nei", phonetic: "nån" },
+  { fr: "pardon", no: "unnskyld", phonetic: "pardån" },
+  { fr: "de rien", no: "ingen årsak", phonetic: "də rjæn" },
+  // Pronomen
+  { fr: "je", no: "jeg", phonetic: "sjø" },
+  { fr: "tu", no: "du", phonetic: "ty" },
+  { fr: "il", no: "han", phonetic: "il" },
+  { fr: "elle", no: "hun", phonetic: "æl" },
+  { fr: "nous", no: "vi", phonetic: "nu" },
+  { fr: "vous", no: "dere / De", phonetic: "vu" },
+  // Vanlige verb
+  { fr: "être", no: "å være", phonetic: "ætr" },
+  { fr: "avoir", no: "å ha", phonetic: "avwår" },
+  { fr: "aller", no: "å gå / dra", phonetic: "alæ" },
+  { fr: "venir", no: "å komme", phonetic: "vənir" },
+  { fr: "voir", no: "å se", phonetic: "vwår" },
+  { fr: "parler", no: "å snakke", phonetic: "parlæ" },
+  { fr: "manger", no: "å spise", phonetic: "månsjæ" },
+  { fr: "boire", no: "å drikke", phonetic: "bwår" },
+  { fr: "lire", no: "å lese", phonetic: "lir" },
+  { fr: "écrire", no: "å skrive", phonetic: "ekrir" },
+  { fr: "aimer", no: "å like / elske", phonetic: "emæ" },
+  { fr: "savoir", no: "å vite", phonetic: "savwår" },
+  { fr: "faire", no: "å gjøre / lage", phonetic: "fær" },
+  { fr: "habiter", no: "å bo", phonetic: "abitæ" },
+  // Steder – Paris
+  { fr: "Paris", no: "Paris", phonetic: "pari" },
+  { fr: "café", no: "kafé", phonetic: "kafæ" },
+  { fr: "rue", no: "gate", phonetic: "ry" },
+  { fr: "ville", no: "by", phonetic: "vil" },
+  { fr: "quartier", no: "bydel / nabolag", phonetic: "kartjæ" },
+  { fr: "musée", no: "museum", phonetic: "myzæ" },
+  { fr: "gare", no: "togstasjon", phonetic: "går" },
+  { fr: "hôtel", no: "hotell", phonetic: "otæl" },
+  { fr: "restaurant", no: "restaurant", phonetic: "rEstorån" },
+  { fr: "bibliothèque", no: "bibliotek", phonetic: "biblijotæk" },
+  { fr: "la Seine", no: "Seinen (elven)", phonetic: "la sæn" },
+  // Tid
+  { fr: "aujourd'hui", no: "i dag", phonetic: "osjurdwi" },
+  { fr: "demain", no: "i morgen", phonetic: "dəmæn" },
+  { fr: "hier", no: "i går", phonetic: "jær" },
+  { fr: "maintenant", no: "nå", phonetic: "mæntnå" },
+  { fr: "toujours", no: "alltid", phonetic: "tusjur" },
+  { fr: "jamais", no: "aldri", phonetic: "sjamæ" },
+  { fr: "souvent", no: "ofte", phonetic: "suvån" },
+  // Adjektiver
+  { fr: "beau / belle", no: "vakker", phonetic: "bo / bæl" },
+  { fr: "grand / grande", no: "stor", phonetic: "grå / grågd" },
+  { fr: "petit / petite", no: "liten", phonetic: "pəti / pətit" },
+  { fr: "bon / bonne", no: "god / bra", phonetic: "bån / bOn" },
+  { fr: "nouveau / nouvelle", no: "ny", phonetic: "nuvo / nuvæl" },
+  { fr: "vieux / vieille", no: "gammel", phonetic: "vjø / vjæj" },
+  { fr: "simple", no: "enkel", phonetic: "sæmpl" },
+  // Kunst og kultur (1920-tallet)
+  { fr: "artiste", no: "kunstner", phonetic: "artist" },
+  { fr: "peintre", no: "maler", phonetic: "pæntr" },
+  { fr: "écrivain", no: "forfatter", phonetic: "ekriven" },
+  { fr: "roman", no: "roman", phonetic: "romån" },
+  { fr: "livre", no: "bok", phonetic: "livr" },
+  { fr: "tableau", no: "maleri", phonetic: "tablo" },
+  { fr: "jazz", no: "jazz", phonetic: "dsjaz" },
+  { fr: "musique", no: "musikk", phonetic: "myzik" },
+  { fr: "guerre", no: "krig", phonetic: "gær" },
+  { fr: "étranger", no: "utlending / fremmed", phonetic: "etrånsjæ" },
+  { fr: "époque", no: "epoke / tid", phonetic: "epok" },
+  // Mat og drikke
+  { fr: "pain", no: "brød", phonetic: "pæn" },
+  { fr: "vin", no: "vin", phonetic: "væn" },
+  { fr: "eau", no: "vann", phonetic: "o" },
+  { fr: "fromage", no: "ost", phonetic: "fromåsj" },
+  { fr: "bière", no: "øl", phonetic: "bjær" },
+  // Verden og natur
+  { fr: "soleil", no: "sol", phonetic: "solæj" },
+  { fr: "ciel", no: "himmel / sky", phonetic: "sjæl" },
+  { fr: "vie", no: "liv", phonetic: "vi" },
+  { fr: "monde", no: "verden", phonetic: "månd" },
+  { fr: "homme", no: "mann / menneske", phonetic: "Om" },
+  { fr: "femme", no: "kvinne", phonetic: "fam" },
+  { fr: "ami / amie", no: "venn / venninne", phonetic: "ami" },
+  { fr: "temps", no: "tid / vær", phonetic: "tå" },
+  { fr: "année", no: "år", phonetic: "anæ" },
+];
+
+function normalizeAnswer(s) {
+  return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+function checkQuizAnswer(input, card) {
+  const inp = normalizeAnswer(input);
+  return card.no.split(/\s*\/\s*/).some(part => normalizeAnswer(part) === inp);
+}
 
 const MODES = [
   { id: "quiz", label: "Glosekort", icon: "◈", desc: "Test deg selv på ord og fraser" },
@@ -155,6 +253,13 @@ export default function App() {
   const [reviewStats, setReviewStats] = useState({ correct: 0, wrong: 0 });
   const [reviewInput, setReviewInput] = useState("");
   const [reviewChecked, setReviewChecked] = useState(false);
+  // Local quiz state
+  const [quizQueue, setQuizQueue] = useState([]);
+  const [quizCard, setQuizCard] = useState(null);
+  const [quizInput, setQuizInput] = useState("");
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState(false);
+  const [quizStats, setQuizStats] = useState({ correct: 0, wrong: 0 });
   // Manual word adding
   const [addWordOpen, setAddWordOpen] = useState(false);
   const [addWordFr, setAddWordFr] = useState("");
@@ -219,6 +324,21 @@ export default function App() {
   const stopListening = () => { recognitionRef.current?.stop(); setListening(false); };
 
   const startMode = async (m) => {
+    if (m.id === "quiz") {
+      const learnedFr = new Set(words.map(w => w.fr));
+      const due = getDue(words);
+      const newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr));
+      const queue = [...due, ...newVocab].slice(0, 20);
+      if (queue.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
+      setQuizQueue(queue);
+      setQuizCard(queue[0]);
+      setQuizInput("");
+      setQuizChecked(false);
+      setQuizCorrect(false);
+      setQuizStats({ correct: 0, wrong: 0 });
+      setScreen("quiz");
+      return;
+    }
     if (m.id === "repetisjon") {
       const due = getDue(words);
       if (due.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
@@ -231,7 +351,7 @@ export default function App() {
     setMode(m); setScreen("chat"); setShowBooks(false);
 
     // For modes that use progression, fetch a personalized opener from Claude
-    if (["quiz", "samtale", "muntlig"].includes(m.id) && words.length > 0) {
+    if (["samtale", "muntlig"].includes(m.id) && words.length > 0) {
       setLoading(true);
       setMessages([]);
       const wordCtx = `\n\nElevens ordbank (${words.length} ord lagret på enheten):\n` +
@@ -479,6 +599,94 @@ export default function App() {
           <div style={{ display: "flex", gap: 8 }}>
             {Array.from({ length: total }).map((_, i) => (
               <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < reviewStats.correct ? grn : i < done ? red : `${brd}` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Local quiz screen ---
+  if (screen === "quiz" && quizCard) {
+    const total = quizStats.correct + quizStats.wrong + quizQueue.length;
+    const done = quizStats.correct + quizStats.wrong;
+    const isFromBank = !!quizCard.id;
+
+    const submitQuiz = () => {
+      if (!quizInput.trim()) return;
+      const correct = checkQuizAnswer(quizInput, quizCard);
+      setQuizChecked(true);
+      setQuizCorrect(correct);
+      setQuizStats(s => ({ correct: s.correct + (correct ? 1 : 0), wrong: s.wrong + (correct ? 0 : 1) }));
+      if (isFromBank) {
+        const { level: newLevel, nextReview } = scheduleNext(quizCard.level, correct);
+        setWords(prev => prev.map(w => w.id === quizCard.id ? { ...w, level: newLevel, nextReview } : w));
+      } else {
+        const newWord = { id: Date.now() + Math.random(), fr: quizCard.fr, no: quizCard.no, phonetic: quizCard.phonetic, level: correct ? 1 : 0, nextReview: Date.now() + SR_INTERVALS[correct ? 1 : 0] * 86400000, added: Date.now() };
+        setWords(prev => prev.some(w => w.fr === newWord.fr) ? prev : [...prev, newWord]);
+      }
+    };
+
+    const nextQuiz = () => {
+      const remaining = quizQueue.slice(1);
+      if (remaining.length === 0) { setScreen("home"); return; }
+      setQuizQueue(remaining);
+      setQuizCard(remaining[0]);
+      setQuizInput("");
+      setQuizChecked(false);
+      setQuizCorrect(false);
+    };
+
+    return (
+      <div style={S.page}>
+        <div style={S.header}>
+          <button onClick={() => setScreen("home")} style={S.backBtn}>← Tilbake</button>
+          <div style={S.title}><span style={{ color: gold }}>◈</span> Glosekort</div>
+          <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 1 }}>{done}/{total}</div>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
+          <div style={{ fontSize: 10, color: `${gold}55`, letterSpacing: 2, textTransform: "uppercase" }}>
+            {isFromBank ? `Repetisjon · niv. ${quizCard.level}` : "Nytt ord"}
+          </div>
+          <div style={{ background: card, border: `1px solid ${brd}`, borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340 }}>
+            <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
+            <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8 }}>{quizCard.fr}</div>
+            {quizCard.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({quizCard.phonetic})</div>}
+            <button onClick={() => speak(quizCard.fr)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 18, cursor: "pointer" }}>🔊</button>
+          </div>
+
+          {!quizChecked
+            ? <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
+                <input
+                  value={quizInput}
+                  onChange={e => setQuizInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && submitQuiz()}
+                  placeholder="Skriv norsk oversettelse..."
+                  style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
+                  autoFocus
+                />
+                <button onClick={submitQuiz} disabled={!quizInput.trim()} style={{ background: quizInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: quizInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
+              </div>
+            : <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
+                <div style={{ background: quizCorrect ? "rgba(76,175,122,0.12)" : "rgba(196,122,90,0.12)", border: `1px solid ${quizCorrect ? grn : red}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
+                  <div style={{ fontSize: 14, color: quizCorrect ? grn : red, letterSpacing: 1, marginBottom: 6, textTransform: "uppercase", fontWeight: "bold" }}>{quizCorrect ? "✓ Riktig!" : "✗ Feil"}</div>
+                  {!quizCorrect && (
+                    <>
+                      <div style={{ fontSize: 12, color: `${cream}66`, marginBottom: 4 }}>Du svarte: <em>{quizInput}</em></div>
+                      <div style={{ fontSize: 18, color: cream }}>{quizCard.no}</div>
+                    </>
+                  )}
+                  {!isFromBank && quizCorrect && <div style={{ fontSize: 12, color: `${grn}aa`, marginTop: 4 }}>Lagt til i ordbanken din ✦</div>}
+                </div>
+                <button onClick={nextQuiz} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer", letterSpacing: 1 }}>
+                  {quizQueue.length <= 1 ? "Ferdig!" : "Neste ord →"}
+                </button>
+              </div>
+          }
+
+          <div style={{ display: "flex", gap: 8 }}>
+            {Array.from({ length: Math.min(total, 20) }).map((_, i) => (
+              <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < quizStats.correct ? grn : i < done ? red : brd }} />
             ))}
           </div>
         </div>
