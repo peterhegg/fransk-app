@@ -129,6 +129,10 @@ const VOCAB_LIST = [
 function normalizeAnswer(s) {
   return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
 }
+// Strip leading particles/articles so "komme" matches "å komme", "venn" matches "en venn"
+function stripParticles(s) {
+  return s.replace(/^(a |le |la |les |l |un |une |en |et |de |du |des )/i, "").trim();
+}
 function levenshtein(a, b) {
   if (!a.length) return b.length;
   if (!b.length) return a.length;
@@ -144,8 +148,15 @@ function checkQuizAnswer(input, card) {
   const inp = normalizeAnswer(input);
   const variants = card.no.split(/\s*\/\s*/).map(normalizeAnswer);
   if (variants.some(v => v === inp)) return "correct";
-  const minDist = Math.min(...variants.map(v => levenshtein(inp, v)));
-  const threshold = Math.max(1, Math.floor(Math.max(...variants.map(v => v.length)) / 5));
+  // Also try with leading particles stripped (handles "komme" → "å komme")
+  const inpStripped = stripParticles(inp);
+  if (inpStripped.length > 1 && variants.some(v => stripParticles(v) === inpStripped)) return "correct";
+  // Levenshtein — try both with and without particles, take minimum distance
+  const minDist = Math.min(...variants.map(v =>
+    Math.min(levenshtein(inp, v), levenshtein(inpStripped, stripParticles(v)))
+  ));
+  const maxLen = Math.max(...variants.map(v => v.length));
+  const threshold = Math.max(2, Math.floor(maxLen / 4));
   return minDist <= threshold ? "close" : "wrong";
 }
 
@@ -175,6 +186,7 @@ const SR_INTERVALS = [1, 2, 4, 8, 16, 32];
 const WORDS_KEY = "fransk-laering-ord-v2";
 const STREAK_KEY = "fransk-streak";
 const DAGENS_KEY = "fransk-dagens-ovelse";
+const SESSION_KEY = "fransk-session-msgs";
 
 function todayStr() { return new Date().toISOString().split("T")[0]; }
 function getTodaysWords(words) {
@@ -279,7 +291,12 @@ export default function App() {
   const [streak, setStreak] = useState(() => loadStreak().current);
   const [showWords, setShowWords] = useState(false);
   const [showBooks, setShowBooks] = useState(false);
-  const [sessionMsgs, setSessionMsgs] = useState(0);
+  const [sessionMsgs, setSessionMsgs] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
+      return s.date === todayStr() ? (s.count || 0) : 0;
+    } catch { return 0; }
+  });
   const [copied, setCopied] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [listening, setListening] = useState(false);
@@ -461,7 +478,11 @@ setMode(m); setScreen("chat"); setShowBooks(false);
     setInput("");
     if (sessionMsgs === 0) setStreak(touchStreak());
     const next = [...messages, { role: "user", content: text }];
-    setMessages(next); setLoading(true); setSessionMsgs(s => s + 1);
+    setMessages(next); setLoading(true); setSessionMsgs(s => {
+      const next = s + 1;
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify({ date: todayStr(), count: next })); } catch {}
+      return next;
+    });
     const wordCtx = words.length > 0
       ? `\n\nElevens ordbank (${words.length} ord lagret på enheten):\n` +
         words.map(w => `- ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [nivå ${w.level}]`).join("\n") +
