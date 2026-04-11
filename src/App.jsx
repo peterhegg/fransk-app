@@ -155,9 +155,10 @@ function getQuizOptions(card) {
 }
 
 // Returns "correct" | "close" | "wrong"
-function checkQuizAnswer(input, card) {
+function checkQuizAnswer(input, card, reverse = false) {
   const inp = normalizeAnswer(input);
-  const variants = card.no.split(/\s*\/\s*/).map(normalizeAnswer);
+  const field = reverse ? card.fr : card.no;
+  const variants = field.split(/\s*\/\s*/).map(normalizeAnswer);
   if (variants.some(v => v === inp)) return "correct";
   // Also try with leading particles stripped (handles "komme" → "å komme")
   const inpStripped = stripParticles(inp);
@@ -683,7 +684,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
 
     const submitDagens = () => {
       if (!dagensInput.trim()) return;
-      const result = checkQuizAnswer(dagensInput, dagensCard);
+      const result = checkQuizAnswer(dagensInput, dagensCard, isReverse);
       const passed = result !== "wrong";
       setDagensChecked(true);
       setDagensResult(result);
