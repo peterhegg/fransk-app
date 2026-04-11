@@ -392,7 +392,9 @@ export default function App() {
   useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
 
   useEffect(() => { saveWords(words); }, [words]);
+  const hasMountedRef = useRef(false);
   useEffect(() => {
+    if (!hasMountedRef.current) { hasMountedRef.current = true; return; }
     try {
       sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null, showWords }));
     } catch {}
@@ -408,23 +410,24 @@ export default function App() {
 
   const skipExitRef = useRef(false);
   useEffect(() => {
-    window.location.hash = "nav";
-    const handleHashChange = () => {
-      if (window.location.hash !== "#nav") {
-        window.location.hash = "nav";
-        if (skipExitRef.current) { skipExitRef.current = false; return; }
-        if (showWordsRef.current) {
-          setShowWords(false);
-        } else if (screenRef.current !== "home") {
-          setScreen("home");
-        } else {
-          setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
-          setShowExitDialog(true);
-        }
+    const cleanUrl = window.location.pathname + window.location.search;
+    // Remove any leftover #nav hash, then push one clean entry
+    window.history.replaceState(null, "", cleanUrl);
+    window.history.pushState({ fransNav: true }, "", cleanUrl);
+    const handler = () => {
+      window.history.pushState({ fransNav: true }, "", cleanUrl);
+      if (skipExitRef.current) { skipExitRef.current = false; return; }
+      if (showWordsRef.current) {
+        setShowWords(false);
+      } else if (screenRef.current !== "home") {
+        setScreen("home");
+      } else {
+        setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
+        setShowExitDialog(true);
       }
     };
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
