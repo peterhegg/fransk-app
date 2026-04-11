@@ -407,14 +407,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Set initial hash so back button has an entry to pop
-    if (window.location.hash !== "#nav") {
-      window.history.replaceState(null, "", window.location.pathname + window.location.search + "#nav");
-    }
+    // Push a #nav entry so Android back button has something to pop
+    window.location.hash = "nav";
     const handleHashChange = () => {
-      // Back was pressed — hash was removed. Re-add it immediately so next back also works.
       if (window.location.hash !== "#nav") {
-        window.history.replaceState(null, "", window.location.pathname + window.location.search + "#nav");
+        // Back was pressed — re-add hash so next press also works
+        window.location.hash = "nav";
         if (showWordsRef.current) {
           setShowWords(false);
         } else if (screenRef.current !== "home") {
