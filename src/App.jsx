@@ -410,14 +410,12 @@ export default function App() {
 
   const skipExitRef = useRef(false);
   useEffect(() => {
-    window.location.hash = "nav";
-    let blocked = false;
-    const handleBack = () => {
-      if (blocked) return;
-      blocked = true;
-      setTimeout(() => { blocked = false; }, 100);
+    const cleanUrl = window.location.pathname + window.location.search;
+    window.history.replaceState(null, "", cleanUrl);
+    window.history.pushState({ fransNav: true }, "", cleanUrl);
+    const handler = () => {
       if (skipExitRef.current) { skipExitRef.current = false; return; }
-      window.location.hash = "nav";
+      window.history.pushState({ fransNav: true }, "", cleanUrl);
       if (showWordsRef.current) {
         setShowWords(false);
       } else if (screenRef.current !== "home") {
@@ -427,14 +425,8 @@ export default function App() {
         setShowExitDialog(true);
       }
     };
-    const onHash = () => { if (window.location.hash !== "#nav") handleBack(); };
-    const onPop = () => { if (window.location.hash !== "#nav") handleBack(); };
-    window.addEventListener("hashchange", onHash);
-    window.addEventListener("popstate", onPop);
-    return () => {
-      window.removeEventListener("hashchange", onHash);
-      window.removeEventListener("popstate", onPop);
-    };
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
@@ -1176,7 +1168,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             </div>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button onClick={() => setShowExitDialog(false)} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Bli værende</button>
-              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.back(); setTimeout(() => { skipExitRef.current = false; if (window.location.hash !== "#nav") { window.location.hash = "nav"; } }, 400); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
+              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.back(); setTimeout(() => { skipExitRef.current = false; if (!history.state?.fransNav) { const u = window.location.pathname + window.location.search; window.history.pushState({ fransNav: true }, "", u); } }, 400); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
             </div>
           </div>
         </div>
