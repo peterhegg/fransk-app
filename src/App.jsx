@@ -172,6 +172,29 @@ function checkQuizAnswer(input, card, reverse = false) {
   return minDist <= threshold ? "close" : "wrong";
 }
 
+const EXIT_PHRASES = [
+  "Er du sikker på at du vil avslutte?",
+  "Êtes-vous sûr de vouloir quitter?",
+  "Allerede ferdig for i dag?",
+  "Déjà fini pour aujourd'hui?",
+  "Vil du virkelig forlate Pierre?",
+  "Vous voulez vraiment quitter Pierre?",
+  "Vi savner deg allerede!",
+  "On va vous manquer!",
+  "Husker du at du skal lese Houellebecq på fransk én dag?",
+  "N'oubliez pas — Houellebecq vous attend en français!",
+  "Sikker? Du var så nær fremgang!",
+  "Sûr? Vous étiez si proche du progrès!",
+  "Et lite franskord til før du går?",
+  "Encore un petit mot français avant de partir?",
+  "Au revoir betyr ikke for alltid.",
+  "Au revoir ne veut pas dire pour toujours.",
+  "Ta gjerne med deg noen franske ord ut i verden!",
+  "Emportez quelques mots français dans le monde!",
+  "Kom tilbake snart — Pierre venter.",
+  "Revenez vite — Pierre vous attend.",
+];
+
 const MODES = [
   { id: "dagens", label: "Dagens øvelse", icon: "◆", desc: "5 nye ord + 10 produksjonsoppgaver" },
   { id: "quiz", label: "Glosekort", icon: "◈", desc: "Nye ord + repeter det du har lært" },
@@ -339,8 +362,14 @@ export default function App() {
   const [addWordPhonetic, setAddWordPhonetic] = useState("");
   // Recent lesehjelp texts
   const [recentTexts, setRecentTexts] = useState(() => { try { return JSON.parse(localStorage.getItem("fransk-recent-texts") || "[]"); } catch { return []; } });
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [exitPhraseIdx, setExitPhraseIdx] = useState(0);
   const bottomRef = useRef(null);
   const recognitionRef = useRef(null);
+  const screenRef = useRef(screen);
+  const showWordsRef = useRef(showWords);
+  useEffect(() => { screenRef.current = screen; }, [screen]);
+  useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
 
   useEffect(() => { saveWords(words); }, [words]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
@@ -350,6 +379,23 @@ export default function App() {
     window.addEventListener("online", on);
     window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+
+  useEffect(() => {
+    history.pushState({ app: true }, "");
+    const handlePop = () => {
+      if (showWordsRef.current) {
+        setShowWords(false);
+      } else if (screenRef.current !== "home") {
+        setScreen("home");
+      } else {
+        setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
+        setShowExitDialog(true);
+      }
+      history.pushState({ app: true }, "");
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
@@ -1018,6 +1064,20 @@ setMode(m); setScreen("chat"); setShowBooks(false);
   // --- Home screen ---
   return (
     <div style={{ minHeight: "100dvh", background: dark, color: cream, fontFamily: "'Jost', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: 0 }}>
+      {showExitDialog && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ background: card, border: `1px solid ${gold}55`, borderRadius: 20, padding: "32px 28px", maxWidth: 320, width: "100%", textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontSize: 28, marginBottom: 12 }}>🗼</div>
+            <div style={{ fontSize: 17, color: cream, lineHeight: 1.5, marginBottom: 24, fontStyle: exitPhraseIdx % 2 === 1 ? "italic" : "normal" }}>
+              {EXIT_PHRASES[exitPhraseIdx]}
+            </div>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button onClick={() => setShowExitDialog(false)} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Bli værende</button>
+              <button onClick={() => { setShowExitDialog(false); history.back(); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ width: "100%", height: 4, background: "linear-gradient(to right, #002395 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ED2939 66.66%)", flexShrink: 0 }} />
       {offlineBanner}
       <div style={{ width: "100%", background: "linear-gradient(150deg, #c8935a 0%, #7a3e18 100%)", padding: "52px 16px 44px", textAlign: "center", color: "white" }}>
