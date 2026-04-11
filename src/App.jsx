@@ -382,7 +382,9 @@ export default function App() {
   const [importResult, setImportResult] = useState(null);
   // Recent lesehjelp texts
   const [recentTexts, setRecentTexts] = useState(() => { try { return JSON.parse(localStorage.getItem("fransk-recent-texts") || "[]"); } catch { return []; } });
-  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showExitDialog, _setShowExitDialog] = useState(false);
+  const showExitDialogRef = useRef(false);
+  const setShowExitDialog = (v) => { showExitDialogRef.current = v; _setShowExitDialog(v); };
   const [exitPhraseIdx, setExitPhraseIdx] = useState(0);
   const bottomRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -415,6 +417,11 @@ export default function App() {
     window.history.pushState({ fransNav: true }, "", cleanUrl);
     const handler = () => {
       if (skipExitRef.current) { skipExitRef.current = false; return; }
+      if (showExitDialogRef.current) {
+        // Second back press while dialog is open → close dialog, don't re-push sentinel → next back exits PWA
+        setShowExitDialog(false);
+        return;
+      }
       window.history.pushState({ fransNav: true }, "", cleanUrl);
       if (showWordsRef.current) {
         setShowWords(false);
@@ -1168,7 +1175,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             </div>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button onClick={() => setShowExitDialog(false)} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Bli værende</button>
-              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.back(); setTimeout(() => { skipExitRef.current = false; if (!history.state?.fransNav) { const u = window.location.pathname + window.location.search; window.history.pushState({ fransNav: true }, "", u); } }, 400); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
+              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.back(); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
             </div>
           </div>
         </div>
