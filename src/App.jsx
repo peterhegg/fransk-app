@@ -377,6 +377,9 @@ export default function App() {
   const [addWordFr, setAddWordFr] = useState("");
   const [addWordNo, setAddWordNo] = useState("");
   const [addWordPhonetic, setAddWordPhonetic] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importResult, setImportResult] = useState(null);
   // Recent lesehjelp texts
   const [recentTexts, setRecentTexts] = useState(() => { try { return JSON.parse(localStorage.getItem("fransk-recent-texts") || "[]"); } catch { return []; } });
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -610,6 +613,30 @@ setMode(m); setScreen("chat"); setShowBooks(false);
 
 
   const clearWords = () => { setWords([]); localStorage.removeItem(WORDS_KEY); localStorage.removeItem("fransk-laering-ord"); };
+  const importWords = (text) => {
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    let added = 0;
+    setWords(prev => {
+      let updated = [...prev];
+      for (const line of lines) {
+        const clean = line.replace(/^[✓✗•\-*]\s*/, "").trim();
+        const eqIdx = clean.indexOf(" = ");
+        if (eqIdx === -1) continue;
+        const fr = clean.slice(0, eqIdx).trim();
+        if (!fr) continue;
+        let rest = clean.slice(eqIdx + 3).trim();
+        const phoneticMatch = rest.match(/\(([^)]+)\)\s*$/);
+        const phonetic = phoneticMatch ? phoneticMatch[1].trim() : "";
+        const no = phoneticMatch ? rest.slice(0, phoneticMatch.index).trim() : rest;
+        if (!fr) continue;
+        if (updated.some(w => w.fr === fr)) continue;
+        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now() });
+        added++;
+      }
+      return updated;
+    });
+    return added;
+  };
   const addWordManually = () => {
     if (!addWordFr.trim()) return;
     const newWord = { id: Date.now() + Math.random(), fr: addWordFr.trim(), no: addWordNo.trim(), phonetic: addWordPhonetic.trim(), level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now() };
@@ -694,8 +721,35 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       <div style={S.header}>
         <button onClick={() => setShowWords(false)} style={S.backBtn}>← Tilbake</button>
         <div style={S.title}><span style={{ color: gold }}>◈</span> Ordsamlingen din</div>
-        <button onClick={() => setAddWordOpen(o => !o)} style={{ background: addWordOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addWordOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>+ Legg til</button>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button onClick={() => { setImportOpen(o => !o); setAddWordOpen(false); }} style={{ background: importOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: importOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>↑ Importer</button>
+          <button onClick={() => { setAddWordOpen(o => !o); setImportOpen(false); }} style={{ background: addWordOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addWordOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>+ Legg til</button>
+        </div>
       </div>
+      {importOpen && (
+        <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Lim inn ord på formatet:<br /><em>✓ bonjour = hallo (bånsjur)</em></div>
+          <textarea
+            placeholder={"✓ bonjour = hallo (bånsjur)\n✓ merci = takk (merssi)\n..."}
+            value={importText}
+            onChange={e => { setImportText(e.target.value); setImportResult(null); }}
+            rows={6}
+            style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 12px", outline: "none", resize: "vertical" }}
+          />
+          {importResult !== null && (
+            <div style={{ fontSize: 13, color: importResult > 0 ? grn : gold, fontWeight: "bold" }}>
+              {importResult > 0 ? `✓ ${importResult} ord lagt til!` : "Ingen nye ord funnet — sjekk formatet."}
+            </div>
+          )}
+          <button
+            onClick={() => { const n = importWords(importText); setImportResult(n); if (n > 0) { setImportText(""); setTimeout(() => { setImportOpen(false); setImportResult(null); }, 1800); } }}
+            disabled={!importText.trim()}
+            className={importText.trim() ? "btn-shine" : ""}
+            style={{ background: importText.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : `rgba(200,120,58,0.25)`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
+            Importer ord
+          </button>
+        </div>
+      )}
       {addWordOpen && (
         <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           <input placeholder="Fransk ord *" value={addWordFr} onChange={e => setAddWordFr(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
