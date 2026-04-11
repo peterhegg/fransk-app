@@ -143,6 +143,17 @@ function levenshtein(a, b) {
       dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
   return dp[a.length][b.length];
 }
+// Generate 4 answer options: 1 correct + 3 distractors from VOCAB_LIST
+function getQuizOptions(card) {
+  const correct = card.no.split(/\s*\/\s*/)[0];
+  const pool = VOCAB_LIST
+    .filter(v => v.no !== card.no && v.fr !== card.fr)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3)
+    .map(w => w.no.split(/\s*\/\s*/)[0]);
+  return [...pool, correct].sort(() => Math.random() - 0.5);
+}
+
 // Returns "correct" | "close" | "wrong"
 function checkQuizAnswer(input, card) {
   const inp = normalizeAnswer(input);
@@ -203,7 +214,7 @@ function getTodaysWords(words) {
   return exercise;
 }
 
-const gold = "#9B6820", dark = "#F5EDD8", cream = "#1D1610", card = "#FFFDF6", brd = "#D9CCAF", grn = "#3D7850", red = "#9C4238";
+const gold = "#c8783a", dark = "#f5f0e6", cream = "#1a1210", card = "#ffffff", brd = "rgba(0,0,0,0.09)", grn = "#3a8a50", red = "#c83a3a";
 
 // --- Storage helpers ---
 function loadWords() {
@@ -275,7 +286,7 @@ function renderMessage(text) {
   return text.split("\n").map((line, i) => {
     if (line.startsWith("✓ LÆRT:")) return <div key={i} style={{ color: grn, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{parseInline(line)}</div>;
     if (line.startsWith("✗ FEIL:")) return <div key={i} style={{ color: red, fontWeight: "bold", margin: "4px 0", fontSize: 14 }}>{parseInline(line)}</div>;
-    if (line.startsWith("GLOSE:")) return <div key={i} style={{ background: "rgba(201,168,76,0.08)", borderLeft: `3px solid ${gold}`, padding: "6px 10px", margin: "6px 0", borderRadius: "0 8px 8px 0", fontSize: 14 }}>{parseInline(line)}</div>;
+    if (line.startsWith("GLOSE:")) return <div key={i} style={{ background: "rgba(200,120,58,0.08)", borderLeft: `3px solid ${gold}`, padding: "6px 10px", margin: "6px 0", borderRadius: "0 8px 8px 0", fontSize: 14 }}>{parseInline(line)}</div>;
     if (line === "---") return <hr key={i} style={{ border: "none", borderTop: `1px solid ${brd}`, margin: "8px 0" }} />;
     return <div key={i} style={{ minHeight: line === "" ? 10 : "auto" }}>{parseInline(line)}</div>;
   });
@@ -318,6 +329,8 @@ export default function App() {
   const [quizChecked, setQuizChecked] = useState(false);
   const [quizResult, setQuizResult] = useState("");
   const [quizStats, setQuizStats] = useState({ correct: 0, wrong: 0 });
+  const [quizOptions, setQuizOptions] = useState([]);
+  const [quizMode, setQuizMode] = useState("choice"); // "input" | "choice"
   // Manual word adding
   const [addWordOpen, setAddWordOpen] = useState(false);
   const [addWordFr, setAddWordFr] = useState("");
@@ -433,6 +446,8 @@ export default function App() {
       if (queue.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
       setQuizQueue(queue);
       setQuizCard(queue[0]);
+      setQuizOptions(getQuizOptions(queue[0]));
+      setQuizMode(Math.random() < 0.5 ? "input" : "choice");
       setQuizInput("");
       setQuizChecked(false);
       setQuizResult("");
@@ -549,19 +564,53 @@ setMode(m); setScreen("chat"); setShowBooks(false);
   );
 
   const S = {
-    page: { display: "flex", flexDirection: "column", height: "100dvh", background: dark, fontFamily: "'Georgia', serif", color: cream },
-    header: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card },
-    backBtn: { background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'Georgia', serif" },
+    page: { display: "flex", flexDirection: "column", height: "100dvh", background: dark, fontFamily: "'Jost', sans-serif", color: cream, paddingBottom: 66 },
+    header: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" },
+    backBtn: { background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'Jost', sans-serif" },
     title: { display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 },
-    badge: { background: "none", border: `1px solid ${gold}44`, borderRadius: 20, color: gold, fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "'Georgia', serif", letterSpacing: 1 },
-    msgs: { flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16 },
-    ai: { alignSelf: "flex-start", maxWidth: "88%", background: "#F0E8D5", border: `1px solid ${brd}`, borderRadius: "4px 16px 16px 16px", padding: "12px 16px" },
-    user: { alignSelf: "flex-end", maxWidth: "80%", background: "#E8DECA", border: `1px solid ${gold}44`, borderRadius: "16px 4px 16px 16px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 },
+    badge: { background: "none", border: `1px solid ${gold}44`, borderRadius: 20, color: gold, fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif", letterSpacing: 1 },
+    msgs: { flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16 },
+    ai: { alignSelf: "flex-start", maxWidth: "88%", background: card, border: `0.5px solid ${brd}`, borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "0 4px 20px rgba(0,0,0,0.07)" },
+    user: { alignSelf: "flex-end", maxWidth: "80%", background: "rgba(200,120,58,0.1)", border: `1px solid ${gold}44`, borderRadius: "18px 4px 18px 18px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 },
     aiLabel: { fontSize: 10, color: gold, letterSpacing: 2, marginBottom: 6, textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center" },
     bubbleTxt: { fontSize: 15, lineHeight: 1.75, color: cream },
     inputArea: { display: "flex", gap: 10, padding: "12px 16px", borderTop: `1px solid ${brd}`, background: card, alignItems: "flex-end" },
-    textarea: { flex: 1, background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 15, padding: "10px 14px", resize: "none", outline: "none", lineHeight: 1.5 },
-    sendBtn: (d) => ({ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 14, padding: "10px 18px", cursor: d ? "default" : "pointer", letterSpacing: 1, whiteSpace: "nowrap", opacity: d ? 0.4 : 1 }),
+    textarea: { flex: 1, background: dark, border: `0.5px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "10px 14px", resize: "none", outline: "none", lineHeight: 1.5 },
+    sendBtn: (d) => ({ background: d ? `rgba(200,120,58,0.3)` : `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: d ? `${cream}88` : dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: d ? "default" : "pointer", letterSpacing: 1, whiteSpace: "nowrap" }),
+  };
+
+  const BottomNav = () => {
+    const tabs = [
+      { id: "home",    label: "Hjem",    sym: "⌂" },
+      { id: "quiz",    label: "Øv",      sym: "◈" },
+      { id: "samtale", label: "Snakk",   sym: "◉" },
+      { id: "words",   label: "Ordbank", sym: "◎" },
+    ];
+    const activeId = showWords ? "words"
+      : screen === "home" ? "home"
+      : (screen === "quiz" || screen === "dagens") ? "quiz"
+      : screen === "chat" && mode?.id === "samtale" ? "samtale"
+      : null;
+    const handleNav = (id) => {
+      if (id === "words")   { setShowWords(true); setScreen("home"); }
+      else if (id === "home")    { setShowWords(false); setScreen("home"); }
+      else if (id === "quiz")    { setShowWords(false); startMode(MODES.find(m => m.id === "quiz")); }
+      else if (id === "samtale") { setShowWords(false); startMode(MODES.find(m => m.id === "samtale")); }
+    };
+    return (
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#ffffff", borderTop: `0.5px solid ${brd}`, display: "flex", alignItems: "stretch", height: 66, zIndex: 200, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
+        {tabs.map(t => {
+          const active = activeId === t.id;
+          return (
+            <button key={t.id} onClick={() => handleNav(t.id)}
+              style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, color: active ? gold : "rgba(26,18,16,0.3)", fontFamily: "'Jost', sans-serif", padding: "8px 4px", transition: "color 0.2s ease" }}>
+              <span style={{ fontSize: 22, lineHeight: 1 }}>{t.sym}</span>
+              <span style={{ fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", fontWeight: active ? "500" : "400" }}>{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
   };
 
   // --- Words screen ---
@@ -570,14 +619,14 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       <div style={S.header}>
         <button onClick={() => setShowWords(false)} style={S.backBtn}>← Tilbake</button>
         <div style={S.title}><span style={{ color: gold }}>◈</span> Ordsamlingen din</div>
-        <button onClick={() => setAddWordOpen(o => !o)} style={{ background: addWordOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addWordOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Georgia', serif" }}>+ Legg til</button>
+        <button onClick={() => setAddWordOpen(o => !o)} style={{ background: addWordOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addWordOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>+ Legg til</button>
       </div>
       {addWordOpen && (
         <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <input placeholder="Fransk ord *" value={addWordFr} onChange={e => setAddWordFr(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
-          <input placeholder="Norsk oversettelse" value={addWordNo} onChange={e => setAddWordNo(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
-          <input placeholder="Uttale (f.eks. bånsjur)" value={addWordPhonetic} onChange={e => setAddWordPhonetic(e.target.value)} onKeyDown={e => e.key === "Enter" && addWordManually()} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Georgia', serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
-          <button onClick={addWordManually} disabled={!addWordFr.trim()} style={{ background: addWordFr.trim() ? gold : `${gold}44`, border: "none", borderRadius: 8, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 14, padding: "10px", cursor: addWordFr.trim() ? "pointer" : "default" }}>Lagre ord</button>
+          <input placeholder="Fransk ord *" value={addWordFr} onChange={e => setAddWordFr(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <input placeholder="Norsk oversettelse" value={addWordNo} onChange={e => setAddWordNo(e.target.value)} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <input placeholder="Uttale (f.eks. bånsjur)" value={addWordPhonetic} onChange={e => setAddWordPhonetic(e.target.value)} onKeyDown={e => e.key === "Enter" && addWordManually()} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <button onClick={addWordManually} disabled={!addWordFr.trim()} className={addWordFr.trim() ? "btn-shine" : ""} style={{ background: addWordFr.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : `rgba(200,120,58,0.25)`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px", cursor: addWordFr.trim() ? "pointer" : "default" }}>Lagre ord</button>
         </div>
       )}
       <div style={{ padding: "24px 16px", flex: 1, overflowY: "auto" }}>
@@ -614,14 +663,15 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       </div>
       {words.length > 0 && (
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={copyWords} style={{ background: copied ? grn : "none", border: `1px solid ${copied ? grn : gold}88`, borderRadius: 8, color: copied ? dark : gold, fontFamily: "'Georgia', serif", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
+          <button onClick={copyWords} style={{ background: copied ? grn : "none", border: `1px solid ${copied ? grn : gold}88`, borderRadius: 8, color: copied ? dark : gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
             {copied ? "✓ Kopiert!" : "Kopier ordlisten min"}
           </button>
-          <button onClick={clearWords} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 8, color: red, fontFamily: "'Georgia', serif", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%" }}>
+          <button onClick={clearWords} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 8, color: red, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%" }}>
             Nullstill ordliste
           </button>
         </div>
       )}
+      <BottomNav />
     </div>
   );
 
@@ -690,8 +740,9 @@ setMode(m); setScreen("chat"); setShowBooks(false);
               </div>
             ))}
           </div>
-          <button onClick={() => setScreen("home")} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>Tilbake til hjem</button>
+          <button onClick={() => setScreen("home")} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>Tilbake til hjem</button>
         </div>
+        <BottomNav />
       </div>
     );
 
@@ -713,7 +764,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
               {isReverse ? "Skriv på fransk:" : "Hva betyr dette?"}
             </div>
-            <div style={{ fontSize: 32, color: cream, fontStyle: isReverse ? "normal" : "italic", marginBottom: 8 }}>{prompt}</div>
+            <div style={{ fontSize: 32, color: cream, fontStyle: isReverse ? "normal" : "italic", marginBottom: 8, fontFamily: isReverse ? "'Jost', sans-serif" : "'Playfair Display', Georgia, serif" }}>{prompt}</div>
             {phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({phonetic})</div>}
             {!isReverse && <button onClick={() => speak(dagensCard.fr)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 20, cursor: "pointer" }}>🔊</button>}
           </div>
@@ -722,8 +773,9 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             ? <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
                 <input value={dagensInput} onChange={e => setDagensInput(e.target.value)} onKeyDown={e => e.key === "Enter" && submitDagens()}
                   placeholder={isReverse ? "Skriv det franske ordet..." : "Skriv norsk oversettelse..."}
-                  style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }} autoFocus />
-                <button onClick={submitDagens} disabled={!dagensInput.trim()} style={{ background: dagensInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: dagensInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
+                  className="input-glow"
+                  style={{ background: dark, border: `0.5px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }} autoFocus />
+                <button onClick={submitDagens} disabled={!dagensInput.trim()} className={dagensInput.trim() ? "btn-shine" : ""} style={{ background: dagensInput.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : `rgba(200,120,58,0.25)`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px", cursor: dagensInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
               </div>
             : <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
                 {dagensResult === "correct" && <div style={{ background: "rgba(76,175,122,0.12)", border: `1px solid ${grn}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%", fontSize: 16, color: grn, fontWeight: "bold" }}>✓ Riktig!</div>}
@@ -741,7 +793,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
                     {dagensCard.phonetic && <div style={{ fontSize: 13, color: gold, marginTop: 4 }}>({dagensCard.phonetic}) — si det høyt!</div>}
                   </div>
                 )}
-                <button onClick={nextDagens} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+                <button onClick={nextDagens} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
                   {dagensQueue.length <= 1 && dagensPhase === 2 ? "Fullfør!" : dagensQueue.length <= 1 ? "Del 2 →" : "Neste →"}
                 </button>
               </div>
@@ -753,6 +805,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             ))}
           </div>
         </div>
+        <BottomNav />
       </div>
     );
   }
@@ -784,6 +837,8 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       if (remaining.length === 0) { setScreen("home"); return; }
       setQuizQueue(remaining);
       setQuizCard(remaining[0]);
+      setQuizOptions(getQuizOptions(remaining[0]));
+      setQuizMode(Math.random() < 0.5 ? "input" : "choice");
       setQuizInput("");
       setQuizChecked(false);
       setQuizResult("");
@@ -802,7 +857,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
           </div>
           <div style={{ background: card, border: `1px solid ${brd}`, borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340 }}>
             <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
-            <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8 }}>{quizCard.fr}</div>
+            <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8, fontFamily: "'Playfair Display', Georgia, serif" }}>{quizCard.fr}</div>
             {quizCard.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({quizCard.phonetic})</div>}
             <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center", alignItems: "center" }}>
               <button onClick={() => speak(quizCard.fr)} title="Normal hastighet" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", opacity: speaking ? 1 : 0.6, lineHeight: 1 }}>🔊</button>
@@ -811,17 +866,33 @@ setMode(m); setScreen("chat"); setShowBooks(false);
           </div>
 
           {!quizChecked
-            ? <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
-                <input
-                  value={quizInput}
-                  onChange={e => setQuizInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && submitQuiz()}
-                  placeholder="Skriv norsk oversettelse..."
-                  style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Georgia', serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
-                  autoFocus
-                />
-                <button onClick={submitQuiz} disabled={!quizInput.trim()} style={{ background: quizInput.trim() ? gold : `${gold}33`, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px", cursor: quizInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
-              </div>
+            ? quizMode === "choice"
+              ? <>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%", maxWidth: 340 }}>
+                    {quizOptions.map((opt, i) => (
+                      <button key={i} onClick={() => setQuizInput(opt)}
+                        style={{ background: quizInput === opt ? "rgba(200,120,58,0.12)" : card, border: `${quizInput === opt ? 2 : 1}px solid ${quizInput === opt ? gold : brd}`, borderRadius: 14, padding: "16px 10px", cursor: "pointer", color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, lineHeight: 1.3, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", textAlign: "center", transition: "all 0.15s ease" }}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={submitQuiz} disabled={!quizInput.trim()} className={quizInput.trim() ? "btn-shine" : ""}
+                    style={{ background: quizInput.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : "rgba(200,120,58,0.2)", border: "none", borderRadius: 14, color: quizInput.trim() ? dark : `${cream}55`, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "16px", cursor: quizInput.trim() ? "pointer" : "default", width: "100%", maxWidth: 340 }}>
+                    Bekreft svar
+                  </button>
+                </>
+              : <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
+                  <input
+                    value={quizInput}
+                    onChange={e => setQuizInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && submitQuiz()}
+                    placeholder="Skriv norsk oversettelse..."
+                    className="input-glow"
+                    style={{ background: dark, border: `0.5px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
+                    autoFocus
+                  />
+                  <button onClick={submitQuiz} disabled={!quizInput.trim()} className={quizInput.trim() ? "btn-shine" : ""} style={{ background: quizInput.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : `rgba(200,120,58,0.25)`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px", cursor: quizInput.trim() ? "pointer" : "default" }}>Sjekk svar</button>
+                </div>
             : <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
                 {quizResult === "correct" && (
                   <div style={{ background: "rgba(76,175,122,0.12)", border: `1px solid ${grn}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
@@ -847,7 +918,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
                     <div style={{ fontSize: 12, color: `${cream}55`, fontStyle: "italic" }}>Si det høyt et par ganger — det hjelper!</div>
                   </div>
                 )}
-                <button onClick={nextQuiz} style={{ background: gold, border: "none", borderRadius: 10, color: dark, fontFamily: "'Georgia', serif", fontWeight: "bold", fontSize: 15, padding: "14px 40px", cursor: "pointer", letterSpacing: 1 }}>
+                <button onClick={nextQuiz} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", letterSpacing: 1 }}>
                   {quizQueue.length <= 1 ? "Ferdig!" : "Neste ord →"}
                 </button>
               </div>
@@ -859,6 +930,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             ))}
           </div>
         </div>
+        <BottomNav />
       </div>
     );
   }
@@ -873,7 +945,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       </div>
       {offlineBanner}
       {mode?.id === "lesehjelp" && (
-        <button onClick={() => setShowBooks(b => !b)} style={{ background: "rgba(201,168,76,0.06)", border: "none", borderBottom: `1px solid ${brd}`, color: gold, fontFamily: "'Georgia', serif", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", letterSpacing: 1, width: "100%" }}>
+        <button onClick={() => setShowBooks(b => !b)} style={{ background: "rgba(201,168,76,0.06)", border: "none", borderBottom: `1px solid ${brd}`, color: gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", letterSpacing: 1, width: "100%" }}>
           {showBooks ? "▲ Lukk boksamling" : "▼ Velg setning fra bøkene dine"}
         </button>
       )}
@@ -883,7 +955,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             <>
               <div style={{ fontSize: 10, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase" }}>Nylig brukt</div>
               {recentTexts.map((t, i) => (
-                <button key={`r${i}`} onClick={() => { setInput(t); setShowBooks(false); }} style={{ background: dark, border: `1px solid ${gold}33`, borderRadius: 8, padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "'Georgia', serif", outline: "none" }}>
+                <button key={`r${i}`} onClick={() => { setInput(t); setShowBooks(false); }} style={{ background: dark, border: `1px solid ${gold}33`, borderRadius: 8, padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "'Jost', sans-serif", outline: "none" }}>
                   <div style={{ fontSize: 13, color: cream, fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{t}"</div>
                 </button>
               ))}
@@ -891,7 +963,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             </>
           )}
           {BOOK_EXCERPTS.map((ex, i) => (
-            <button key={i} onClick={() => { setInput(ex.text); setShowBooks(false); }} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "'Georgia', serif", outline: "none" }}>
+            <button key={i} onClick={() => { setInput(ex.text); setShowBooks(false); }} style={{ background: dark, border: `1px solid ${brd}`, borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "'Jost', sans-serif", outline: "none" }}>
               <div style={{ fontSize: 11, color: gold, letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>{ex.book} · {ex.hint}</div>
               <div style={{ fontSize: 14, color: cream, fontStyle: "italic" }}>"{ex.text}"</div>
             </button>
@@ -925,31 +997,33 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         return (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "8px 16px 0", background: card, borderTop: `1px solid ${brd}` }}>
             {suggestions.map((s, i) => (
-              <button key={i} onClick={() => send(s)} style={{ background: "none", border: `1px solid ${gold}55`, borderRadius: 20, color: gold, fontFamily: "'Georgia', serif", fontSize: 13, padding: "6px 14px", cursor: "pointer", letterSpacing: 0.5 }}>{s}</button>
+              <button key={i} onClick={() => send(s)} className="suggestion-chip" style={{ background: "none", border: `1px solid ${gold}55`, borderRadius: 20, color: gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "6px 14px", cursor: "pointer", letterSpacing: 0.5 }}>{s}</button>
             ))}
           </div>
         );
       })()}
       <div style={S.inputArea}>
         {micBtn}
-        <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder={listening ? "Lytter..." : "Skriv eller snakk..."} style={{ ...S.textarea, borderColor: listening ? gold : brd }} rows={2} />
+        <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder={listening ? "Lytter..." : "Skriv eller snakk..."} className="input-glow" style={{ ...S.textarea, borderColor: listening ? gold : brd }} rows={2} />
         <button onClick={() => send()} disabled={loading || !input.trim()} style={S.sendBtn(loading || !input.trim())}>Send</button>
       </div>
+      <BottomNav />
     </div>
   );
 
   // --- Home screen ---
   return (
-    <div style={{ minHeight: "100dvh", background: dark, color: cream, fontFamily: "'Georgia', serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "0 16px 40px" }}>
+    <div style={{ minHeight: "100dvh", background: dark, color: cream, fontFamily: "'Jost', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: 0 }}>
+      <div style={{ width: "100%", height: 4, background: "linear-gradient(to right, #002395 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ED2939 66.66%)", flexShrink: 0 }} />
       {offlineBanner}
-      <div style={{ textAlign: "center", paddingTop: 52, paddingBottom: 32 }}>
-        <div style={{ color: gold, fontSize: 11, letterSpacing: 7, marginBottom: 18, opacity: 0.6, textTransform: "uppercase" }}>Paris · Aujourd'hui</div>
-        <h1 style={{ fontSize: 48, fontWeight: "normal", letterSpacing: 5, color: cream, margin: "0 0 8px", fontStyle: "italic" }}>Mon Français</h1>
-        <p style={{ fontSize: 12, color: gold, letterSpacing: 4, textTransform: "uppercase", margin: "0 0 24px", opacity: 0.75 }}>Lær fransk på din måte</p>
-        <div style={{ width: 80, height: 1, background: `linear-gradient(to right, transparent, ${gold}88, transparent)`, margin: "0 auto" }} />
+      <div style={{ width: "100%", background: "linear-gradient(150deg, #c8935a 0%, #7a3e18 100%)", padding: "52px 16px 44px", textAlign: "center", color: "white" }}>
+        <div style={{ fontSize: 11, letterSpacing: 7, marginBottom: 18, opacity: 0.75, textTransform: "uppercase", fontWeight: 300 }}>Paris · Aujourd'hui</div>
+        <h1 style={{ fontSize: 48, fontWeight: "normal", letterSpacing: 5, color: "white", margin: "0 0 8px", fontStyle: "italic", fontFamily: "'Playfair Display', Georgia, serif" }}>Mon Français</h1>
+        <p style={{ fontSize: 12, letterSpacing: 4, textTransform: "uppercase", margin: 0, opacity: 0.8, fontWeight: 300 }}>Lær fransk på din måte</p>
       </div>
+      <div style={{ padding: "0 16px 80px", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-      <div style={{ display: "flex", alignItems: "center", background: card, border: `1px solid ${brd}`, borderRadius: 12, padding: "12px 24px", marginBottom: 24, gap: 0, width: "100%", maxWidth: 420 }}>
+      <div style={{ display: "flex", alignItems: "center", background: card, border: `0.5px solid ${brd}`, borderRadius: 18, padding: "12px 24px", marginBottom: 24, gap: 0, width: "100%", maxWidth: 420, marginTop: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}>
         <button onClick={() => setShowWords(true)} style={{ background: "none", border: "none", cursor: "pointer", textAlign: "center", flex: 1, padding: 0 }}>
           <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{words.length}</div>
           <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>ord lært</div>
@@ -966,15 +1040,16 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, width: "100%", maxWidth: 420, marginBottom: 20 }}>
+      <div className="fade-stagger" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, width: "100%", maxWidth: 420, marginBottom: 20 }}>
         {(() => {
           const dagensDone = (() => { try { const s = JSON.parse(localStorage.getItem(DAGENS_KEY) || "{}"); return s.date === todayStr() && s.phase2done; } catch { return false; } })();
           return MODES.map((m, idx) => (
             <button key={m.id} onClick={() => startMode(m)}
-              style={{ background: card, border: `1px solid ${(m.id === "quiz" && dueCount > 0) || (m.id === "dagens" && !dagensDone) ? gold + "88" : brd}`, borderRadius: 12, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Georgia', serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
+              className="mode-card-hover btn-shine"
+              style={{ background: card, border: `1px solid ${(m.id === "quiz" && dueCount > 0) || (m.id === "dagens" && !dagensDone) ? gold + "88" : brd}`, borderRadius: 18, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Jost', sans-serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", boxShadow: "0 4px 20px rgba(0,0,0,0.07)", gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
               <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
-              <div style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 1 }}>{m.label}</div>
-              <div style={{ fontSize: 12, color: "rgba(29,22,16,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
+              <div style={{ fontSize: 15, fontWeight: "500", letterSpacing: 1 }}>{m.label}</div>
+              <div style={{ fontSize: 12, color: "rgba(26,18,16,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
               {m.id === "quiz" && dueCount > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: gold, color: dark, borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 6px" }}>{dueCount}</div>}
               {m.id === "dagens" && dagensDone && <div style={{ position: "absolute", top: 10, right: 10, color: grn, fontSize: 14 }}>✓</div>}
             </button>
@@ -992,6 +1067,8 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${brd}, transparent)`, marginBottom: 14 }} />
         <p style={{ fontSize: 11, letterSpacing: 4, color: `${gold}66`, textTransform: "uppercase", margin: 0 }}>1920 · Paris · Maintenant</p>
       </div>
+      </div>
+      <BottomNav />
     </div>
   );
 }

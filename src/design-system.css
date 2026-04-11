@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0,1&family=Jost:wght@300;400;500&display=swap');
+
+:root {
+  --color-primary: #c8783a;
+  --color-primary-light: #d98a4a;
+  --color-primary-dark: #7a3e18;
+  --color-primary-mid: #c8935a;
+  --color-bg: #f5f0e6;
+  --color-text: #1a1210;
+  --color-card: #ffffff;
+  --color-border: rgba(0, 0, 0, 0.09);
+  --color-success: #3a8a50;
+  --color-error: #c83a3a;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Jost', Georgia, sans-serif;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.07);
+  --shadow-card-hover: 0 8px 28px rgba(0, 0, 0, 0.11);
+  --radius-card: 18px;
+  --radius-btn: 14px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Gradient button with shimmer on hover */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.28),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.45s ease;
+  pointer-events: none;
+}
+
+.btn-shine:hover::before {
+  left: 150%;
+}
+
+.btn-shine:active {
+  transform: scale(0.98) !important;
+}
+
+/* Mode cards hover lift */
+.mode-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mode-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+.mode-card-hover:active {
+  transform: scale(0.98);
+}
+
+/* Generic card hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+/* Fade-in with translateY animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.35s ease both;
+}
+
+/* Staggered delays for grids */
+.fade-stagger > *:nth-child(1)  { animation: fadeInUp 0.35s ease both; animation-delay: 0ms; }
+.fade-stagger > *:nth-child(2)  { animation: fadeInUp 0.35s ease both; animation-delay: 60ms; }
+.fade-stagger > *:nth-child(3)  { animation: fadeInUp 0.35s ease both; animation-delay: 120ms; }
+.fade-stagger > *:nth-child(4)  { animation: fadeInUp 0.35s ease both; animation-delay: 180ms; }
+.fade-stagger > *:nth-child(5)  { animation: fadeInUp 0.35s ease both; animation-delay: 240ms; }
+.fade-stagger > *:nth-child(6)  { animation: fadeInUp 0.35s ease both; animation-delay: 300ms; }
+.fade-stagger > *:nth-child(7)  { animation: fadeInUp 0.35s ease both; animation-delay: 360ms; }
+.fade-stagger > *:nth-child(8)  { animation: fadeInUp 0.35s ease both; animation-delay: 420ms; }
+
+/* Input focus glow — replaces outline */
+.input-glow {
+  outline: none !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.input-glow:focus {
+  box-shadow: 0 0 0 3px rgba(200, 120, 58, 0.18) !important;
+}
+
+/* Suggestion chips */
+.suggestion-chip {
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.suggestion-chip:hover {
+  background: rgba(200, 120, 58, 0.08) !important;
+}
+
+.suggestion-chip:active {
+  transform: scale(0.97);
+}
