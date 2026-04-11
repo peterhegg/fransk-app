@@ -413,12 +413,19 @@ export default function App() {
   const skipExitRef = useRef(false);
   useEffect(() => {
     const cleanUrl = window.location.pathname + window.location.search;
-    window.history.replaceState(null, "", cleanUrl);
-    window.history.pushState({ fransNav: true }, "", cleanUrl);
+
+    const restoreSentinel = () => {
+      if (!history.state?.fransNav) {
+        window.history.replaceState(null, "", cleanUrl);
+        window.history.pushState({ fransNav: true }, "", cleanUrl);
+      }
+    };
+
+    restoreSentinel();
+
     const handler = () => {
       if (skipExitRef.current) { skipExitRef.current = false; return; }
       if (showExitDialogRef.current) {
-        // Second back press while dialog is open → close dialog, don't re-push sentinel → next back exits PWA
         setShowExitDialog(false);
         return;
       }
@@ -432,8 +439,19 @@ export default function App() {
         setShowExitDialog(true);
       }
     };
+
+    const onPageShow = (e) => { if (e.persisted) restoreSentinel(); };
+    const onVisible = () => { if (!document.hidden) restoreSentinel(); };
+
     window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("popstate", handler);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
