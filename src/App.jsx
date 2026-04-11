@@ -409,10 +409,8 @@ export default function App() {
   }, []);
 
   const skipExitRef = useRef(false);
-  const navDepthRef = useRef(0);
   useEffect(() => {
     window.location.hash = "nav";
-    navDepthRef.current = 1;
     let blocked = false;
     const handleBack = () => {
       if (blocked) return;
@@ -420,7 +418,6 @@ export default function App() {
       setTimeout(() => { blocked = false; }, 100);
       if (skipExitRef.current) { skipExitRef.current = false; return; }
       window.location.hash = "nav";
-      navDepthRef.current++;
       if (showWordsRef.current) {
         setShowWords(false);
       } else if (screenRef.current !== "home") {
@@ -917,7 +914,10 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             </div>
             <div style={{ fontSize: 32, color: cream, fontStyle: isReverse ? "normal" : "italic", marginBottom: 8, fontFamily: isReverse ? "'Jost', sans-serif" : "'Playfair Display', Georgia, serif" }}>{prompt}</div>
             {phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({phonetic})</div>}
-            {!isReverse && <button onClick={() => speak(dagensCard.fr)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 20, cursor: "pointer" }}>🔊</button>}
+            {!isReverse && <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button onClick={() => speak(dagensCard.fr)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 20, cursor: "pointer" }}>🔊</button>
+              <button onClick={() => speak(dagensCard.fr, 0.4)} style={{ background: "none", border: "none", color: `${gold}66`, fontSize: 20, cursor: "pointer" }}>🐢</button>
+            </div>}
           </div>
 
           {!dagensChecked
@@ -1176,7 +1176,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             </div>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button onClick={() => setShowExitDialog(false)} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Bli værende</button>
-              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.go(-navDepthRef.current); setTimeout(() => { skipExitRef.current = false; if (window.location.hash !== "#nav") { window.location.hash = "nav"; navDepthRef.current = 1; } }, 500); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
+              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.back(); setTimeout(() => { skipExitRef.current = false; if (window.location.hash !== "#nav") { window.location.hash = "nav"; } }, 400); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
             </div>
           </div>
         </div>
