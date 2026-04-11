@@ -394,9 +394,9 @@ export default function App() {
   useEffect(() => { saveWords(words); }, [words]);
   useEffect(() => {
     try {
-      sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null }));
+      sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null, showWords }));
     } catch {}
-  }, [screen, mode]);
+  }, [screen, mode, showWords]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
   useEffect(() => {
     const on = () => setIsOnline(true);
@@ -646,6 +646,17 @@ setMode(m); setScreen("chat"); setShowBooks(false);
     navigator.clipboard.writeText("Mine franske ord:\n" + words.map(w => `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""}`).join("\n"))
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
+
+  useEffect(() => {
+    try {
+      const s = JSON.parse(sessionStorage.getItem(SESSION_SCREEN_KEY) || "null");
+      if (!s) return;
+      if (s.showWords) { setShowWords(true); return; }
+      if (s.screen === "quiz") { startMode(MODES.find(m => m.id === "quiz")); return; }
+      if (s.screen === "dagens") { startMode(MODES.find(m => m.id === "dagens")); return; }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } };
   const dueCount = getDue(words).length;
