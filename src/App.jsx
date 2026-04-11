@@ -1040,20 +1040,33 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         </div>
       </div>
 
-      <div className="fade-stagger" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, width: "100%", maxWidth: 420, marginBottom: 20 }}>
+      <div className="fade-stagger" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 420, marginBottom: 20 }}>
         {(() => {
           const dagensDone = (() => { try { const s = JSON.parse(localStorage.getItem(DAGENS_KEY) || "{}"); return s.date === todayStr() && s.phase2done; } catch { return false; } })();
-          return MODES.map((m, idx) => (
-            <button key={m.id} onClick={() => startMode(m)}
-              className="mode-card-hover btn-shine"
-              style={{ background: card, border: `1px solid ${(m.id === "quiz" && dueCount > 0) || (m.id === "dagens" && !dagensDone) ? gold + "88" : brd}`, borderRadius: 18, padding: "22px 16px", cursor: "pointer", textAlign: "center", color: cream, fontFamily: "'Jost', sans-serif", outline: "none", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", position: "relative", boxShadow: "0 4px 20px rgba(0,0,0,0.07)", gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
-              <div style={{ fontSize: 28, color: gold, lineHeight: 1 }}>{m.icon}</div>
-              <div style={{ fontSize: 15, fontWeight: "500", letterSpacing: 1 }}>{m.label}</div>
-              <div style={{ fontSize: 12, color: "rgba(26,18,16,0.5)", lineHeight: 1.4 }}>{m.desc}</div>
-              {m.id === "quiz" && dueCount > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: gold, color: dark, borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 6px" }}>{dueCount}</div>}
-              {m.id === "dagens" && dagensDone && <div style={{ position: "absolute", top: 10, right: 10, color: grn, fontSize: 14 }}>✓</div>}
-            </button>
-          ));
+          const modeColors = {
+            dagens:     "#7a4828",
+            quiz:       "#3d5a35",
+            grammatikk: "#2a4848",
+            samtale:    "#7a3828",
+            muntlig:    "#2a3d60",
+            lesehjelp:  "#4a5828",
+            artikkel:   "#5a3020",
+            fri:        "#3a2d18",
+          };
+          return MODES.map((m, idx) => {
+            const bg = modeColors[m.id] || gold;
+            return (
+              <button key={m.id} onClick={() => startMode(m)}
+                className="mode-card-hover btn-shine"
+                style={{ background: bg, border: "none", borderRadius: 18, padding: "20px 16px 18px", cursor: "pointer", textAlign: "left", color: "white", fontFamily: "'Jost', sans-serif", outline: "none", display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start", position: "relative", boxShadow: "0 6px 24px rgba(0,0,0,0.18)", minHeight: 132, gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
+                <div style={{ fontSize: 22, lineHeight: 1, opacity: 0.65, marginBottom: 2 }}>{m.icon}</div>
+                <div style={{ fontSize: 17, fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: "normal", lineHeight: 1.2, flex: 1 }}>{m.label}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.4, fontWeight: 300, marginTop: 2 }}>{m.desc}</div>
+                {m.id === "quiz" && dueCount > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(255,255,255,0.25)", color: "white", borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 7px" }}>{dueCount}</div>}
+                {m.id === "dagens" && dagensDone && <div style={{ position: "absolute", top: 10, right: 10, color: "rgba(255,255,255,0.8)", fontSize: 14 }}>✓</div>}
+              </button>
+            );
+          });
         })()}
       </div>
 
