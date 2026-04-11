@@ -409,12 +409,18 @@ export default function App() {
   }, []);
 
   const skipExitRef = useRef(false);
+  const navDepthRef = useRef(0);
   useEffect(() => {
-    if (!window.location.hash) window.location.hash = "nav";
-    const handler = () => {
-      if (window.location.hash === "#nav") return;
+    window.location.hash = "nav";
+    navDepthRef.current = 1;
+    let blocked = false;
+    const handleBack = () => {
+      if (blocked) return;
+      blocked = true;
+      setTimeout(() => { blocked = false; }, 100);
       if (skipExitRef.current) { skipExitRef.current = false; return; }
       window.location.hash = "nav";
+      navDepthRef.current++;
       if (showWordsRef.current) {
         setShowWords(false);
       } else if (screenRef.current !== "home") {
@@ -424,8 +430,14 @@ export default function App() {
         setShowExitDialog(true);
       }
     };
-    window.addEventListener("hashchange", handler);
-    return () => window.removeEventListener("hashchange", handler);
+    const onHash = () => { if (window.location.hash !== "#nav") handleBack(); };
+    const onPop = () => { if (window.location.hash !== "#nav") handleBack(); };
+    window.addEventListener("hashchange", onHash);
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("hashchange", onHash);
+      window.removeEventListener("popstate", onPop);
+    };
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
@@ -1164,7 +1176,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             </div>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button onClick={() => setShowExitDialog(false)} className="btn-shine" style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Bli værende</button>
-              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.back(); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
+              <button onClick={() => { setShowExitDialog(false); skipExitRef.current = true; history.go(-navDepthRef.current); }} style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>Avslutt</button>
             </div>
           </div>
         </div>
