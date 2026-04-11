@@ -410,13 +410,11 @@ export default function App() {
 
   const skipExitRef = useRef(false);
   useEffect(() => {
-    const cleanUrl = window.location.pathname + window.location.search;
-    // Remove any leftover #nav hash, then push one clean entry
-    window.history.replaceState(null, "", cleanUrl);
-    window.history.pushState({ fransNav: true }, "", cleanUrl);
+    if (!window.location.hash) window.location.hash = "nav";
     const handler = () => {
+      if (window.location.hash === "#nav") return;
       if (skipExitRef.current) { skipExitRef.current = false; return; }
-      window.history.pushState({ fransNav: true }, "", cleanUrl);
+      window.location.hash = "nav";
       if (showWordsRef.current) {
         setShowWords(false);
       } else if (screenRef.current !== "home") {
@@ -426,8 +424,8 @@ export default function App() {
         setShowExitDialog(true);
       }
     };
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
