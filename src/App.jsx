@@ -316,10 +316,32 @@ function renderMessage(text) {
   });
 }
 
+const CHAT_MODES = ["samtale", "muntlig", "grammatikk", "lesehjelp", "artikkel", "fri"];
+const SESSION_SCREEN_KEY = "fransk-session-screen";
+
 export default function App() {
-  const [screen, setScreen] = useState("home");
-  const [mode, setMode] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [screen, setScreen] = useState(() => {
+    try {
+      const s = JSON.parse(sessionStorage.getItem(SESSION_SCREEN_KEY) || "null");
+      return s?.screen === "chat" && CHAT_MODES.includes(s?.modeId) ? "chat" : "home";
+    } catch { return "home"; }
+  });
+  const [mode, setMode] = useState(() => {
+    try {
+      const s = JSON.parse(sessionStorage.getItem(SESSION_SCREEN_KEY) || "null");
+      if (s?.screen === "chat" && s?.modeId) return MODES.find(m => m.id === s.modeId) || null;
+    } catch {}
+    return null;
+  });
+  const [messages, setMessages] = useState(() => {
+    try {
+      const s = JSON.parse(sessionStorage.getItem(SESSION_SCREEN_KEY) || "null");
+      if (s?.screen === "chat" && s?.modeId && CHAT_MODES.includes(s.modeId)) {
+        return [{ role: "assistant", content: STARTER[s.modeId] || "", mode: s.modeId }];
+      }
+    } catch {}
+    return [];
+  });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState(loadWords);
@@ -372,6 +394,11 @@ export default function App() {
   useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
 
   useEffect(() => { saveWords(words); }, [words]);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null }));
+    } catch {}
+  }, [screen, mode]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
   useEffect(() => {
     const on = () => setIsOnline(true);
