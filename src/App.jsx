@@ -409,8 +409,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    history.pushState({ app: true }, "");
+    const pushNav = () => window.history.pushState({ app: true }, null, window.location.href);
+    pushNav();
     const handlePop = () => {
+      pushNav();
       if (showWordsRef.current) {
         setShowWords(false);
       } else if (screenRef.current !== "home") {
@@ -419,7 +421,6 @@ export default function App() {
         setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
         setShowExitDialog(true);
       }
-      history.pushState({ app: true }, "");
     };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
