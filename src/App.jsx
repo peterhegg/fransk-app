@@ -415,8 +415,8 @@ export default function App() {
     window.history.replaceState(null, "", cleanUrl);
     window.history.pushState({ fransNav: true }, "", cleanUrl);
     const handler = () => {
-      window.history.pushState({ fransNav: true }, "", cleanUrl);
       if (skipExitRef.current) { skipExitRef.current = false; return; }
+      window.history.pushState({ fransNav: true }, "", cleanUrl);
       if (showWordsRef.current) {
         setShowWords(false);
       } else if (screenRef.current !== "home") {
