@@ -404,21 +404,26 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const pushNav = () => window.history.pushState({ app: true }, null, window.location.href);
-    pushNav();
-    const handlePop = () => {
-      pushNav();
-      if (showWordsRef.current) {
-        setShowWords(false);
-      } else if (screenRef.current !== "home") {
-        setScreen("home");
-      } else {
-        setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
-        setShowExitDialog(true);
+    // Set initial hash so back button has an entry to pop
+    if (window.location.hash !== "#nav") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search + "#nav");
+    }
+    const handleHashChange = () => {
+      // Back was pressed — hash was removed. Re-add it immediately so next back also works.
+      if (window.location.hash !== "#nav") {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search + "#nav");
+        if (showWordsRef.current) {
+          setShowWords(false);
+        } else if (screenRef.current !== "home") {
+          setScreen("home");
+        } else {
+          setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
+          setShowExitDialog(true);
+        }
       }
     };
-    window.addEventListener("popstate", handlePop);
-    return () => window.removeEventListener("popstate", handlePop);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
