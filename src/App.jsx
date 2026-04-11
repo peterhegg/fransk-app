@@ -21,11 +21,10 @@ PROGRESJON:
 - Bruk ord og temaer fra Houellebecq og Paris på 1920-tallet aktivt
 - Målet er at eleven skal kunne lese disse bøkene på egenhånd
 
-SAMTALE: Spill franskmannen Pierre. Start på norsk, innfør gradvis mer og mer fransk. Bruk *kursiv* for handlinger som *Pierre smiler*. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3] — naturlige korte svar eleven kan trykke på.
-LESEHJELP: Bryt ned setningen ord for ord med oversettelse og enkel grammatikk.
 MUNTLIG: Gi én kort norsk setning eleven skal oversette til fransk. Ved riktig svar: ✓ LÆRT: [fr] = [no] ([uttale]) — gi neste setning. Ved feil: ✗ FEIL: [riktig versjon med fonetikk] — vent på nytt forsøk, ikke gå videre.
 GRAMMATIKK: Undervis progressiv fransk grammatikk én regel om gangen. Rekkefølge: 1) être (jeg er/du er/han er…) 2) avoir (jeg har…) 3) Kjønn — le/la/un/une 4) Enkle setninger med adjektiv 5) -er verb 6) Negasjon ne…pas 7) Spørsmål 8) Passé composé 9) Adjektivbøying 10) Futur proche. For hvert emne: forklar regelen kort på norsk → vis eksempler med fonetikk → gi én konkret øvingsoppgave → vent på svar → gi tilbakemelding. Bruk ordbanken aktivt — bygg eksempler rundt ord eleven allerede kan. Merk lærte strukturer med ✓ LÆRT: [struktur] = [forklaring]. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3].
-ARTIKKEL: Eleven limer inn en tekst på fransk. Gjør i denne rekkefølgen: 1) Norsk sammendrag (2-3 setninger). 2) Oversett avsnitt for avsnitt — vis original + oversettelse. 3) Plukk ut 3-5 grammatiske mønstre fra teksten og forklar dem enkelt med eksempel fra teksten. 4) Merk nye nyttige ord med ✓ LÆRT: [fr] = [no] ([uttale]). Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3].`;
+TEKSTHJELP: Eleven limer inn tekst på fransk — alt fra én setning til en hel artikkel. Bruk skjønn: Er det én setning eller et par ord, bryt ned ord for ord med oversettelse og enkel grammatikk. Er det en lengre tekst: gi norsk sammendrag (2-3 setninger), oversett avsnitt for avsnitt, plukk ut 2-3 grammatiske mønstre. Avslutt alltid med FORSLAG: [svar1] | [svar2] | [svar3].
+FRI: Svar fritt på spørsmål om fransk. Kan også spille franskmannen Pierre hvis eleven vil — start da på norsk og innfør gradvis mer fransk, bruk *kursiv* for handlinger. Avslutt gjerne med FORSLAG: [svar1] | [svar2] | [svar3].`;
 
 const BOOK_EXCERPTS = [
   { book: "Houellebecq", hint: "Om en enkel dag", text: "Il faisait beau, le ciel était bleu." },
@@ -143,10 +142,10 @@ function levenshtein(a, b) {
       dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
   return dp[a.length][b.length];
 }
-// Generate 4 answer options: 1 correct + 3 distractors from VOCAB_LIST
-function getQuizOptions(card) {
+// Generate 4 answer options: 1 correct + 3 distractors from word bank
+function getQuizOptions(card, bank = []) {
   const correct = card.no.split(/\s*\/\s*/)[0];
-  const pool = VOCAB_LIST
+  const pool = bank
     .filter(v => v.no !== card.no && v.fr !== card.fr)
     .sort(() => Math.random() - 0.5)
     .slice(0, 3)
@@ -199,24 +198,20 @@ const MODES = [
   { id: "dagens", label: "Dagens øvelse", icon: "◆", desc: "5 nye ord + 10 produksjonsoppgaver" },
   { id: "quiz", label: "Glosekort", icon: "◈", desc: "Nye ord + repeter det du har lært" },
   { id: "grammatikk", label: "Grammatikk", icon: "◑", desc: "Setningsoppbygging trinn for trinn" },
-  { id: "samtale", label: "Samtale", icon: "◉", desc: "Øv med en virtuell franskmann" },
   { id: "muntlig", label: "Muntlig", icon: "◎", desc: "Snakk fransk — få direkte korreksjon" },
-  { id: "lesehjelp", label: "Lesehjelp", icon: "◫", desc: "Forstå setninger fra bøkene dine" },
-  { id: "artikkel", label: "Artikkelleser", icon: "◰", desc: "Lim inn fransk tekst — oversettelse og grammatikk" },
-  { id: "fri", label: "Spør fritt", icon: "✦", desc: "Still spørsmål om fransk" },
+  { id: "teksthjelp", label: "Teksthjelp", icon: "◫", desc: "Lim inn setning eller tekst på fransk" },
+  { id: "fri", label: "Spør fritt", icon: "✦", desc: "Still spørsmål eller snakk med Pierre" },
 ];
 
 const STARTER = {
   quiz: "Vil du øve på hverdagsord, mat og drikke, Paris på 1920-tallet, eller skal jeg velge?",
   grammatikk: "La oss lære fransk grammatikk trinn for trinn.\n\nVi starter helt fra bunnen: hvordan man sier «jeg er», «du er», «han er» på fransk — og hvordan det henger sammen med resten av setningen.",
-  samtale: "Bonjour! (bånsjur) Jeg er Pierre. Vi starter på norsk, men jeg innfører gradvis mer fransk. Fortell meg litt om deg selv!",
   muntlig: "La oss øve på å snakke! Jeg gir deg en norsk setning — du oversetter og sier den på fransk. Trykk på mikrofonen og si svaret høyt.\n\nFørste setning: «Jeg heter Peter og jeg bor i Norge.»",
-  lesehjelp: "Lim inn en setning fra en av bøkene dine, eller velg en fra boksamlingen nedenfor.",
-  artikkel: "Lim inn en fransk tekst eller nettartikkel nedenfor.\n\nJeg gir deg: norsk sammendrag → oversettelse avsnitt for avsnitt → grammatiske mønstre fra teksten → nye ord.",
-  fri: "Hva lurer du på om fransk?",
+  teksthjelp: "Lim inn en setning eller lengre tekst på fransk — jeg tilpasser meg automatisk.\n\nDu kan også velge en setning fra bøkene dine nedenfor.",
+  fri: "Hva lurer du på om fransk? Du kan også skrive «Pierre» hvis du vil øve med en virtuell franskmann.",
 };
 
-const SPEECH_LANG = { samtale: "fr-FR", muntlig: "fr-FR" };
+const SPEECH_LANG = { fri: "fr-FR", muntlig: "fr-FR" };
 const SR_INTERVALS = [1, 2, 4, 8, 16, 32];
 const WORDS_KEY = "fransk-laering-ord-v2";
 const STREAK_KEY = "fransk-streak";
@@ -316,7 +311,7 @@ function renderMessage(text) {
   });
 }
 
-const CHAT_MODES = ["samtale", "muntlig", "grammatikk", "lesehjelp", "artikkel", "fri"];
+const CHAT_MODES = ["muntlig", "grammatikk", "teksthjelp", "fri"];
 const SESSION_SCREEN_KEY = "fransk-session-screen";
 
 export default function App() {
@@ -515,14 +510,13 @@ export default function App() {
       return;
     }
     if (m.id === "quiz") {
-      const learnedFr = new Set(words.map(w => w.fr));
       const due = getDue(words);
-      const newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr));
-      const queue = [...due, ...newVocab].slice(0, 20);
+      const notDue = words.filter(w => !due.some(d => d.id === w.id));
+      const queue = [...due, ...notDue].slice(0, 20);
       if (queue.length === 0) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
       setQuizQueue(queue);
       setQuizCard(queue[0]);
-      setQuizOptions(getQuizOptions(queue[0]));
+      setQuizOptions(getQuizOptions(queue[0], words));
       setQuizMode(Math.random() < 0.5 ? "input" : "choice");
       setQuizInput("");
       setQuizChecked(false);
@@ -534,7 +528,7 @@ export default function App() {
 setMode(m); setScreen("chat"); setShowBooks(false);
 
     // For modes that use progression, fetch a personalized opener from Claude
-    if (["samtale", "muntlig", "grammatikk"].includes(m.id) && words.length > 0) {
+    if (["muntlig", "grammatikk", "fri"].includes(m.id) && words.length > 0) {
       setLoading(true);
       setMessages([]);
       const wordCtx = `\n\nElevens ordbank (${words.length} ord lagret på enheten):\n` +
@@ -595,7 +589,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       const reply = data.content?.find(b => b.type === "text")?.text ||
         (budgetHit ? "Daglig grense er nådd. Appen åpner igjen ved midnatt (UTC). Kom tilbake i morgen!" :
           data.error ? `Feil: ${data.error.message}` : "Noe gikk galt.");
-      if (mode?.id === "lesehjelp" && text) {
+      if (mode?.id === "teksthjelp" && text) {
         setRecentTexts(prev => {
           const next2 = [text, ...prev.filter(t => t !== text)].slice(0, 5);
           localStorage.setItem("fransk-recent-texts", JSON.stringify(next2));
@@ -659,19 +653,19 @@ setMode(m); setScreen("chat"); setShowBooks(false);
     const tabs = [
       { id: "home",    label: "Hjem",    sym: "⌂" },
       { id: "quiz",    label: "Øv",      sym: "◈" },
-      { id: "samtale", label: "Snakk",   sym: "◉" },
+      { id: "fri",     label: "Snakk",   sym: "◉" },
       { id: "words",   label: "Ordbank", sym: "◎" },
     ];
     const activeId = showWords ? "words"
       : screen === "home" ? "home"
       : (screen === "quiz" || screen === "dagens") ? "quiz"
-      : screen === "chat" && mode?.id === "samtale" ? "samtale"
+      : screen === "chat" && mode?.id === "fri" ? "fri"
       : null;
     const handleNav = (id) => {
       if (id === "words")   { setShowWords(true); setScreen("home"); }
       else if (id === "home")    { setShowWords(false); setScreen("home"); }
       else if (id === "quiz")    { setShowWords(false); startMode(MODES.find(m => m.id === "quiz")); }
-      else if (id === "samtale") { setShowWords(false); startMode(MODES.find(m => m.id === "samtale")); }
+      else if (id === "fri") { setShowWords(false); startMode(MODES.find(m => m.id === "fri")); }
     };
     return (
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#ffffff", borderTop: `0.5px solid ${brd}`, display: "flex", alignItems: "stretch", height: 66, zIndex: 200, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
@@ -915,7 +909,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
       if (remaining.length === 0) { setScreen("home"); return; }
       setQuizQueue(remaining);
       setQuizCard(remaining[0]);
-      setQuizOptions(getQuizOptions(remaining[0]));
+      setQuizOptions(getQuizOptions(remaining[0], words));
       setQuizMode(Math.random() < 0.5 ? "input" : "choice");
       setQuizInput("");
       setQuizChecked(false);
@@ -1022,7 +1016,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         <button onClick={() => setShowWords(true)} style={S.badge}>◈ {words.length}</button>
       </div>
       {offlineBanner}
-      {mode?.id === "lesehjelp" && (
+      {mode?.id === "teksthjelp" && (
         <button onClick={() => setShowBooks(b => !b)} style={{ background: "rgba(201,168,76,0.06)", border: "none", borderBottom: `1px solid ${brd}`, color: gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", letterSpacing: 1, width: "100%" }}>
           {showBooks ? "▲ Lukk boksamling" : "▼ Velg setning fra bøkene dine"}
         </button>
@@ -1139,11 +1133,9 @@ setMode(m); setScreen("chat"); setShowBooks(false);
             dagens:     "#7a4828",
             quiz:       "#3d5a35",
             grammatikk: "#2a4848",
-            samtale:    "#7a3828",
             muntlig:    "#2a3d60",
-            lesehjelp:  "#4a5828",
-            artikkel:   "#5a3020",
-            fri:        "#3a2d18",
+            teksthjelp: "#4a5828",
+            fri:        "#7a3828",
           };
           return MODES.map((m, idx) => {
             const bg = modeColors[m.id] || gold;
