@@ -352,9 +352,10 @@ export default function App() {
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
 
+  const WORD_SAVE_MODES = ["muntlig", "grammatikk"];
   useEffect(() => {
     messages.forEach(msg => {
-      if (msg.role === "assistant") {
+      if (msg.role === "assistant" && WORD_SAVE_MODES.includes(msg.mode)) {
         [...msg.content.matchAll(/✓ LÆRT: .+/g)].forEach(m => {
           const parsed = parseLearnLine(m[0]);
           setWords(prev => {
@@ -478,7 +479,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
         });
         const data = await res.json();
         const reply = data.content?.find(b => b.type === "text")?.text || STARTER[m.id];
-        setMessages([{ role: "assistant", content: reply }]);
+        setMessages([{ role: "assistant", content: reply, mode: m.id }]);
       } catch {
         setMessages([{ role: "assistant", content: STARTER[m.id] }]);
       }
@@ -527,7 +528,7 @@ setMode(m); setScreen("chat"); setShowBooks(false);
           return next2;
         });
       }
-      setMessages([...next, { role: "assistant", content: reply }]);
+      setMessages([...next, { role: "assistant", content: reply, mode: mode?.id }]);
     } catch {
       setMessages([...next, { role: "assistant", content: "Kunne ikke koble til. Prøv igjen." }]);
     }
@@ -783,13 +784,15 @@ setMode(m); setScreen("chat"); setShowBooks(false);
                 {dagensResult === "close" && (
                   <div style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${gold}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                     <div style={{ fontSize: 15, color: gold, fontWeight: "bold", marginBottom: 4 }}>~ Nesten!</div>
-                    <div style={{ fontSize: 14, color: cream }}>{isReverse ? dagensCard.fr : dagensCard.no}</div>
+                    <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{dagensInput}</em></div>
+                    <div style={{ fontSize: 14, color: cream }}>Riktig: <strong>{isReverse ? dagensCard.fr : dagensCard.no}</strong></div>
                     {dagensCard.phonetic && <div style={{ fontSize: 12, color: `${gold}88`, marginTop: 4 }}>{dagensCard.phonetic}</div>}
                   </div>
                 )}
                 {dagensResult === "wrong" && (
                   <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                     <div style={{ fontSize: 14, color: red, marginBottom: 6 }}>Ikke helt — riktig svar:</div>
+                    <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{dagensInput}</em></div>
                     <div style={{ fontSize: 18, color: cream, fontWeight: "bold" }}>{isReverse ? dagensCard.fr : dagensCard.no}</div>
                     {dagensCard.phonetic && <div style={{ fontSize: 13, color: gold, marginTop: 4 }}>({dagensCard.phonetic}) — si det høyt!</div>}
                   </div>
