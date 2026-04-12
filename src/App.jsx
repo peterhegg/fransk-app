@@ -100,6 +100,13 @@ export default function App() {
   }, []);
 
   // --- Session screen save ---
+  // Restore sentinel when user navigates within app (e.g. after Avslutt without closing)
+  useEffect(() => {
+    exitingRef.current = false;
+    if (!history.state?.fransNav) {
+      window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search);
+    }
+  }, [screen, showWords]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
   useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
   useEffect(() => {
@@ -116,11 +123,10 @@ export default function App() {
     window.history.pushState({ fransNav: true }, "", url);
 
     const restoreSentinel = () => {
-      exitingRef.current = false;
       if (!history.state?.fransNav) window.history.pushState({ fransNav: true }, "", url);
     };
     const handler = () => {
-      if (exitingRef.current) return;
+      if (exitingRef.current) { exitingRef.current = false; return; }
       window.history.pushState({ fransNav: true }, "", url);
       if (showExitDialogRef.current) { setShowExitDialog(false); return; }
       if (showWordsRef.current) { setShowWords(false); return; }
@@ -172,7 +178,9 @@ export default function App() {
     if (!clean) return;
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(clean);
-    utt.lang = "fr-FR";
+    // Use French voice if installed; otherwise let device use default (avoids silent failure)
+    const frVoice = window.speechSynthesis.getVoices().find(v => v.lang.toLowerCase().startsWith("fr"));
+    if (frVoice) { utt.voice = frVoice; utt.lang = frVoice.lang; }
     utt.rate = rate;
     utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
     utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
