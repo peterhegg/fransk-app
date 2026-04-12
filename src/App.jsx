@@ -112,13 +112,13 @@ export default function App() {
 
   // --- Back button / exit dialog ---
   useEffect(() => {
-    const url = window.location.pathname + window.location.search;
-    history.pushState({ fransNav: true }, "", url);
+    const cleanUrl = window.location.pathname + window.location.search;
+    window.history.pushState({ fransNav: true }, "", cleanUrl);
 
-    const restoreSentinel = () => { if (!history.state?.fransNav) history.pushState({ fransNav: true }, "", url); };
+    const restoreSentinel = () => { if (!history.state?.fransNav) window.history.pushState({ fransNav: true }, "", cleanUrl); };
     const handler = () => {
       if (skipCountRef.current > 0) { skipCountRef.current--; return; }
-      history.pushState({ fransNav: true }, "", url);
+      window.history.pushState({ fransNav: true }, "", cleanUrl);
       if (showExitDialogRef.current) { setShowExitDialog(false); return; }
       if (showWordsRef.current) { setShowWords(false); }
       else if (screenRef.current !== "home") { setScreen("home"); }
@@ -155,11 +155,10 @@ export default function App() {
   // --- Speak ---
   const speak = (text, rate = 0.85) => {
     if (!window.speechSynthesis) return;
-    if (speakingRef.current) {
-      window.speechSynthesis.cancel();
-      speakingRef.current = false; setSpeaking(false);
-      return;
-    }
+    const wasActive = speakingRef.current;
+    window.speechSynthesis.cancel();
+    speakingRef.current = false; setSpeaking(false);
+    if (wasActive) return;
     const cleanLine = t => t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/[✓✗].*?:/g, "").replace(/GLOSE:/g, "").trim();
     const detectLang = l => {
       if (/[øåæ]/i.test(l)) return "nb-NO";
@@ -169,14 +168,11 @@ export default function App() {
     };
     const lines = text.split("\n").map(l => ({ text: cleanLine(l), lang: detectLang(l) })).filter(l => l.text.length > 1);
     if (!lines.length) return;
-    // Check which language voices are available (Samsung may not have fr/nb installed)
-    const voices = window.speechSynthesis.getVoices();
-    const hasLang = lang => !voices.length || voices.some(v => v.lang.startsWith(lang.slice(0, 2)));
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     speakingRef.current = true; setSpeaking(true);
     lines.forEach((l, i) => {
       const utt = new SpeechSynthesisUtterance(l.text);
-      if (hasLang(l.lang)) utt.lang = l.lang;
-      utt.rate = rate;
+      utt.lang = l.lang; utt.rate = rate;
       if (i === lines.length - 1) {
         utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
         utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
