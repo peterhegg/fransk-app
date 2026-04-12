@@ -36,6 +36,7 @@ export default function App() {
   // --- Speech ---
   const [speaking, setSpeaking] = useState(false);
   const speakingRef = useRef(false);
+  const voicesRef = useRef([]);
 
   // --- Exit dialog ---
   const [showExitDialog, _setShowExitDialog] = useState(false);
@@ -100,8 +101,11 @@ export default function App() {
   }, []);
 
   // --- Session screen save ---
-  // Restore sentinel when user navigates within app (e.g. after Avslutt without closing)
+  // Restore sentinel when screen/showWords changes AFTER mount (e.g. after Avslutt without closing).
+  // Skip first run to avoid double-push with the back-button effect below.
+  const sentinelMountedRef = useRef(false);
   useEffect(() => {
+    if (!sentinelMountedRef.current) { sentinelMountedRef.current = true; return; }
     if (!history.state?.fransNav) {
       window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search);
     }
@@ -114,7 +118,13 @@ export default function App() {
   }, [screen, mode, showWords]);
 
   // --- Speech synthesis preload ---
-  useEffect(() => { if (window.speechSynthesis) window.speechSynthesis.getVoices(); }, []);
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    const load = () => { voicesRef.current = window.speechSynthesis.getVoices(); };
+    load();
+    window.speechSynthesis.addEventListener("voiceschanged", load);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", load);
+  }, []);
 
   // --- Back button / exit dialog ---
   useEffect(() => {
@@ -178,10 +188,12 @@ export default function App() {
       .replace(/\n+/g, " ")
       .trim();
     if (!clean) return;
-    window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(clean);
     utt.lang = "fr-FR";
     utt.rate = rate;
+    const frVoice = voicesRef.current.find(v => v.lang === "fr-FR")
+                 || voicesRef.current.find(v => v.lang.startsWith("fr"));
+    if (frVoice) utt.voice = frVoice;
     utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
     utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
     speakingRef.current = true; setSpeaking(true);
