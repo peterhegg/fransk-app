@@ -178,9 +178,7 @@ export default function App() {
     if (!clean) return;
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(clean);
-    // Use French voice if installed; otherwise let device use default (avoids silent failure)
-    const frVoice = window.speechSynthesis.getVoices().find(v => v.lang.toLowerCase().startsWith("fr"));
-    if (frVoice) { utt.voice = frVoice; utt.lang = frVoice.lang; }
+    utt.lang = "fr-FR";
     utt.rate = rate;
     utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
     utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
