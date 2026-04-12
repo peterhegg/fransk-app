@@ -159,6 +159,7 @@ export default function App() {
       else if (rs === "dagens-glose") startDagensGlose();
       else if (rs === "dagens-grammatikk") startDagensGrammatikk();
       else if (rs === "grammatikk-ovelse") startGramOvelse();
+      else if (rs === "chat" && s.modeId) startMode(s.modeId);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
