@@ -1,0 +1,95 @@
+import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, gold, dark, cream, card, brd, grn } from "../constants.js";
+import { todayStr, getDue, loadGrammarProgress } from "../utils.jsx";
+import BottomNav from "../components/BottomNav.jsx";
+
+export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
+  const dueCount = getDue(words).length;
+
+  const dagensDone = (() => {
+    try { const s = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}"); return s.date === todayStr() && s.phase2done; }
+    catch { return false; }
+  })();
+
+  const completedGrammar = loadGrammarProgress();
+  const grammarDone = completedGrammar.length >= GRAMMAR_TOPICS.length;
+  const grammarProgress = `${completedGrammar.length}/${GRAMMAR_TOPICS.length}`;
+
+  const grammarOvDue = getDue(grammarWords).length;
+
+  const modeColors = {
+    "dagens-glose": "#7a4828",
+    glose: "#3d5a35",
+    "dagens-grammatikk": "#2a4848",
+    "grammatikk-ovelse": "#384060",
+    teksthjelp: "#4a5828",
+    fri: "#7a3828",
+  };
+
+  return (
+    <div style={{ minHeight: "100dvh", background: "#f5f0e6", color: cream, fontFamily: "'Jost', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: 0 }}>
+      <div style={{ width: "100%", height: 4, background: "linear-gradient(to right, #002395 33.33%, #ffffff 33.33%, #ffffff 66.66%, #ED2939 66.66%)", flexShrink: 0 }} />
+      {offlineBanner}
+      <div style={{ width: "100%", background: "linear-gradient(150deg, #c8935a 0%, #7a3e18 100%)", padding: "52px 16px 44px", textAlign: "center", color: "white" }}>
+        <div style={{ fontSize: 11, letterSpacing: 7, marginBottom: 18, opacity: 0.75, textTransform: "uppercase", fontWeight: 300 }}>Paris · Aujourd'hui</div>
+        <h1 style={{ fontSize: 48, fontWeight: "normal", letterSpacing: 5, color: "white", margin: "0 0 8px", fontStyle: "italic", fontFamily: "'Playfair Display', Georgia, serif" }}>Mon Français</h1>
+        <p style={{ fontSize: 12, letterSpacing: 4, textTransform: "uppercase", margin: 0, opacity: 0.8, fontWeight: 300 }}>Lær fransk på din måte</p>
+      </div>
+
+      <div style={{ padding: "0 16px 80px", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", background: card, border: `0.5px solid ${brd}`, borderRadius: 18, padding: "12px 24px", marginBottom: 24, gap: 0, width: "100%", maxWidth: 420, marginTop: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}>
+          <button onClick={onShowWords} style={{ background: "none", border: "none", cursor: "pointer", textAlign: "center", flex: 1, padding: 0 }}>
+            <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{words.length}</div>
+            <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>ord lært</div>
+          </button>
+          <div style={{ width: 1, height: 36, background: brd }} />
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{streak}</div>
+            <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>🔥 dager</div>
+          </div>
+          <div style={{ width: 1, height: 36, background: brd }} />
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ fontSize: 26, color: gold, fontStyle: "italic" }}>{sessionMsgs}</div>
+            <div style={{ fontSize: 11, color: "rgba(29,22,16,0.45)", letterSpacing: 1, textTransform: "uppercase", marginTop: 2 }}>svar i dag</div>
+          </div>
+        </div>
+
+        <div className="fade-stagger" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 420, marginBottom: 20 }}>
+          {MODES.map((m, idx) => {
+            const bg = modeColors[m.id] || gold;
+            let badge = null;
+            if (m.id === "glose" && dueCount > 0) badge = dueCount;
+            if (m.id === "dagens-glose" && dagensDone) badge = "✓";
+            if (m.id === "dagens-grammatikk") badge = grammarDone ? "✓" : grammarProgress;
+            if (m.id === "grammatikk-ovelse" && grammarOvDue > 0) badge = grammarOvDue;
+            return (
+              <button key={m.id} onClick={() => onStart(m.id)}
+                className="mode-card-hover btn-shine"
+                style={{ background: bg, border: "none", borderRadius: 18, padding: "20px 16px 18px", cursor: "pointer", textAlign: "left", color: "white", fontFamily: "'Jost', sans-serif", outline: "none", display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start", position: "relative", boxShadow: "0 6px 24px rgba(0,0,0,0.18)", minHeight: 132, gridColumn: idx === MODES.length - 1 && MODES.length % 2 !== 0 ? "1 / -1" : undefined }}>
+                <div style={{ fontSize: 22, lineHeight: 1, opacity: 0.65, marginBottom: 2 }}>{m.icon}</div>
+                <div style={{ fontSize: 17, fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: "normal", lineHeight: 1.2, flex: 1 }}>{m.label}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.4, fontWeight: 300, marginTop: 2 }}>{m.desc}</div>
+                {badge !== null && (
+                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(255,255,255,0.25)", color: "white", borderRadius: 10, fontSize: 10, fontWeight: "bold", padding: "2px 7px" }}>
+                    {badge}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {noWordsMsg && (
+          <div style={{ color: `${cream}88`, fontSize: 13, textAlign: "center", marginBottom: 12 }}>
+            Alle ord er mestret! Kom tilbake i morgen for neste runde.
+          </div>
+        )}
+
+        <div style={{ textAlign: "center", width: "100%", maxWidth: 420, marginTop: 8 }}>
+          <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${brd}, transparent)`, marginBottom: 14 }} />
+          <p style={{ fontSize: 11, letterSpacing: 4, color: `${gold}66`, textTransform: "uppercase", margin: 0 }}>1920 · Paris · Maintenant</p>
+        </div>
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+}
