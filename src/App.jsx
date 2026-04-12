@@ -113,7 +113,6 @@ export default function App() {
   // --- Back button / exit dialog ---
   useEffect(() => {
     const url = window.location.pathname + window.location.search;
-    history.replaceState({ fransBase: true }, "", url);
     history.pushState({ fransNav: true }, "", url);
 
     const restoreSentinel = () => { if (!history.state?.fransNav) history.pushState({ fransNav: true }, "", url); };
@@ -161,8 +160,6 @@ export default function App() {
       speakingRef.current = false; setSpeaking(false);
       return;
     }
-    // Clear any stuck synthesis state
-    window.speechSynthesis.cancel();
     const cleanLine = t => t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/[✓✗].*?:/g, "").replace(/GLOSE:/g, "").trim();
     const detectLang = l => {
       if (/[øåæ]/i.test(l)) return "nb-NO";
