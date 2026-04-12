@@ -42,7 +42,7 @@ export default function App() {
   const showExitDialogRef = useRef(false);
   const setShowExitDialog = v => { showExitDialogRef.current = v; _setShowExitDialog(v); };
   const [exitPhraseIdx, setExitPhraseIdx] = useState(0);
-  const skipCountRef = useRef(0);
+  const exitingRef = useRef(false);
   const screenRef = useRef(screen);
   const showWordsRef = useRef(showWords);
 
@@ -112,17 +112,21 @@ export default function App() {
 
   // --- Back button / exit dialog ---
   useEffect(() => {
-    const cleanUrl = window.location.pathname + window.location.search;
-    window.history.pushState({ fransNav: true }, "", cleanUrl);
+    const url = window.location.pathname + window.location.search;
+    window.history.pushState({ fransNav: true }, "", url);
 
-    const restoreSentinel = () => { if (!history.state?.fransNav) window.history.pushState({ fransNav: true }, "", cleanUrl); };
+    const restoreSentinel = () => {
+      exitingRef.current = false;
+      if (!history.state?.fransNav) window.history.pushState({ fransNav: true }, "", url);
+    };
     const handler = () => {
-      if (skipCountRef.current > 0) { skipCountRef.current--; return; }
-      window.history.pushState({ fransNav: true }, "", cleanUrl);
+      if (exitingRef.current) return;
+      window.history.pushState({ fransNav: true }, "", url);
       if (showExitDialogRef.current) { setShowExitDialog(false); return; }
-      if (showWordsRef.current) { setShowWords(false); }
-      else if (screenRef.current !== "home") { setScreen("home"); }
-      else { setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length); setShowExitDialog(true); }
+      if (showWordsRef.current) { setShowWords(false); return; }
+      if (screenRef.current !== "home") { setScreen("home"); return; }
+      setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
+      setShowExitDialog(true);
     };
     const onPageShow = e => { if (e.persisted) restoreSentinel(); };
     const onVisible = () => { if (!document.hidden) restoreSentinel(); };
@@ -155,30 +159,25 @@ export default function App() {
   // --- Speak ---
   const speak = (text, rate = 0.85) => {
     if (!window.speechSynthesis) return;
-    const wasActive = speakingRef.current;
+    if (speakingRef.current) {
+      window.speechSynthesis.cancel();
+      speakingRef.current = false; setSpeaking(false);
+      return;
+    }
+    const clean = text
+      .replace(/\*\*?(.+?)\*\*?/g, "$1")
+      .replace(/[✓✗][^:]*:/g, "")
+      .replace(/\n+/g, " ")
+      .trim();
+    if (!clean) return;
     window.speechSynthesis.cancel();
-    speakingRef.current = false; setSpeaking(false);
-    if (wasActive) return;
-    const cleanLine = t => t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/[✓✗].*?:/g, "").replace(/GLOSE:/g, "").trim();
-    const detectLang = l => {
-      if (/[øåæ]/i.test(l)) return "nb-NO";
-      if (/[éèêëàâùûôîœç]/i.test(l)) return "fr-FR";
-      if (/\b(jeg|og|er|til|for|ikke|fra|med|har|kan|det|norsk)\b/i.test(l)) return "nb-NO";
-      return "fr-FR";
-    };
-    const lines = text.split("\n").map(l => ({ text: cleanLine(l), lang: detectLang(l) })).filter(l => l.text.length > 1);
-    if (!lines.length) return;
-    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    const utt = new SpeechSynthesisUtterance(clean);
+    utt.lang = "fr-FR";
+    utt.rate = rate;
+    utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
+    utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
     speakingRef.current = true; setSpeaking(true);
-    lines.forEach((l, i) => {
-      const utt = new SpeechSynthesisUtterance(l.text);
-      utt.lang = l.lang; utt.rate = rate;
-      if (i === lines.length - 1) {
-        utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
-        utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
-      }
-      window.speechSynthesis.speak(utt);
-    });
+    window.speechSynthesis.speak(utt);
   };
 
   // --- Start modes ---
@@ -416,28 +415,28 @@ export default function App() {
   // --- Routing ---
   if (showWords) return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       <WordsScreen words={words} setWords={setWords} onBack={() => setShowWords(false)} {...navProps} />
     </>
   );
 
   if (screen === "dagens-glose") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       <DagensExerciseScreen title="Dagens øvelse – glose" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "glose") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "dagens-grammatikk") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       {grammarTopic ? (
         <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
       ) : (
@@ -460,21 +459,21 @@ export default function App() {
 
   if (screen === "grammatikk-ovelse") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "chat") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       <ChatScreen mode={mode} words={words} setWords={setWords} isOnline={isOnline} speak={speak} speaking={speaking} sessionMsgs={sessionMsgs} setSessionMsgs={setSessionMsgs} onBack={() => setScreen("home")} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
 
   return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); skipCountRef.current = 1; history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => setShowExitDialog(false)} onExit={() => { setShowExitDialog(false); exitingRef.current = true; history.back(); }} />}
       <HomeScreen words={words} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
