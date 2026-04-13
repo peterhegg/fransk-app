@@ -90,37 +90,48 @@ export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, o
 
         {/* Vocabulary goals progression */}
         {(() => {
-          const cumulativeTargets = VOCAB_GOALS.reduce((acc, g, i) => {
+          const cumTargets = VOCAB_GOALS.reduce((acc, g, i) => {
             acc.push((acc[i - 1] || 0) + g.target);
             return acc;
           }, []);
-          const activeGoalIdx = cumulativeTargets.findIndex(t => words.length < t);
-          const activeGoal = activeGoalIdx === -1 ? VOCAB_GOALS[VOCAB_GOALS.length - 1] : VOCAB_GOALS[activeGoalIdx];
-          const prevTotal = activeGoalIdx <= 0 ? 0 : cumulativeTargets[activeGoalIdx - 1];
-          const goalTotal = activeGoalIdx === -1 ? cumulativeTargets[cumulativeTargets.length - 1] : cumulativeTargets[activeGoalIdx];
+          const activeIdx = cumTargets.findIndex(t => words.length < t);
+          const idx = activeIdx === -1 ? VOCAB_GOALS.length - 1 : activeIdx;
+          const activeGoal = VOCAB_GOALS[idx];
+          const prevTotal = idx === 0 ? 0 : cumTargets[idx - 1];
+          const goalTotal = cumTargets[idx];
           const pct = Math.min(100, ((words.length - prevTotal) / (goalTotal - prevTotal)) * 100);
+          const completedCount = activeIdx === -1 ? VOCAB_GOALS.length : activeIdx;
+          // Show up to 3 upcoming bolks
+          const upcoming = VOCAB_GOALS.slice(idx + 1, idx + 4);
           return (
             <div style={{ width: "100%", maxWidth: 420, marginTop: 16, background: card, border: `0.5px solid ${brd}`, borderRadius: 14, padding: "12px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <span style={{ fontSize: 11, letterSpacing: 2, color: `${gold}99`, textTransform: "uppercase" }}>Nåværende læringsmål</span>
-                <span style={{ fontSize: 11, color: `rgba(29,22,16,0.4)` }}>{words.length} / {goalTotal} ord</span>
+                <span style={{ fontSize: 11, letterSpacing: 2, color: `${gold}99`, textTransform: "uppercase" }}>Læringsmål</span>
+                <span style={{ fontSize: 11, color: `rgba(29,22,16,0.4)` }}>Bolk {idx + 1} av {VOCAB_GOALS.length}</span>
               </div>
-              <div style={{ fontSize: 13, color: cream, marginBottom: 4, fontStyle: "italic" }}>{activeGoal.label}</div>
-              <div style={{ fontSize: 11, color: `rgba(29,22,16,0.5)`, marginBottom: 8, lineHeight: 1.5 }}>{activeGoal.desc}</div>
-              <div style={{ height: 4, background: "rgba(200,120,58,0.12)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ fontSize: 14, color: cream, marginBottom: 3, fontStyle: "italic", fontFamily: "'Playfair Display', Georgia, serif" }}>{activeGoal.label}</div>
+              <div style={{ fontSize: 11, color: `rgba(29,22,16,0.5)`, marginBottom: 10, lineHeight: 1.5 }}>{activeGoal.desc}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: `rgba(29,22,16,0.4)`, marginBottom: 4 }}>
+                <span>{words.length - prevTotal} / {goalTotal - prevTotal} ord i bolken</span>
+                <span>{completedCount} bolker fullført</span>
+              </div>
+              <div style={{ height: 5, background: "rgba(200,120,58,0.12)", borderRadius: 99, overflow: "hidden", marginBottom: 10 }}>
                 <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(to right, #c8783a, #e8a060)`, borderRadius: 99, transition: "width 0.8s ease" }} />
               </div>
-              <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                {VOCAB_GOALS.map((g, i) => {
-                  const cumTarget = cumulativeTargets[i];
-                  const done = words.length >= cumTarget;
-                  return (
-                    <span key={g.id} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, background: done ? `${gold}22` : "rgba(0,0,0,0.04)", color: done ? gold : `rgba(29,22,16,0.35)`, border: `0.5px solid ${done ? gold + "44" : "transparent"}`, letterSpacing: 0.5 }}>
-                      {done ? "✓ " : ""}{g.label}
-                    </span>
-                  );
-                })}
-              </div>
+              {upcoming.length > 0 && (
+                <div style={{ borderTop: `0.5px solid ${brd}`, paddingTop: 8 }}>
+                  <div style={{ fontSize: 10, color: `rgba(29,22,16,0.35)`, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Neste bolker</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {upcoming.map((g, i) => (
+                      <div key={g.id} style={{ fontSize: 11, color: `rgba(29,22,16,0.4)`, display: "flex", gap: 6, alignItems: "center" }}>
+                        <span style={{ color: `${gold}44`, fontSize: 9 }}>◆</span>
+                        <span>{g.label}</span>
+                        <span style={{ color: `rgba(29,22,16,0.25)`, fontSize: 10 }}>— {g.target} ord</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })()}

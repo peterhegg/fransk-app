@@ -288,10 +288,52 @@ export const ORDMESTER_GOALS = [
 ];
 
 export const VOCAB_GOALS = [
-  { id: "core", label: "Grunnleggende fransk", desc: "Funksjonsord, pronomen, kjerneverb og basissubstantiv", target: 400 },
-  { id: "everyday", label: "Hverdagssituasjoner", desc: "Bestilling av mat og drikke på restaurant, café og bar", target: 200 },
-  { id: "tdf", label: "Tour de France", desc: "Etapper, felt, tid og avstand – lukket domene", target: 200 },
-  { id: "news", label: "Avis og værmeldinger", desc: "Vær, politikk og rettssaker – åpent domene", target: 200 },
+  // --- Fase 1: Grunnmur (0–800) ---
+  { id: "core",       label: "Grunnleggende fransk",          desc: "Funksjonsord, pronomen, kjerneverb og basissubstantiv",                target: 400 },
+  { id: "everyday",  label: "Hverdagssituasjoner",            desc: "Bestilling av mat og drikke på restaurant, café og bar",               target: 200 },
+  { id: "tdf",       label: "Tour de France",                 desc: "Etapper, felt, tid og avstand – lukket domene",                        target: 200 },
+  // --- Fase 2: Utvidelse av hverdagsfransk (800–1 950) ---
+  { id: "senses",    label: "Beskrivelse, rom og sanser",     desc: "Farger, lys, former, rom og sanselig beskrivelse",                     target: 120 },
+  { id: "food",      label: "Mat, drikke og matlaging",       desc: "Råvarer, tilberedning, smak og fransk kjøkken",                        target: 200 },
+  { id: "body",      label: "Kropp, helse og rutine",         desc: "Kroppsdeler, symptomer, daglige rutiner og medisin",                   target: 150 },
+  { id: "family",    label: "Familie og relasjoner",          desc: "Familiemedlemmer, vennskap, hjemmeliv og følelser mellom folk",        target: 150 },
+  { id: "travel",    label: "Feriereiser og transport",       desc: "Reise, hotell, flyplass, tog og å finne veien",                        target: 180 },
+  { id: "core2",     label: "Grunnleggende fransk — avansert",desc: "Mer nyanserte bindeord, preposisjoner og frekvente verb",              target: 150 },
+  { id: "geo",       label: "Geografi og natur",              desc: "Land, landskap, vær, klima og Frankrikes regioner",                    target: 200 },
+  // --- Fase 3: Mellomtrinn – samfunn og kultur (1 950–3 400) ---
+  { id: "everyday2", label: "Hverdagssituasjoner — avansert", desc: "Shopping, bank, lege, apotek og mer komplekse situasjoner",            target: 150 },
+  { id: "identity",  label: "Følelser og identitet",          desc: "Indre liv, personlighetstrekk, selvbeskrivelse og relasjoner",         target: 170 },
+  { id: "popculture",label: "Populærkultur og underholdning", desc: "Musikk, film, TV, idrett, sosiale medier og mote",                    target: 200 },
+  { id: "history",   label: "Historie",                       desc: "Revolusjon, verdenskrigene, de fem republikkene og sentrale hendelser", target: 230 },
+  { id: "arts",      label: "Kunst og kulturliv",             desc: "Kunstretninger, musikk, litteratur, teater, kino og museer",           target: 200 },
+  { id: "politics",  label: "Det politiske system",           desc: "Statsapparat, partier, valg og demokratiske institusjoner",            target: 200 },
+  { id: "tdf2",      label: "Tour de France — avansert",      desc: "Taktikk, lagdynamikk, fjell og sendetekst i detalj",                  target: 150 },
+  { id: "gastro",    label: "Matlaging og gastronomi — avansert", desc: "Fransk gastronomi, vin, regionale spesialiteter og finmat",        target: 150 },
+  // --- Fase 4: Litterær inngang (3 400–4 650) ---
+  { id: "prose1",    label: "Litterær prosa — nivå 1",        desc: "Litterære bindeord, fortidsformer i tekst og beskrivende prosa",       target: 200 },
+  { id: "work",      label: "Fag, yrker og arbeidsliv",       desc: "Profesjoner, arbeidsplass, utdanning og fagspråk",                    target: 200 },
+  { id: "abstract",  label: "Abstrakt og filosofisk",         desc: "Årsak, konsekvens, tvil, ironi og abstrakte substantiv",               target: 150 },
+  { id: "geo2",      label: "Geografi — avansert",            desc: "Frankrikes regioner i dybden, oversjøiske territorier og Europa",     target: 200 },
+  { id: "body2",     label: "Kropp og helse — avansert",      desc: "Medisinske konsultasjoner, psykisk helse og kroppssystemer",          target: 150 },
+  { id: "popculture2",label:"Populærkultur — avansert",       desc: "Filmanalyse, musikkritikk og internetkultur på fransk",               target: 200 },
+  { id: "everyday3", label: "Hverdagssituasjoner — avansert 2",desc: "Juridiske forhold, kontrakter, forsikring og formelle situasjoner",  target: 150 },
+  // --- Fase 5: Avansert kulturforståelse (4 650–6 050) ---
+  { id: "prose2",    label: "Litterær prosa — nivå 2",        desc: "Houellebecqs register: fremmedgjøring, kropp og moderne Frankrike",    target: 250 },
+  { id: "history2",  label: "Historie — avansert",            desc: "Historiografi, kollektiv hukommelse og commemorasjon",                target: 200 },
+  { id: "politics2", label: "Det politiske system — avansert",desc: "Politisk debattspråk, medier, journalistikk og kommentar",            target: 200 },
+  { id: "aesthetics",label: "Beskrivelse og estetikk — avansert", desc: "Kunstbeskrivelse, estetisk vurdering, stil og arkitektur",        target: 150 },
+  { id: "paris1920", label: "Paris 1920 — kunst og modernitet",desc: "Avantgarde, surrealisme, dadaisme og kunsthistorisk terminologi",    target: 200 },
+  { id: "nature",    label: "Natur, miljø og vitenskap",      desc: "Miljø, klimaendringer, biologi, kjemi og vitenskapsspråk",            target: 200 },
+  { id: "core3",     label: "Grunnleggende fransk — avansert 2", desc: "Idiomer, kollokasjoner og register – formelt vs. uformelt",        target: 200 },
+  // --- Fase 6: Ekspertnivå og direkte lesing (6 050–8 000) ---
+  { id: "medicine",  label: "Medisin og psykologi",           desc: "Psykiatri, farmakologi og biologisk vokabular til Sérotonine",        target: 200 },
+  { id: "philosophy",label: "Filosofi og samfunn",            desc: "Eksistensialisme, sosiologi og franske filosofiske begreper",         target: 250 },
+  { id: "gastro2",   label: "Mat og vin — ekspert",           desc: "Sommeliervokabular, ost, regionale retter og kulinarisk kritikk",     target: 200 },
+  { id: "prose3",    label: "Litterær prosa — nivå 3",        desc: "Komplekse litterære grep, intertekstualitet, metafor og retorikk",    target: 250 },
+  { id: "tdf3",      label: "Tour de France — ekspert",       desc: "Historiske TdF-referanser, sykkelkultur og kjendisvokabular",         target: 150 },
+  { id: "houellebecq",label:"Houellebecq — direkte lesing",   desc: "Sérotonines spesifikke vokabular: depresjon, ironi og samtids-Frankrike", target: 300 },
+  { id: "paris_adv", label: "Paris kulturliv — direkte lesing",desc: "Kunsthistorisk og kulturkritisk vokabular fra 1920-boken",          target: 250 },
+  { id: "free",      label: "Avansert lesing og fri forståelse",desc: "Avisspråk, kompleks argumentasjon og nær-innfødt leseforståelse",   target: 350 },
 ];
 
 export const WORDS_KEY = "fransk-laering-ord-v2";
