@@ -32,11 +32,17 @@ jobs:
             echo "ERROR: VITE_PROXY_URL secret is not set"
             exit 1
           fi
+          if [ -z "$VITE_APP_TOKEN" ]; then
+            echo "ERROR: VITE_APP_TOKEN secret is not set"
+            exit 1
+          fi
         env:
           VITE_PROXY_URL: ${{ secrets.VITE_PROXY_URL }}
+          VITE_APP_TOKEN: ${{ secrets.VITE_APP_TOKEN }}
       - run: npm run build
         env:
           VITE_PROXY_URL: ${{ secrets.VITE_PROXY_URL }}
+          VITE_APP_TOKEN: ${{ secrets.VITE_APP_TOKEN }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

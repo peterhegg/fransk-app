@@ -1,4 +1,5 @@
 export const PROXY_URL = import.meta.env.VITE_PROXY_URL;
+export const APP_TOKEN = import.meta.env.VITE_APP_TOKEN;
 
 export const SYSTEM_PROMPT = `Du er en tålmodig fransktutor for en norsk nybegynner (A1/A2) med dysleksi. Eleven har to bøker: en roman av Houellebecq og en bok om kulturlivet i Paris på 1920-tallet.
 

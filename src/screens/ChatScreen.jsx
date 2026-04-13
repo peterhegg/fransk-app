@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, SYSTEM_PROMPT, BOOK_EXCERPTS, SESSION_KEY, gold, dark, cream, card, brd, grn } from "../constants.js";
+import { PROXY_URL, APP_TOKEN, SYSTEM_PROMPT, BOOK_EXCERPTS, SESSION_KEY, gold, dark, cream, card, brd, grn } from "../constants.js";
 import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
@@ -56,9 +56,10 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
     const wordSample = words.length > 0
       ? [...words].sort((a, b) => (a.points || 0) - (b.points || 0)).slice(0, 80)
       : [];
+    const san = s => String(s || "").replace(/\n/g, " ").slice(0, 60);
     const wordCtx = wordSample.length > 0
       ? `\n\nElevens ordbank (${words.length} ord totalt, viser ${wordSample.length} minst mestrede):\n` +
-        wordSample.map(w => `- ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [niv. ${w.level}]`).join("\n") +
+        wordSample.map(w => `- ${san(w.fr)}${w.no ? ` = ${san(w.no)}` : ""}${w.phonetic ? ` (${san(w.phonetic)})` : ""} [niv. ${w.level}]`).join("\n") +
         `\n\nDisse ordene KAN eleven. Ikke re-introduser dem som nye. Bygg heller samtaler der disse ordene inngår naturlig.`
       : "";
     const controller = new AbortController();
@@ -66,7 +67,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
     try {
       const res = await fetch(PROXY_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
         signal: controller.signal,
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
