@@ -280,11 +280,11 @@ export const MASTERY_PAUSE_MIN = 20;
 export const MASTERY_PAUSE_MAX = 40;
 
 export const ORDMESTER_GOALS = [
-  { target: 500, reward: "Vinylplate" },
-  { target: 1000, reward: "Vinylplate" },
-  { target: 1500, reward: "Vinylplate" },
-  { target: 2000, reward: "Vinylplate" },
-  { target: 2500, reward: "Tur til Frankrike" },
+  { target: 150, reward: "Vinylplate" },
+  { target: 300, reward: "Vinylplate" },
+  { target: 450, reward: "Vinylplate" },
+  { target: 600, reward: "Vinylplate" },
+  { target: 750, reward: "Tur til Frankrike" },
 ];
 
 export const VOCAB_GOALS = [
