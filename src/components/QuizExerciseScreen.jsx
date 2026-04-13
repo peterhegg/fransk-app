@@ -1,4 +1,4 @@
-import { gold, dark, cream, card as cardBg, brd, grn, red } from "../constants.js";
+import { gold, dark, cream, card as cardBg, brd, grn, red, GRAMMAR_TOPICS } from "../constants.js";
 import BottomNav from "./BottomNav.jsx";
 
 // Shared screen for Gloseøvelse AND Grammatikkøvelse
@@ -13,6 +13,7 @@ export default function QuizExerciseScreen({
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
   const isFromBank = !!card?.id;
+  const grammarTip = card?.topicId ? GRAMMAR_TOPICS.find(t => t.id === card.topicId) : null;
 
   if (!card) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'Jost', sans-serif", color: cream, paddingBottom: 66 }}>
@@ -102,16 +103,24 @@ export default function QuizExerciseScreen({
               </div>
             )}
             {result === "wrong" && (
-              <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 16, color: red, fontWeight: "bold", marginBottom: 6 }}>Prøv igjen neste gang</div>
-                <div style={{ fontSize: 13, color: `${cream}66`, marginBottom: 6 }}>Du svarte: <em>{input}</em></div>
-                <div style={{ fontSize: 18, color: cream, marginBottom: 4 }}>{card.no}</div>
-                {card.phonetic && <div style={{ fontSize: 13, color: gold, opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 4 }}>
-                  <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🐢</button>
+              <>
+                <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
+                  <div style={{ fontSize: 16, color: red, fontWeight: "bold", marginBottom: 6 }}>Prøv igjen neste gang</div>
+                  <div style={{ fontSize: 13, color: `${cream}66`, marginBottom: 6 }}>Du svarte: <em>{input}</em></div>
+                  <div style={{ fontSize: 18, color: cream, marginBottom: 4 }}>{card.no}</div>
+                  {card.phonetic && <div style={{ fontSize: 13, color: gold, opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 4 }}>
+                    <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🔊</button>
+                    <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  </div>
                 </div>
-              </div>
+                {grammarTip && (
+                  <div style={{ background: `rgba(200,120,58,0.07)`, border: `1px solid ${gold}33`, borderRadius: 12, padding: "12px 16px", width: "100%" }}>
+                    <div style={{ fontSize: 10, color: gold, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Huskeregel — {grammarTip.title}</div>
+                    <div style={{ fontSize: 13, color: cream, lineHeight: 1.65 }}>{grammarTip.description}</div>
+                  </div>
+                )}
+              </>
             )}
             <button onClick={onNext} className="btn-shine"
               style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", letterSpacing: 1 }}>

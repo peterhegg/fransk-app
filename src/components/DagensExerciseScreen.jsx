@@ -151,16 +151,24 @@ export default function DagensExerciseScreen({
               </div>
             )}
             {result === "wrong" && (
-              <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 14, color: red, marginBottom: 6 }}>Prøv igjen — riktig svar:</div>
-                <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
-                <div style={{ fontSize: 18, color: cream, fontWeight: "bold" }}>{isReverse ? card.fr : card.no}</div>
-                {card.phonetic && <div style={{ fontSize: 13, color: gold, marginTop: 4 }}>({card.phonetic})</div>}
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-                  <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🐢</button>
+              <>
+                <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
+                  <div style={{ fontSize: 14, color: red, marginBottom: 6 }}>Prøv igjen — riktig svar:</div>
+                  <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
+                  <div style={{ fontSize: 18, color: cream, fontWeight: "bold" }}>{isReverse ? card.fr : card.no}</div>
+                  {card.phonetic && <div style={{ fontSize: 13, color: gold, marginTop: 4 }}>({card.phonetic})</div>}
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
+                    <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🔊</button>
+                    <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  </div>
                 </div>
-              </div>
+                {topic && (
+                  <div style={{ background: `rgba(200,120,58,0.07)`, border: `1px solid ${gold}33`, borderRadius: 12, padding: "12px 16px", width: "100%" }}>
+                    <div style={{ fontSize: 10, color: gold, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Huskeregel</div>
+                    <div style={{ fontSize: 13, color: cream, lineHeight: 1.65 }}>{topic.description}</div>
+                  </div>
+                )}
+              </>
             )}
             <button onClick={onNext} className="btn-shine"
               style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
