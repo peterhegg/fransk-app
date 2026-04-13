@@ -58,6 +58,7 @@ export default function App() {
   const [dagensResult, setDagensResult] = useState("");
   const [dagensStats, setDagensStats] = useState({ correct: 0, wrong: 0 });
   const [dagensMastered, setDagensMastered] = useState(new Set());
+  const [dagensHistory, setDagensHistory] = useState([]);
 
   // --- Glose state ---
   const [gloseQueue, setGloseQueue] = useState([]);
@@ -68,6 +69,7 @@ export default function App() {
   const [gloseStats, setGloseStats] = useState({ correct: 0, wrong: 0 });
   const [gloseOptions, setGloseOptions] = useState([]);
   const [gloseMode, setGloseMode] = useState("choice");
+  const [gloseHistory, setGloseHistory] = useState([]);
 
   // --- Daglig Grammatikk state ---
   const [grammarTopic, setGrammarTopic] = useState(null);
@@ -79,6 +81,7 @@ export default function App() {
   const [grammarResult, setGrammarResult] = useState("");
   const [grammarStats, setGrammarStats] = useState({ correct: 0, wrong: 0 });
   const [grammarMastered, setGrammarMastered] = useState(new Set());
+  const [grammarHistory, setGrammarHistory] = useState([]);
 
   // --- Grammatikk Ovelse state ---
   const [gramOvQueue, setGramOvQueue] = useState([]);
@@ -89,6 +92,7 @@ export default function App() {
   const [gramOvStats, setGramOvStats] = useState({ correct: 0, wrong: 0 });
   const [gramOvOptions, setGramOvOptions] = useState([]);
   const [gramOvMode, setGramOvMode] = useState("choice");
+  const [gramOvHistory, setGramOvHistory] = useState([]);
 
   // --- Persist words ---
   useEffect(() => { saveWords(words); }, [words]);
@@ -207,11 +211,13 @@ export default function App() {
     if (!ex.words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
     const phase = ex.phase2done ? 3 : ex.phase1done ? 2 : 1;
     setDagensWords(ex.words); setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set());
-    setDagensInput(""); setDagensChecked(false); setDagensResult("");
+    setDagensInput(""); setDagensChecked(false); setDagensResult(""); setDagensHistory([]);
     if (phase === 1) { const q = shuffle([...ex.words]); setDagensQueue(q); setDagensCard(q[0]); }
     else if (phase === 2) {
-      const fill = words.filter(w => !ex.words.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
-      const all = [...ex.words, ...fill]; setDagensWords(all);
+      const savedFill = Array.isArray(ex.fillFr)
+        ? words.filter(w => ex.fillFr.includes(w.fr))
+        : words.filter(w => !ex.words.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
+      const all = [...ex.words, ...savedFill]; setDagensWords(all);
       const p2 = shuffle(all).map(w => ({ ...w, reverse: true })); setDagensQueue(p2); setDagensCard(p2[0]);
     }
     setDagensPhase(phase); setScreen("dagens-glose");
@@ -224,7 +230,7 @@ export default function App() {
     const q = shuffle([...due, ...notDue]).slice(0, 20);
     setGloseQueue(q); setGloseCard(q[0]);
     setGloseOptions(getQuizOptions(q[0], words)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
-    setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 });
+    setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
     setScreen("glose");
   };
 
@@ -234,7 +240,7 @@ export default function App() {
     setGrammarTopic(topic); setGrammarPhase(0);
     setGrammarQueue([]); setGrammarCard(null);
     setGrammarInput(""); setGrammarChecked(false); setGrammarResult("");
-    setGrammarStats({ correct: 0, wrong: 0 }); setGrammarMastered(new Set());
+    setGrammarStats({ correct: 0, wrong: 0 }); setGrammarMastered(new Set()); setGrammarHistory([]);
     setScreen("dagens-grammatikk");
   };
 
@@ -245,7 +251,7 @@ export default function App() {
     const q = shuffle([...due, ...notDue]).slice(0, 20);
     setGramOvQueue(q); setGramOvCard(q[0]);
     setGramOvOptions(getQuizOptions(q[0], grammarWords)); setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
-    setGramOvInput(""); setGramOvChecked(false); setGramOvResult(""); setGramOvStats({ correct: 0, wrong: 0 });
+    setGramOvInput(""); setGramOvChecked(false); setGramOvResult(""); setGramOvStats({ correct: 0, wrong: 0 }); setGramOvHistory([]);
     setScreen("grammatikk-ovelse");
   };
 
@@ -267,6 +273,7 @@ export default function App() {
     const passed = result !== "wrong";
     setDagensChecked(true); setDagensResult(result);
     setDagensStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+    setDagensHistory(h => [...h, passed ? "correct" : "wrong"]);
     const gc = incrementAnswerCount();
     const inBank = words.find(w => w.fr === dagensCard.fr);
     if (inBank) {
@@ -308,12 +315,12 @@ export default function App() {
       }
       const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
       if (dagensPhase === 1) {
-        localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, phase1done: true }));
         const fill = words.filter(w => !dagensWords.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
+        localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, phase1done: true, fillFr: fill.map(w => w.fr) }));
         const allWords = [...dagensWords, ...fill]; setDagensWords(allWords);
         const p2 = shuffle(allWords).map(w => ({ ...w, reverse: true }));
         setDagensQueue(p2); setDagensCard(p2[0]); setDagensPhase(2);
-        setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set());
+        setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set()); setDagensHistory([]);
       } else {
         localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, phase2done: true }));
         setDagensPhase(3); setStreak(touchStreak());
@@ -330,6 +337,7 @@ export default function App() {
     const passed = result !== "wrong";
     setGloseChecked(true); setGloseResult(result);
     setGloseStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+    setGloseHistory(h => [...h, passed ? "correct" : "wrong"]);
     const gc = incrementAnswerCount();
     if (gloseCard.id) {
       setWords(prev => prev.map(w => {
@@ -344,14 +352,21 @@ export default function App() {
         }
         return cleanUpdated;
       }));
-    } else if (passed) {
-      const nw = { id: Date.now() + Math.random(), fr: gloseCard.fr, no: gloseCard.no, phonetic: gloseCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1 };
-      setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
 
   const nextGlose = () => {
     const remaining = gloseQueue.slice(1);
+    const passed = gloseResult !== "wrong";
+    if (!passed) {
+      const at = Math.min(3, remaining.length);
+      const recycled = [...remaining.slice(0, at), { ...gloseCard }, ...remaining.slice(at)];
+      setGloseQueue(recycled); setGloseCard(recycled[0]);
+      setGloseOptions(getQuizOptions(recycled[0], words));
+      setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+      setGloseInput(""); setGloseChecked(false); setGloseResult("");
+      return;
+    }
     if (!remaining.length) { setScreen("home"); return; }
     setGloseQueue(remaining); setGloseCard(remaining[0]);
     setGloseOptions(getQuizOptions(remaining[0], words));
@@ -373,6 +388,7 @@ export default function App() {
     setGrammarChecked(true); setGrammarResult(result);
     const passed = result !== "wrong";
     setGrammarStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+    setGrammarHistory(h => [...h, passed ? "correct" : "wrong"]);
   };
 
   const nextGrammar = () => {
@@ -396,7 +412,7 @@ export default function App() {
       if (grammarPhase === 1) {
         const p2 = shuffle(allPairs).map(p => ({ ...p, reverse: true }));
         setGrammarQueue(p2); setGrammarCard(p2[0]); setGrammarPhase(2);
-        setGrammarStats({ correct: 0, wrong: 0 }); setGrammarMastered(new Set()); return;
+        setGrammarStats({ correct: 0, wrong: 0 }); setGrammarMastered(new Set()); setGrammarHistory([]); return;
       }
       // Phase 2 done — save grammar words
       const newGW = grammarTopic.pairs.map(p => ({ id: Date.now() + Math.random(), fr: p.fr, no: p.no, phonetic: p.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), topicId: grammarTopic.id }));
@@ -416,10 +432,21 @@ export default function App() {
     const passed = result !== "wrong";
     setGramOvChecked(true); setGramOvResult(result);
     setGramOvStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
-    incrementAnswerCount();
+    setGramOvHistory(h => [...h, passed ? "correct" : "wrong"]);
+    const gc = incrementAnswerCount();
     if (gramOvCard?.id) {
-      const { level: nl, nextReview: nr } = scheduleNext(gramOvCard.level, passed);
-      setGrammarWords(prev => prev.map(w => w.id === gramOvCard.id ? { ...w, level: nl, nextReview: nr } : w));
+      setGrammarWords(prev => prev.map(w => {
+        if (w.id !== gramOvCard.id) return w;
+        const updated = updateWordPoints(w, passed, gc);
+        const srOverride = updated._srOverride;
+        const { _srOverride: _, ...cleanUpdated } = updated;
+        if (srOverride) return { ...cleanUpdated, ...srOverride };
+        if ((cleanUpdated.points || 0) < 50) {
+          const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
+          return { ...cleanUpdated, level: nl, nextReview: nr };
+        }
+        return cleanUpdated;
+      }));
     }
   };
 
@@ -430,6 +457,12 @@ export default function App() {
     setGramOvOptions(getQuizOptions(remaining[0], grammarWords));
     setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult("");
+  };
+
+  // --- Clear all data ---
+  const clearAllData = () => {
+    setGrammarWords([]);
+    saveGrammarProgress([]);
   };
 
   // --- Nav helper ---
@@ -452,21 +485,21 @@ export default function App() {
   if (showWords) return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
-      <WordsScreen words={words} setWords={setWords} onBack={() => setShowWords(false)} {...navProps} />
+      <WordsScreen words={words} setWords={setWords} onBack={() => setShowWords(false)} onClearGrammar={clearAllData} {...navProps} />
     </>
   );
 
   if (screen === "dagens-glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
-      <DagensExerciseScreen title="Dagens øvelse – glose" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <DagensExerciseScreen title="Dagens øvelse – glose" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
-      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
@@ -474,7 +507,7 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
       {grammarTopic ? (
-        <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+        <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'Jost', sans-serif", color: cream, paddingBottom: 66 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card }}>
@@ -496,7 +529,7 @@ export default function App() {
   if (screen === "grammatikk-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
-      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 

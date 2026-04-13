@@ -11,7 +11,7 @@ export default function BottomNav({ screen, showWords, onNav }) {
   const activeId = showWords ? "words"
     : screen === "home" ? "home"
     : (screen === "glose" || screen === "dagens-glose" || screen === "dagens-grammatikk" || screen === "grammatikk-ovelse") ? "glose"
-    : screen === "chat-fri" ? "fri"
+    : screen === "chat" ? "fri"
     : null;
 
   return (

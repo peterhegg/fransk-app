@@ -4,11 +4,10 @@ import BottomNav from "./BottomNav.jsx";
 // Shared screen for Gloseøvelse AND Grammatikkøvelse
 export default function QuizExerciseScreen({
   title, icon, emptyMsg,
-  queue, card, input, setInput, checked, result, stats, options, mode,
+  queue, card, input, setInput, checked, result, stats, history = [], options, mode,
   onSubmit, onNext, onBack,
   speak, speaking,
   screen, showWords, onNav,
-  wordsCount,
 }) {
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
@@ -131,7 +130,7 @@ export default function QuizExerciseScreen({
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
           {Array.from({ length: Math.min(total, 20) }).map((_, i) => (
-            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < stats.correct ? grn : i < done ? red : brd }} />
+            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: history[i] === "correct" ? grn : history[i] === "wrong" ? red : brd }} />
           ))}
         </div>
       </div>

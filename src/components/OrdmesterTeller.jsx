@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import { ORDMESTER_GOALS } from "../constants.js";
-
-const gold = "#c8783a";
-const cream = "#1a1210";
+import { ORDMESTER_GOALS, gold, cream } from "../constants.js";
 
 function getSegment(masteredCount) {
   const idx = ORDMESTER_GOALS.findIndex(g => masteredCount < g.target);

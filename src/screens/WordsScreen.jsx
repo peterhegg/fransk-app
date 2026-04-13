@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS } from "../constants.js";
-import { saveWords } from "../utils.jsx";
+import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 
-export default function WordsScreen({ words, setWords, onBack, screen, showWords, onNav }) {
+export default function WordsScreen({ words, setWords, onBack, screen, showWords, onNav, onClearGrammar }) {
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [addFr, setAddFr] = useState("");
@@ -54,7 +53,7 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
       return updated;
     });
     const total = added + updated_count;
-    setImportResult(total);
+    setImportResult({ added, updated: updated_count });
     if (total > 0) { setImportText(""); setTimeout(() => { setImportOpen(false); setImportResult(null); }, 1800); }
   };
 
@@ -70,7 +69,11 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
   };
 
   const clearWords = () => {
-    setWords([]); localStorage.removeItem(WORDS_KEY); localStorage.removeItem("fransk-laering-ord");
+    setWords([]);
+    onClearGrammar?.();
+    localStorage.removeItem(WORDS_KEY);
+    localStorage.removeItem("fransk-laering-ord");
+    localStorage.removeItem(DAGENS_GLOSE_KEY);
   };
 
   return (
@@ -91,7 +94,16 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
           <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur) [pts:42]</em> — [pts:…] er valgfritt</div>
           <textarea placeholder={"✓ bonjour = hallo (bånsjur) [pts:42]\n✓ merci = takk (merssi)"} value={importText} onChange={e => { setImportText(e.target.value); setImportResult(null); }} rows={5}
             style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 12px", outline: "none", resize: "vertical" }} />
-          {importResult !== null && <div style={{ fontSize: 13, color: importResult > 0 ? grn : gold, fontWeight: "bold" }}>{importResult > 0 ? `✓ ${importResult} ord lagt til!` : "Ingen nye ord funnet."}</div>}
+          {importResult !== null && (
+            <div style={{ fontSize: 13, fontWeight: "bold", color: (importResult.added + importResult.updated) > 0 ? grn : gold }}>
+              {importResult.added === 0 && importResult.updated === 0
+                ? "Ingen nye ord funnet."
+                : [
+                    importResult.added > 0 && `✓ ${importResult.added} nye ord lagt til`,
+                    importResult.updated > 0 && `${importResult.updated} oppdatert`,
+                  ].filter(Boolean).join(", ") + "."}
+            </div>
+          )}
           <button onClick={importWords} disabled={!importText.trim()} className={importText.trim() ? "btn-shine" : ""}
             style={{ background: importText.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : "rgba(200,120,58,0.25)", border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
             Importer ord
@@ -121,9 +133,13 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
         ) : (
           <>
             <div style={{ display: "flex", gap: 12, marginBottom: 16, fontSize: 11, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase", flexWrap: "wrap" }}>
-              {MASTERY_LABELS.map((label, i) => (
-                <span key={i}><span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({words.filter(w => w.level === i).length})</span>
-              ))}
+              {MASTERY_LABELS.map((label, i) => {
+                const isMasteredTier = i === MASTERY_LABELS.length - 1;
+                const count = isMasteredTier
+                  ? words.filter(w => (w.points || 0) >= MASTERY_POINTS).length
+                  : words.filter(w => (w.level ?? 0) === i && (w.points || 0) < MASTERY_POINTS).length;
+                return <span key={i}><span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({count})</span>;
+              })}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
               {words.map((w, i) => {
@@ -160,7 +176,7 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
           </button>
           <button onClick={clearWords}
             style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 8, color: red, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%" }}>
-            Nullstill ordliste
+            Nullstill alt (ord + grammatikk)
           </button>
         </div>
       )}

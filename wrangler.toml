@@ -1,3 +1,10 @@
 name = "fransk-proxy"
 main = "cloudflare-worker.js"
 compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "6d43f11b2d6e4dab99fe9e6a9f97e7c5"
+# preview_id is required for `wrangler dev`. Create with:
+# wrangler kv:namespace create RATE_LIMIT_KV --preview
+# preview_id = "<paste id here>"

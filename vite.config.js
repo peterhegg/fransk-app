@@ -9,8 +9,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
-        clientsClaim: true,
         skipWaiting: true,
+        navigateFallback: "/fransk-app/index.html",
       },
       manifest: {
         name: "Mon Français",

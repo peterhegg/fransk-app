@@ -10,7 +10,7 @@ export default function DagensExerciseScreen({
   queue,
   card,
   input, setInput,
-  checked, result, stats,
+  checked, result, stats, history = [],
   onStartExercise,
   onSubmit, onNext,
   onBack,
@@ -179,7 +179,7 @@ export default function DagensExerciseScreen({
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
           {Array.from({ length: Math.min(totalCards, 20) }).map((_, i) => (
-            <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: i < stats.correct ? grn : i < done ? red : brd }} />
+            <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: history[i] === "correct" ? grn : history[i] === "wrong" ? red : brd }} />
           ))}
         </div>
       </div>

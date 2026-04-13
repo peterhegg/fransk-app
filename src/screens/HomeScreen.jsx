@@ -4,7 +4,8 @@ import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 
 export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
-  const dueCount = getDue(words, loadAnswerCount()).length;
+  const answerCount = loadAnswerCount();
+  const dueCount = getDue(words, answerCount).length;
   const masteredCount = getMasteredCount(words);
 
   const dagensDone = (() => {
@@ -16,7 +17,7 @@ export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, o
   const grammarDone = completedGrammar.length >= GRAMMAR_TOPICS.length;
   const grammarProgress = `${completedGrammar.length}/${GRAMMAR_TOPICS.length}`;
 
-  const grammarOvDue = getDue(grammarWords, loadAnswerCount()).length;
+  const grammarOvDue = getDue(grammarWords, answerCount).length;
 
   const modeColors = {
     "dagens-glose": "#7a4828",

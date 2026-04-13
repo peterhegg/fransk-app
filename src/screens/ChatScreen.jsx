@@ -15,12 +15,19 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
   const [showBooks, setShowBooks] = useState(false);
   const [recentTexts, setRecentTexts] = useState(() => { try { return JSON.parse(localStorage.getItem("fransk-recent-texts") || "[]"); } catch { return []; } });
   const bottomRef = useRef(null);
+  const abortRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
-  // Save words from assistant messages (if any ✓ LÆRT: markers)
   useEffect(() => {
-    messages.forEach(msg => {
+    return () => { abortRef.current?.abort(); };
+  }, []);
+
+  // Save words from the latest assistant message (if any ✓ LÆRT: markers)
+  const processedMsgCount = useRef(0);
+  useEffect(() => {
+    const newMsgs = messages.slice(processedMsgCount.current);
+    newMsgs.forEach(msg => {
       if (msg.role === "assistant") {
         [...(msg.content.matchAll(/✓ LÆRT: .+/g) || [])].forEach(m => {
           const parsed = parseLearnLine(m[0]);
@@ -31,6 +38,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
         });
       }
     });
+    processedMsgCount.current = messages.length;
   }, [messages]);
 
   const send = async (override) => {
@@ -44,14 +52,22 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
       try { localStorage.setItem(SESSION_KEY, JSON.stringify({ date: todayStr(), count: n })); } catch {}
       return n;
     });
-    const wordCtx = words.length > 0
-      ? `\n\nElevens ordbank (${words.length} ord):\n` + words.map(w => `- ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [niv. ${w.level}]`).join("\n") +
+    // Limit to 80 least-mastered words to stay within MAX_SYSTEM_LENGTH (6000 chars)
+    const wordSample = words.length > 0
+      ? [...words].sort((a, b) => (a.points || 0) - (b.points || 0)).slice(0, 80)
+      : [];
+    const wordCtx = wordSample.length > 0
+      ? `\n\nElevens ordbank (${words.length} ord totalt, viser ${wordSample.length} minst mestrede):\n` +
+        wordSample.map(w => `- ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [niv. ${w.level}]`).join("\n") +
         `\n\nDisse ordene KAN eleven. Ikke re-introduser dem som nye. Bygg heller samtaler der disse ordene inngår naturlig.`
       : "";
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
       const res = await fetch(PROXY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 800,
@@ -71,8 +87,10 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
         });
       }
       setMessages([...next, { role: "assistant", content: reply, mode: mode?.id }]);
-    } catch {
-      setMessages([...next, { role: "assistant", content: "Kunne ikke koble til. Prøv igjen." }]);
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        setMessages([...next, { role: "assistant", content: "Kunne ikke koble til. Prøv igjen." }]);
+      }
     }
     setLoading(false);
   };

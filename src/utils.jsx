@@ -11,7 +11,7 @@ export function normalizeAnswer(s) {
 }
 
 function stripParticles(s) {
-  return s.replace(/^(a |le |la |les |l |un |une |en |et |de |du |des )/i, "").trim();
+  return s.replace(/^(a |le |la |les |l'|l |un |une |en |et |de |du |des )/i, "").trim();
 }
 
 function levenshtein(a, b) {
@@ -176,7 +176,7 @@ export function getTodaysGloseWords(words) {
   } catch {}
   const learnedFr = new Set(words.map(w => w.fr));
   const newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
-  const due = getDue(words).slice(0, Math.max(0, 5 - newVocab.length));
+  const due = getDue(words, loadAnswerCount()).slice(0, Math.max(0, 5 - newVocab.length));
   const selected = [...newVocab, ...due].slice(0, 5);
   const exercise = { date: todayStr(), words: selected, phase1done: false, phase2done: false };
   localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(exercise));
