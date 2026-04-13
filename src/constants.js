@@ -275,6 +275,25 @@ export const MASTERY_COLORS = [
 
 export const SR_INTERVALS = [1, 2, 4, 8, 16, 32];
 
+export const MASTERY_POINTS = 50;
+export const MASTERY_PAUSE_MIN = 20;
+export const MASTERY_PAUSE_MAX = 40;
+
+export const ORDMESTER_GOALS = [
+  { target: 500, reward: "Vinylplate" },
+  { target: 1000, reward: "Vinylplate" },
+  { target: 1500, reward: "Vinylplate" },
+  { target: 2000, reward: "Vinylplate" },
+  { target: 2500, reward: "Tur til Frankrike" },
+];
+
+export const VOCAB_GOALS = [
+  { id: "core", label: "Grunnleggende fransk", desc: "Funksjonsord, pronomen, kjerneverb og basissubstantiv", target: 400 },
+  { id: "everyday", label: "Hverdagssituasjoner", desc: "Bestilling av mat og drikke på restaurant, café og bar", target: 200 },
+  { id: "tdf", label: "Tour de France", desc: "Etapper, felt, tid og avstand – lukket domene", target: 200 },
+  { id: "news", label: "Avis og værmeldinger", desc: "Vær, politikk og rettssaker – åpent domene", target: 200 },
+];
+
 export const WORDS_KEY = "fransk-laering-ord-v2";
 export const GRAMMAR_WORDS_KEY = "fransk-grammar-words";
 export const GRAMMAR_PROGRESS_KEY = "fransk-grammar-progress";
@@ -282,6 +301,7 @@ export const STREAK_KEY = "fransk-streak";
 export const DAGENS_GLOSE_KEY = "fransk-dagens-glose";
 export const SESSION_KEY = "fransk-session-msgs";
 export const SESSION_SCREEN_KEY = "fransk-session-screen";
+export const ANSWER_COUNT_KEY = "fransk-global-answer-count";
 
 export const gold = "#c8783a";
 export const dark = "#f5f0e6";

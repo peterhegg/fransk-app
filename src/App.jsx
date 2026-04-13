@@ -10,6 +10,7 @@ import {
   loadStreak, touchStreak, getDue, scheduleNext, shuffle,
   getQuizOptions, checkQuizAnswer, todayStr,
   getTodaysGloseWords, getCurrentGrammarTopic,
+  incrementAnswerCount, loadAnswerCount, updateWordPoints,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -218,7 +219,7 @@ export default function App() {
 
   const startGlose = () => {
     if (!words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
-    const due = getDue(words);
+    const due = getDue(words, loadAnswerCount());
     const notDue = words.filter(w => !due.some(d => d.id === w.id));
     const q = shuffle([...due, ...notDue]).slice(0, 20);
     setGloseQueue(q); setGloseCard(q[0]);
@@ -239,7 +240,7 @@ export default function App() {
 
   const startGramOvelse = () => {
     if (!grammarWords.length) { setGramOvCard(null); setScreen("grammatikk-ovelse"); return; }
-    const due = getDue(grammarWords);
+    const due = getDue(grammarWords, loadAnswerCount());
     const notDue = grammarWords.filter(w => !due.some(d => d.id === w.id));
     const q = shuffle([...due, ...notDue]).slice(0, 20);
     setGramOvQueue(q); setGramOvCard(q[0]);
@@ -266,21 +267,24 @@ export default function App() {
     const passed = result !== "wrong";
     setDagensChecked(true); setDagensResult(result);
     setDagensStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
-    if (passed) {
-      const inBank = words.find(w => w.fr === dagensCard.fr);
-      if (inBank) {
-        const { level: nl, nextReview: nr } = scheduleNext(inBank.level, true);
-        setWords(prev => prev.map(w => w.id === inBank.id ? { ...w, level: nl, nextReview: nr } : w));
-      } else {
-        const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now() };
-        setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
-      }
-    } else {
-      const inBank = words.find(w => w.fr === dagensCard.fr);
-      if (inBank) {
-        const { level: nl, nextReview: nr } = scheduleNext(inBank.level, false);
-        setWords(prev => prev.map(w => w.id === inBank.id ? { ...w, level: nl, nextReview: nr } : w));
-      }
+    const gc = incrementAnswerCount();
+    const inBank = words.find(w => w.fr === dagensCard.fr);
+    if (inBank) {
+      setWords(prev => prev.map(w => {
+        if (w.id !== inBank.id) return w;
+        const updated = updateWordPoints(w, passed, gc);
+        const srOverride = updated._srOverride;
+        const { _srOverride: _, ...cleanUpdated } = updated;
+        if (srOverride) return { ...cleanUpdated, ...srOverride };
+        if ((cleanUpdated.points || 0) < 50) {
+          const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
+          return { ...cleanUpdated, level: nl, nextReview: nr };
+        }
+        return cleanUpdated;
+      }));
+    } else if (passed) {
+      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1 };
+      setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
 
@@ -326,11 +330,22 @@ export default function App() {
     const passed = result !== "wrong";
     setGloseChecked(true); setGloseResult(result);
     setGloseStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+    const gc = incrementAnswerCount();
     if (gloseCard.id) {
-      const { level: nl, nextReview: nr } = scheduleNext(gloseCard.level, passed);
-      setWords(prev => prev.map(w => w.id === gloseCard.id ? { ...w, level: nl, nextReview: nr } : w));
+      setWords(prev => prev.map(w => {
+        if (w.id !== gloseCard.id) return w;
+        const updated = updateWordPoints(w, passed, gc);
+        const srOverride = updated._srOverride;
+        const { _srOverride: _, ...cleanUpdated } = updated;
+        if (srOverride) return { ...cleanUpdated, ...srOverride };
+        if ((cleanUpdated.points || 0) < 50) {
+          const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
+          return { ...cleanUpdated, level: nl, nextReview: nr };
+        }
+        return cleanUpdated;
+      }));
     } else if (passed) {
-      const nw = { id: Date.now() + Math.random(), fr: gloseCard.fr, no: gloseCard.no, phonetic: gloseCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now() };
+      const nw = { id: Date.now() + Math.random(), fr: gloseCard.fr, no: gloseCard.no, phonetic: gloseCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1 };
       setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
@@ -401,6 +416,7 @@ export default function App() {
     const passed = result !== "wrong";
     setGramOvChecked(true); setGramOvResult(result);
     setGramOvStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+    incrementAnswerCount();
     if (gramOvCard?.id) {
       const { level: nl, nextReview: nr } = scheduleNext(gramOvCard.level, passed);
       setGrammarWords(prev => prev.map(w => w.id === gramOvCard.id ? { ...w, level: nl, nextReview: nr } : w));

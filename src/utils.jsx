@@ -1,6 +1,7 @@
 import {
   SR_INTERVALS, WORDS_KEY, GRAMMAR_WORDS_KEY, GRAMMAR_PROGRESS_KEY,
   STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, GRAMMAR_TOPICS,
+  MASTERY_POINTS, MASTERY_PAUSE_MIN, MASTERY_PAUSE_MAX, ANSWER_COUNT_KEY,
   gold, cream, grn, red, card, brd,
 } from "./constants.js";
 
@@ -119,7 +120,49 @@ export function touchStreak() {
   return current;
 }
 
-export function getDue(words) { return words.filter(w => w.nextReview <= Date.now()); }
+// --- Global answer counter ---
+export function loadAnswerCount() {
+  try { return parseInt(localStorage.getItem(ANSWER_COUNT_KEY) || "0", 10); } catch { return 0; }
+}
+export function incrementAnswerCount() {
+  const n = loadAnswerCount() + 1;
+  try { localStorage.setItem(ANSWER_COUNT_KEY, String(n)); } catch {}
+  return n;
+}
+
+// --- Points + mastery ---
+export function getMasteredCount(words) {
+  return words.filter(w => (w.points || 0) >= MASTERY_POINTS).length;
+}
+
+export function updateWordPoints(word, correct, globalCount) {
+  const pts = word.points || 0;
+  const wasMastered = pts >= MASTERY_POINTS;
+  const newPts = correct ? pts + 1 : Math.max(0, pts - 2);
+  let extra = {};
+
+  if (!wasMastered && newPts >= MASTERY_POINTS) {
+    const pause = MASTERY_PAUSE_MIN + Math.floor(Math.random() * (MASTERY_PAUSE_MAX - MASTERY_PAUSE_MIN + 1));
+    extra = { masteredRound: globalCount, retestRound: globalCount + pause };
+  } else if (wasMastered && correct) {
+    const pause = MASTERY_PAUSE_MIN + Math.floor(Math.random() * (MASTERY_PAUSE_MAX - MASTERY_PAUSE_MIN + 1));
+    extra = { masteredRound: globalCount, retestRound: globalCount + pause };
+  } else if (wasMastered && !correct) {
+    extra = { masteredRound: null, retestRound: null, _srOverride: { level: 4, nextReview: Date.now() + SR_INTERVALS[4] * 86400000 } };
+  }
+
+  return { ...word, points: newPts, ...extra };
+}
+
+export function getDue(words, globalCount) {
+  const gc = globalCount ?? loadAnswerCount();
+  return words.filter(w => {
+    const pts = w.points || 0;
+    if (pts >= MASTERY_POINTS) return !w.retestRound || gc >= w.retestRound;
+    return w.nextReview <= Date.now();
+  });
+}
+
 export function scheduleNext(level, correct) {
   const newLevel = correct ? Math.min(level + 1, SR_INTERVALS.length - 1) : 0;
   return { level: newLevel, nextReview: Date.now() + SR_INTERVALS[newLevel] * 86400000 };

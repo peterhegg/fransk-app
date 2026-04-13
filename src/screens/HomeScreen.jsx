@@ -1,9 +1,11 @@
-import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, gold, dark, cream, card, brd, grn } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress } from "../utils.jsx";
+import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, gold, dark, cream, card, brd, grn } from "../constants.js";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 
 export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
-  const dueCount = getDue(words).length;
+  const dueCount = getDue(words, loadAnswerCount()).length;
+  const masteredCount = getMasteredCount(words);
 
   const dagensDone = (() => {
     try { const s = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}"); return s.date === todayStr() && s.phase2done; }
@@ -14,7 +16,7 @@ export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, o
   const grammarDone = completedGrammar.length >= GRAMMAR_TOPICS.length;
   const grammarProgress = `${completedGrammar.length}/${GRAMMAR_TOPICS.length}`;
 
-  const grammarOvDue = getDue(grammarWords).length;
+  const grammarOvDue = getDue(grammarWords, loadAnswerCount()).length;
 
   const modeColors = {
     "dagens-glose": "#7a4828",
@@ -84,10 +86,44 @@ export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, o
           </div>
         )}
 
-        <div style={{ textAlign: "center", width: "100%", maxWidth: 420, marginTop: 8 }}>
-          <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${brd}, transparent)`, marginBottom: 14 }} />
-          <p style={{ fontSize: 11, letterSpacing: 4, color: `${gold}66`, textTransform: "uppercase", margin: 0 }}>1920 · Paris · Maintenant</p>
-        </div>
+        <OrdmesterTeller masteredCount={masteredCount} />
+
+        {/* Vocabulary goals progression */}
+        {(() => {
+          const cumulativeTargets = VOCAB_GOALS.reduce((acc, g, i) => {
+            acc.push((acc[i - 1] || 0) + g.target);
+            return acc;
+          }, []);
+          const activeGoalIdx = cumulativeTargets.findIndex(t => words.length < t);
+          const activeGoal = activeGoalIdx === -1 ? VOCAB_GOALS[VOCAB_GOALS.length - 1] : VOCAB_GOALS[activeGoalIdx];
+          const prevTotal = activeGoalIdx <= 0 ? 0 : cumulativeTargets[activeGoalIdx - 1];
+          const goalTotal = activeGoalIdx === -1 ? cumulativeTargets[cumulativeTargets.length - 1] : cumulativeTargets[activeGoalIdx];
+          const pct = Math.min(100, ((words.length - prevTotal) / (goalTotal - prevTotal)) * 100);
+          return (
+            <div style={{ width: "100%", maxWidth: 420, marginTop: 16, background: card, border: `0.5px solid ${brd}`, borderRadius: 14, padding: "12px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ fontSize: 11, letterSpacing: 2, color: `${gold}99`, textTransform: "uppercase" }}>Nåværende læringsmål</span>
+                <span style={{ fontSize: 11, color: `rgba(29,22,16,0.4)` }}>{words.length} / {goalTotal} ord</span>
+              </div>
+              <div style={{ fontSize: 13, color: cream, marginBottom: 4, fontStyle: "italic" }}>{activeGoal.label}</div>
+              <div style={{ fontSize: 11, color: `rgba(29,22,16,0.5)`, marginBottom: 8, lineHeight: 1.5 }}>{activeGoal.desc}</div>
+              <div style={{ height: 4, background: "rgba(200,120,58,0.12)", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(to right, #c8783a, #e8a060)`, borderRadius: 99, transition: "width 0.8s ease" }} />
+              </div>
+              <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                {VOCAB_GOALS.map((g, i) => {
+                  const cumTarget = cumulativeTargets[i];
+                  const done = words.length >= cumTarget;
+                  return (
+                    <span key={g.id} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, background: done ? `${gold}22` : "rgba(0,0,0,0.04)", color: done ? gold : `rgba(29,22,16,0.35)`, border: `0.5px solid ${done ? gold + "44" : "transparent"}`, letterSpacing: 0.5 }}>
+                      {done ? "✓ " : ""}{g.label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>

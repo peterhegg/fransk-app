@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY } from "../constants.js";
+import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS } from "../constants.js";
 import { saveWords } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
@@ -22,7 +22,7 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
 
   const importWords = () => {
     const lines = importText.split("\n").map(l => l.trim()).filter(Boolean);
-    let added = 0;
+    let added = 0, updated_count = 0;
     setWords(prev => {
       let updated = [...prev];
       for (const line of lines) {
@@ -30,24 +30,43 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
         const eqIdx = clean.indexOf(" = ");
         if (eqIdx === -1) continue;
         const fr = clean.slice(0, eqIdx).trim();
-        if (!fr || updated.some(w => w.fr === fr)) continue;
+        if (!fr) continue;
         let rest = clean.slice(eqIdx + 3).trim();
+        // Parse optional points: [pts:42]
+        const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
+        const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
+        if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
         const pm = rest.match(/\(([^)]+)\)\s*$/);
         const phonetic = pm ? pm[1].trim() : "";
         const no = pm ? rest.slice(0, pm.index).trim() : rest;
-        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now() });
+        const existing = updated.find(w => w.fr === fr);
+        if (existing) {
+          if (importedPoints !== null) {
+            updated = updated.map(w => w.fr === fr ? { ...w, points: importedPoints } : w);
+            updated_count++;
+          }
+          continue;
+        }
+        const pts = importedPoints ?? 0;
+        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: pts });
         added++;
       }
       return updated;
     });
-    setImportResult(added);
-    if (added > 0) { setImportText(""); setTimeout(() => { setImportOpen(false); setImportResult(null); }, 1800); }
+    const total = added + updated_count;
+    setImportResult(total);
+    if (total > 0) { setImportText(""); setTimeout(() => { setImportOpen(false); setImportResult(null); }, 1800); }
   };
 
   const copyWords = () => {
     if (!words.length) return;
-    navigator.clipboard.writeText("Mine franske ord:\n" + words.map(w => `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""}`).join("\n"))
-      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+    navigator.clipboard.writeText(
+      "Mine franske ord:\n" +
+      words.map(w => {
+        const pts = w.points || 0;
+        return `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}]`;
+      }).join("\n")
+    ).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
 
   const clearWords = () => {
@@ -69,8 +88,8 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
 
       {importOpen && (
         <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur)</em></div>
-          <textarea placeholder={"✓ bonjour = hallo (bånsjur)\n✓ merci = takk (merssi)"} value={importText} onChange={e => { setImportText(e.target.value); setImportResult(null); }} rows={5}
+          <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur) [pts:42]</em> — [pts:…] er valgfritt</div>
+          <textarea placeholder={"✓ bonjour = hallo (bånsjur) [pts:42]\n✓ merci = takk (merssi)"} value={importText} onChange={e => { setImportText(e.target.value); setImportResult(null); }} rows={5}
             style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 12px", outline: "none", resize: "vertical" }} />
           {importResult !== null && <div style={{ fontSize: 13, color: importResult > 0 ? grn : gold, fontWeight: "bold" }}>{importResult > 0 ? `✓ ${importResult} ord lagt til!` : "Ingen nye ord funnet."}</div>}
           <button onClick={importWords} disabled={!importText.trim()} className={importText.trim() ? "btn-shine" : ""}
@@ -109,15 +128,22 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
               {words.map((w, i) => {
                 const lvl = Math.min(w.level ?? 0, MASTERY_LABELS.length - 1);
+                const pts = w.points || 0;
+                const isMastered = pts >= MASTERY_POINTS;
                 return (
-                  <div key={i} style={{ background: card, border: `1px solid ${brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
+                  <div key={i} style={{ background: card, border: `1px solid ${isMastered ? gold + "44" : brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ color: grn, marginRight: 6 }}>✓</span>
                       <span style={{ fontSize: 14 }}>{w.fr}</span>
                       {w.no && <span style={{ color: `${cream}66`, fontSize: 13 }}> = {w.no}</span>}
                       {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
                     </div>
-                    <div style={{ fontSize: 10, color: MASTERY_COLORS[lvl], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap" }}>{MASTERY_LABELS[lvl]}</div>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, marginLeft: 8 }}>
+                      <div style={{ fontSize: 10, color: isMastered ? gold : MASTERY_COLORS[lvl], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
+                        {isMastered ? "★ mestret" : MASTERY_LABELS[lvl]}
+                      </div>
+                      <div style={{ fontSize: 10, color: `rgba(29,22,16,0.35)`, letterSpacing: 0.5 }}>{pts} / {MASTERY_POINTS} pts</div>
+                    </div>
                   </div>
                 );
               })}
