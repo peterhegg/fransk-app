@@ -113,9 +113,10 @@ export default function App() {
   const sentinelMountedRef = useRef(false);
   useEffect(() => {
     if (!sentinelMountedRef.current) { sentinelMountedRef.current = true; return; }
-    if (window.location.hash !== "#nav") {
-      window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav");
-    }
+    if (history.state?.fransNav) return;
+    const base = window.location.pathname + window.location.search;
+    if (window.location.hash) window.history.replaceState(null, "", base);
+    window.history.pushState({ fransNav: true }, "", base + "#nav");
   }, [screen, showWords]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
   useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
@@ -135,16 +136,19 @@ export default function App() {
   }, []);
 
   // --- Back button / exit dialog ---
-  // Uses #nav hash as sentinel so Samsung Android PWA fires both popstate + hashchange.
-  // Same-URL state-only pushState is unreliable on Android Chrome; a hash change is not.
+  // Uses #nav hash sentinel. pushSentinel strips any existing hash first (replaceState)
+  // so that the subsequent pushState always causes a real URL change on back navigation —
+  // guaranteeing hashchange + popstate fire on Samsung Android Chrome PWA.
+  // Chrome PWA remembers last URL between sessions, so app may reload at #nav; the
+  // replaceState ensures we always end up with [base, sentinel@#nav] regardless.
   useEffect(() => {
     const baseUrl = window.location.pathname + window.location.search;
     const sentinelUrl = baseUrl + "#nav";
 
     const pushSentinel = () => {
-      if (window.location.hash !== "#nav") {
-        window.history.pushState({ fransNav: true }, "", sentinelUrl);
-      }
+      if (history.state?.fransNav) return;
+      if (window.location.hash) window.history.replaceState(null, "", baseUrl);
+      window.history.pushState({ fransNav: true }, "", sentinelUrl);
     };
 
     pushSentinel();
