@@ -109,11 +109,12 @@ export default function App() {
   // --- Session screen save ---
   // Restore sentinel when screen/showWords changes AFTER mount (e.g. after Avslutt without closing).
   // Skip first run to avoid double-push with the back-button effect below.
+  const exitIntentRef = useRef(false);
   const sentinelMountedRef = useRef(false);
   useEffect(() => {
     if (!sentinelMountedRef.current) { sentinelMountedRef.current = true; return; }
-    if (!history.state?.fransNav) {
-      window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search);
+    if (window.location.hash !== "#nav") {
+      window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav");
     }
   }, [screen, showWords]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
@@ -134,32 +135,50 @@ export default function App() {
   }, []);
 
   // --- Back button / exit dialog ---
+  // Uses #nav hash as sentinel so Samsung Android PWA fires both popstate + hashchange.
+  // Same-URL state-only pushState is unreliable on Android Chrome; a hash change is not.
   useEffect(() => {
-    const url = window.location.pathname + window.location.search;
-    window.history.pushState({ fransNav: true }, "", url);
+    const baseUrl = window.location.pathname + window.location.search;
+    const sentinelUrl = baseUrl + "#nav";
+
+    const pushSentinel = () => {
+      if (window.location.hash !== "#nav") {
+        window.history.pushState({ fransNav: true }, "", sentinelUrl);
+      }
+    };
+
+    pushSentinel();
 
     const restoreSentinel = () => {
       if (showExitDialogRef.current) return;
-      if (!history.state?.fransNav) window.history.pushState({ fransNav: true }, "", url);
+      pushSentinel();
     };
+
+    let handling = false;
     const handler = () => {
-      // Dialog showing: dismiss it — we're now at base (no sentinel re-push)
+      if (handling) return;
+      handling = true;
+      setTimeout(() => { handling = false; }, 50);
+
+      // Avslutt was clicked — ignore the popstate it causes, let PWA close
+      if (exitIntentRef.current) { exitIntentRef.current = false; return; }
       if (showExitDialogRef.current) { setShowExitDialog(false); return; }
-      // Words/screen navigation: push sentinel so back works again
-      if (showWordsRef.current) { window.history.pushState({ fransNav: true }, "", url); setShowWords(false); return; }
-      if (screenRef.current !== "home") { window.history.pushState({ fransNav: true }, "", url); setScreen("home"); return; }
-      // On home screen: show dialog WITHOUT pushing sentinel (stay at base)
-      // After dialog: Avslutt=dismiss only (next back closes app), Bli værende=push sentinel
+      if (showWordsRef.current) { pushSentinel(); setShowWords(false); return; }
+      if (screenRef.current !== "home") { pushSentinel(); setScreen("home"); return; }
+      // On home: show dialog (no sentinel push — we stay at base)
       setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
       setShowExitDialog(true);
     };
+
     const onPageShow = e => { if (e.persisted) restoreSentinel(); };
     const onVisible = () => { if (!document.hidden) restoreSentinel(); };
     window.addEventListener("popstate", handler);
+    window.addEventListener("hashchange", handler);
     window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       window.removeEventListener("popstate", handler);
+      window.removeEventListener("hashchange", handler);
       window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisible);
     };
@@ -487,28 +506,28 @@ export default function App() {
   // --- Routing ---
   if (showWords) return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <WordsScreen words={words} setWords={setWords} onBack={() => setShowWords(false)} onClearGrammar={clearAllData} {...navProps} />
     </>
   );
 
   if (screen === "dagens-glose") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <DagensExerciseScreen title="Dagens øvelse – glose" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "glose") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "dagens-grammatikk") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       {grammarTopic ? (
         <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
       ) : (
@@ -531,21 +550,21 @@ export default function App() {
 
   if (screen === "grammatikk-ovelse") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "chat") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <ChatScreen mode={mode} words={words} setWords={setWords} isOnline={isOnline} speak={speak} speaking={speaking} sessionMsgs={sessionMsgs} setSessionMsgs={setSessionMsgs} onBack={() => setScreen("home")} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
 
   return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <HomeScreen words={words} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
