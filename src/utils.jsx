@@ -131,6 +131,15 @@ export function incrementAnswerCount() {
 }
 
 // --- Points + mastery ---
+export function getWordTier(pts) {
+  if (pts >= 20) return 5;
+  if (pts >= 17) return 4;
+  if (pts >= 15) return 3;
+  if (pts >= 10) return 2;
+  if (pts >= 5) return 1;
+  return 0;
+}
+
 export function getMasteredCount(words) {
   return words.filter(w => (w.points || 0) >= MASTERY_POINTS).length;
 }

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   MODES, EXIT_PHRASES,
-  DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY,
+  DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS,
   gold, cream, card, brd,
 } from "./constants.js";
 import {
@@ -47,6 +47,7 @@ export default function App() {
 
   const screenRef = useRef(screen);
   const showWordsRef = useRef(showWords);
+  const sessionSaveFirstRender = useRef(true);
 
   // --- Dagens Glose state ---
   const [dagensPhase, setDagensPhase] = useState(0);
@@ -118,6 +119,7 @@ export default function App() {
   useEffect(() => { screenRef.current = screen; }, [screen]);
   useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
   useEffect(() => {
+    if (sessionSaveFirstRender.current) { sessionSaveFirstRender.current = false; return; }
     try { sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null, showWords })); }
     catch {}
   }, [screen, mode, showWords]);
@@ -137,6 +139,7 @@ export default function App() {
     window.history.pushState({ fransNav: true }, "", url);
 
     const restoreSentinel = () => {
+      if (showExitDialogRef.current) return;
       if (!history.state?.fransNav) window.history.pushState({ fransNav: true }, "", url);
     };
     const handler = () => {
@@ -283,7 +286,7 @@ export default function App() {
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
-        if ((cleanUpdated.points || 0) < 50) {
+        if ((cleanUpdated.points || 0) < MASTERY_POINTS) {
           const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
           return { ...cleanUpdated, level: nl, nextReview: nr };
         }
@@ -346,7 +349,7 @@ export default function App() {
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
-        if ((cleanUpdated.points || 0) < 50) {
+        if ((cleanUpdated.points || 0) < MASTERY_POINTS) {
           const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
           return { ...cleanUpdated, level: nl, nextReview: nr };
         }
@@ -441,7 +444,7 @@ export default function App() {
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
-        if ((cleanUpdated.points || 0) < 50) {
+        if ((cleanUpdated.points || 0) < MASTERY_POINTS) {
           const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
           return { ...cleanUpdated, level: nl, nextReview: nr };
         }
@@ -484,28 +487,28 @@ export default function App() {
   // --- Routing ---
   if (showWords) return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       <WordsScreen words={words} setWords={setWords} onBack={() => setShowWords(false)} onClearGrammar={clearAllData} {...navProps} />
     </>
   );
 
   if (screen === "dagens-glose") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       <DagensExerciseScreen title="Dagens øvelse – glose" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "glose") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "dagens-grammatikk") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       {grammarTopic ? (
         <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
       ) : (
@@ -528,21 +531,21 @@ export default function App() {
 
   if (screen === "grammatikk-ovelse") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "chat") return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       <ChatScreen mode={mode} words={words} setWords={setWords} isOnline={isOnline} speak={speak} speaking={speaking} sessionMsgs={sessionMsgs} setSessionMsgs={setSessionMsgs} onBack={() => setScreen("home")} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
 
   return (
     <>
-      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => setShowExitDialog(false)} />}
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname); }} onExit={() => { setShowExitDialog(false); window.history.back(); }} />}
       <HomeScreen words={words} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );

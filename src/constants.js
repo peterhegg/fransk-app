@@ -505,7 +505,7 @@ export const MASTERY_COLORS = [
 
 export const SR_INTERVALS = [1, 2, 4, 8, 16, 32];
 
-export const MASTERY_POINTS = 50;
+export const MASTERY_POINTS = 20;
 export const MASTERY_PAUSE_MIN = 20;
 export const MASTERY_PAUSE_MAX = 40;
 

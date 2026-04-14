@@ -5,6 +5,7 @@ const MAX_MESSAGES = 20;
 const MAX_CONTENT_LENGTH = 4000;
 const MAX_SYSTEM_LENGTH = 6000;
 const RATE_LIMIT_PER_MINUTE = 20;
+const DAILY_IP_LIMIT = 200;
 
 // claude-sonnet-4: $3/MTok input, $15/MTok output
 const COST_PER_INPUT_TOKEN = 3 / 1_000_000;
@@ -42,6 +43,14 @@ async function checkRateLimit(env, ip) {
   return true;
 }
 
+async function checkDailyIPLimit(env, ip) {
+  const key = `daily:${ip}:${new Date().toISOString().slice(0, 10)}`;
+  const count = parseInt((await env.RATE_LIMIT_KV.get(key)) || "0");
+  if (count >= DAILY_IP_LIMIT) return false;
+  await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 90000 });
+  return true;
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
@@ -53,7 +62,10 @@ export default {
     const corsHeaders = {
       "Access-Control-Allow-Origin": origin,
       "Access-Control-Allow-Methods": "POST",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, X-App-Token",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
     };
 
     if (request.method === "OPTIONS") {
@@ -62,6 +74,10 @@ export default {
 
     if (request.method !== "POST") {
       return new Response("Method not allowed", { status: 405 });
+    }
+
+    if (env.CLIENT_TOKEN && request.headers.get("X-App-Token") !== env.CLIENT_TOKEN) {
+      return new Response("Forbidden", { status: 403, headers: corsHeaders });
     }
 
     if (!await checkBudget(env)) {
@@ -76,6 +92,13 @@ export default {
       return new Response("Too Many Requests", {
         status: 429,
         headers: { ...corsHeaders, "Retry-After": "60" },
+      });
+    }
+
+    if (!await checkDailyIPLimit(env, ip)) {
+      return new Response("Daily limit reached for this IP. Try again tomorrow.", {
+        status: 429,
+        headers: { ...corsHeaders, "Retry-After": "86400" },
       });
     }
 
