@@ -64,6 +64,10 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
         const fr = clean.slice(0, eqIdx).trim();
         if (!fr) continue;
         let rest = clean.slice(eqIdx + 3).trim();
+        // Parse optional cat: [cat:Hilsener] (must be last tag)
+        const catMatch = rest.match(/\[cat:([^\]]+)\]\s*$/);
+        const importedCat = catMatch ? catMatch[1].trim() : null;
+        if (catMatch) rest = rest.slice(0, catMatch.index).trim();
         // Parse optional points: [pts:42]
         const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
         const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
@@ -73,14 +77,21 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
         const no = pm ? rest.slice(0, pm.index).trim() : rest;
         const existing = updated.find(w => w.fr === fr);
         if (existing) {
-          if (importedPoints !== null) {
-            updated = updated.map(w => w.fr === fr ? { ...w, points: importedPoints } : w);
+          if (importedPoints !== null || importedCat !== null) {
+            updated = updated.map(w => {
+              if (w.fr !== fr) return w;
+              const patch = {};
+              if (importedPoints !== null) patch.points = importedPoints;
+              if (importedCat !== null && !VOCAB_CAT_MAP[w.fr]) patch.cat = importedCat;
+              return { ...w, ...patch };
+            });
             updated_count++;
           }
           continue;
         }
         const pts = importedPoints ?? 0;
-        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: pts });
+        const catProp = importedCat && !VOCAB_CAT_MAP[fr] ? { cat: importedCat } : {};
+        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: pts, ...catProp });
         added++;
       }
       return updated;
@@ -96,7 +107,8 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
       "Mine franske ord:\n" +
       words.map(w => {
         const pts = w.points || 0;
-        return `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}]`;
+        const cat = getCat(w);
+        return `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}] [cat:${cat}]`;
       }).join("\n")
     ).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
@@ -124,8 +136,8 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
 
       {importOpen && (
         <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur) [pts:42]</em> — [pts:…] er valgfritt</div>
-          <textarea placeholder={"✓ bonjour = hallo (bånsjur) [pts:42]\n✓ merci = takk (merssi)"} value={importText} onChange={e => { setImportText(e.target.value); setImportResult(null); }} rows={5}
+          <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur) [pts:42] [cat:Hilsener]</em> — tagene er valgfrie</div>
+          <textarea placeholder={"✓ bonjour = hallo (bånsjur) [pts:42] [cat:Hilsener]\n✓ merci = takk (merssi)"} value={importText} onChange={e => { setImportText(e.target.value); setImportResult(null); }} rows={5}
             style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 12px", outline: "none", resize: "vertical" }} />
           {importResult !== null && (
             <div style={{ fontSize: 13, fontWeight: "bold", color: (importResult.added + importResult.updated) > 0 ? grn : gold }}>
