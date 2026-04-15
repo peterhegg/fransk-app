@@ -1,6 +1,30 @@
 import { useState } from "react";
-import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY } from "../constants.js";
+import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_MAP, VOCAB_CAT_ORDER } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
+
+const getCat = (w) => VOCAB_CAT_MAP[w.fr] || w.cat || "Andre ord";
+
+function WordCard({ w }) {
+  const pts = w.points || 0;
+  const tier = getWordTier(pts);
+  const isMastered = tier === 5;
+  return (
+    <div style={{ background: card, border: `1px solid ${isMastered ? gold + "44" : brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ color: grn, marginRight: 6 }}>✓</span>
+        <span style={{ fontSize: 14 }}>{w.fr}</span>
+        {w.no && <span style={{ color: `${cream}66`, fontSize: 13 }}> = {w.no}</span>}
+        {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, marginLeft: 8 }}>
+        <div style={{ fontSize: 10, color: isMastered ? gold : MASTERY_COLORS[tier], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
+          {isMastered ? "★ mestret" : MASTERY_LABELS[tier]}
+        </div>
+        <div style={{ fontSize: 10, color: `rgba(29,22,16,0.35)`, letterSpacing: 0.5 }}>{pts} / {MASTERY_POINTS} pts</div>
+      </div>
+    </div>
+  );
+}
 import BottomNav from "../components/BottomNav.jsx";
 
 export default function WordsScreen({ words, setWords, onBack, screen, showWords, onNav, onClearGrammar }) {
@@ -12,6 +36,14 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
   const [importText, setImportText] = useState("");
   const [importResult, setImportResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [filterTier, setFilterTier] = useState(null);
+  const [closedSections, setClosedSections] = useState(new Set());
+
+  const toggleSection = (cat) => setClosedSections(prev => {
+    const next = new Set(prev);
+    next.has(cat) ? next.delete(cat) : next.add(cat);
+    return next;
+  });
 
   const addWord = () => {
     if (!addFr.trim()) return;
@@ -133,35 +165,49 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
           </div>
         ) : (
           <>
-            <div style={{ display: "flex", gap: 12, marginBottom: 16, fontSize: 11, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, fontSize: 11, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase", flexWrap: "wrap" }}>
               {MASTERY_LABELS.map((label, i) => {
                 const count = words.filter(w => getWordTier(w.points || 0) === i).length;
-                return <span key={i}><span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({count})</span>;
-              })}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-              {words.map((w, i) => {
-                const pts = w.points || 0;
-                const tier = getWordTier(pts);
-                const isMastered = tier === 5;
+                const active = filterTier === i;
                 return (
-                  <div key={i} style={{ background: card, border: `1px solid ${isMastered ? gold + "44" : brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ color: grn, marginRight: 6 }}>✓</span>
-                      <span style={{ fontSize: 14 }}>{w.fr}</span>
-                      {w.no && <span style={{ color: `${cream}66`, fontSize: 13 }}> = {w.no}</span>}
-                      {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, marginLeft: 8 }}>
-                      <div style={{ fontSize: 10, color: isMastered ? gold : MASTERY_COLORS[tier], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
-                        {isMastered ? "★ mestret" : MASTERY_LABELS[tier]}
-                      </div>
-                      <div style={{ fontSize: 10, color: `rgba(29,22,16,0.35)`, letterSpacing: 0.5 }}>{pts} / {MASTERY_POINTS} pts</div>
-                    </div>
-                  </div>
+                  <button key={i} onClick={() => setFilterTier(active ? null : i)}
+                    style={{ background: active ? MASTERY_COLORS[i] + "33" : "none", border: `1px solid ${active ? MASTERY_COLORS[i] : "transparent"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "'Jost', sans-serif", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: active ? MASTERY_COLORS[i] : `${gold}88` }}>
+                    <span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({count})
+                  </button>
                 );
               })}
+              {filterTier !== null && (
+                <button onClick={() => setFilterTier(null)} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "'Jost', sans-serif", fontSize: 11, color: `${gold}88` }}>✕ Vis alle</button>
+              )}
             </div>
+
+            {filterTier !== null ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+                {words.filter(w => getWordTier(w.points || 0) === filterTier).map((w, i) => <WordCard key={i} w={w} />)}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+                {VOCAB_CAT_ORDER.map(cat => {
+                  const catWords = words.filter(w => getCat(w) === cat);
+                  if (!catWords.length) return null;
+                  const closed = closedSections.has(cat);
+                  return (
+                    <div key={cat}>
+                      <button onClick={() => toggleSection(cat)}
+                        style={{ width: "100%", background: "none", border: "none", borderBottom: `1px solid ${brd}`, padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "'Jost', sans-serif", color: `${gold}cc`, fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                        <span>{cat} <span style={{ color: `${gold}66` }}>({catWords.length})</span></span>
+                        <span style={{ fontSize: 10, color: `${gold}66` }}>{closed ? "▸" : "▾"}</span>
+                      </button>
+                      {!closed && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {catWords.map((w, i) => <WordCard key={i} w={w} />)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </>
         )}
       </div>

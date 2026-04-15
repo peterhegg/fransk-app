@@ -144,7 +144,9 @@ export function getMasteredCount(words) {
   return words.filter(w => (w.points || 0) >= MASTERY_POINTS).length;
 }
 
-export function updateWordPoints(word, correct, globalCount) {
+export function updateWordPoints(word, result, globalCount) {
+  if (result === "close") return word;
+  const correct = result === "correct";
   const pts = word.points || 0;
   const wasMastered = pts >= MASTERY_POINTS;
   const newPts = correct ? pts + 1 : Math.max(0, pts - 2);

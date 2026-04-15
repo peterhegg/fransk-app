@@ -120,6 +120,42 @@ export const VOCAB_LIST = [
   { fr: "année", no: "år", phonetic: "anæ" },
 ];
 
+export const VOCAB_CAT_ORDER = [
+  "Hilsener", "Pronomen", "Vanlige verb", "Steder – Paris",
+  "Tid", "Adjektiver", "Kunst og kultur", "Mat og drikke", "Verden og natur", "Andre ord",
+];
+
+export const VOCAB_CAT_MAP = {
+  "bonjour": "Hilsener", "bonsoir": "Hilsener", "au revoir": "Hilsener",
+  "merci": "Hilsener", "s'il vous plaît": "Hilsener", "oui": "Hilsener",
+  "non": "Hilsener", "pardon": "Hilsener", "de rien": "Hilsener",
+  "je": "Pronomen", "tu": "Pronomen", "il": "Pronomen",
+  "elle": "Pronomen", "nous": "Pronomen", "vous": "Pronomen",
+  "être": "Vanlige verb", "avoir": "Vanlige verb", "aller": "Vanlige verb",
+  "venir": "Vanlige verb", "voir": "Vanlige verb", "parler": "Vanlige verb",
+  "manger": "Vanlige verb", "boire": "Vanlige verb", "lire": "Vanlige verb",
+  "écrire": "Vanlige verb", "aimer": "Vanlige verb", "savoir": "Vanlige verb",
+  "faire": "Vanlige verb", "habiter": "Vanlige verb",
+  "Paris": "Steder – Paris", "café": "Steder – Paris", "rue": "Steder – Paris",
+  "ville": "Steder – Paris", "quartier": "Steder – Paris", "musée": "Steder – Paris",
+  "gare": "Steder – Paris", "hôtel": "Steder – Paris", "restaurant": "Steder – Paris",
+  "bibliothèque": "Steder – Paris", "la Seine": "Steder – Paris",
+  "aujourd'hui": "Tid", "demain": "Tid", "hier": "Tid",
+  "maintenant": "Tid", "toujours": "Tid", "jamais": "Tid", "souvent": "Tid",
+  "beau / belle": "Adjektiver", "grand / grande": "Adjektiver", "petit / petite": "Adjektiver",
+  "bon / bonne": "Adjektiver", "nouveau / nouvelle": "Adjektiver",
+  "vieux / vieille": "Adjektiver", "simple": "Adjektiver",
+  "artiste": "Kunst og kultur", "peintre": "Kunst og kultur", "écrivain": "Kunst og kultur",
+  "roman": "Kunst og kultur", "livre": "Kunst og kultur", "tableau": "Kunst og kultur",
+  "jazz": "Kunst og kultur", "musique": "Kunst og kultur", "guerre": "Kunst og kultur",
+  "étranger": "Kunst og kultur", "époque": "Kunst og kultur",
+  "pain": "Mat og drikke", "vin": "Mat og drikke", "eau": "Mat og drikke",
+  "fromage": "Mat og drikke", "bière": "Mat og drikke",
+  "soleil": "Verden og natur", "ciel": "Verden og natur", "vie": "Verden og natur",
+  "monde": "Verden og natur", "homme": "Verden og natur", "femme": "Verden og natur",
+  "ami / amie": "Verden og natur", "temps": "Verden og natur", "année": "Verden og natur",
+};
+
 export const GRAMMAR_TOPICS = [
   {
     id: "etre",

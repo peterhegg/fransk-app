@@ -305,7 +305,7 @@ export default function App() {
     if (inBank) {
       setWords(prev => prev.map(w => {
         if (w.id !== inBank.id) return w;
-        const updated = updateWordPoints(w, passed, gc);
+        const updated = updateWordPoints(w, result, gc);
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
@@ -315,7 +315,7 @@ export default function App() {
         }
         return cleanUpdated;
       }));
-    } else if (passed) {
+    } else if (result === "correct") {
       const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1 };
       setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
@@ -368,7 +368,7 @@ export default function App() {
     if (gloseCard.id) {
       setWords(prev => prev.map(w => {
         if (w.id !== gloseCard.id) return w;
-        const updated = updateWordPoints(w, passed, gc);
+        const updated = updateWordPoints(w, result, gc);
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
@@ -463,7 +463,7 @@ export default function App() {
     if (gramOvCard?.id) {
       setGrammarWords(prev => prev.map(w => {
         if (w.id !== gramOvCard.id) return w;
-        const updated = updateWordPoints(w, passed, gc);
+        const updated = updateWordPoints(w, result, gc);
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
