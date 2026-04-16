@@ -1,6 +1,7 @@
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS } from "../constants.js";
 import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 
 const MODE_COLORS = {
   "dagens-glose":      "linear-gradient(135deg, #6C5CE7, #a29bf7)",
@@ -179,6 +180,10 @@ export default function HomeScreen({ words, grammarWords, streak, sessionMsgs, o
             <span style={{ fontSize: 11, color: "var(--text-subtle)" }}>{words.length - prevTotal} / {goalTotal - prevTotal} ord i bolken</span>
             <span style={{ fontSize: 11, color: "var(--accent)" }}>{Math.round(pct)}%</span>
           </div>
+        </div>
+
+        <div style={{ margin: "20px 24px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
+          <OrdmesterTeller masteredCount={masteredCount} />
         </div>
 
         {noWordsMsg && (
