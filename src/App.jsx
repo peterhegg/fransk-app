@@ -253,9 +253,9 @@ export default function App() {
     if (!words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
     const due = getDue(words, loadAnswerCount());
     const notDue = words.filter(w => !due.some(d => d.id === w.id));
-    const q = shuffle([...due, ...notDue]).slice(0, 20);
+    const q = shuffle([...due, ...notDue]).slice(0, 20).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGloseQueue(q); setGloseCard(q[0]);
-    setGloseOptions(getQuizOptions(q[0], words)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+    setGloseOptions(getQuizOptions(q[0], words, !!q[0].reverse)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
     setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
     setScreen("glose");
   };
@@ -274,9 +274,9 @@ export default function App() {
     if (!grammarWords.length) { setGramOvCard(null); setScreen("grammatikk-ovelse"); return; }
     const due = getDue(grammarWords, loadAnswerCount());
     const notDue = grammarWords.filter(w => !due.some(d => d.id === w.id));
-    const q = shuffle([...due, ...notDue]).slice(0, 20);
+    const q = shuffle([...due, ...notDue]).slice(0, 20).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGramOvQueue(q); setGramOvCard(q[0]);
-    setGramOvOptions(getQuizOptions(q[0], grammarWords)); setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
+    setGramOvOptions(getQuizOptions(q[0], grammarWords, !!q[0].reverse)); setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult(""); setGramOvStats({ correct: 0, wrong: 0 }); setGramOvHistory([]);
     setScreen("grammatikk-ovelse");
   };
@@ -359,7 +359,8 @@ export default function App() {
   // --- Glose handlers ---
   const submitGlose = () => {
     if (!gloseInput.trim()) return;
-    const result = checkQuizAnswer(gloseInput, gloseCard);
+    const isReverse = !!gloseCard?.reverse;
+    const result = checkQuizAnswer(gloseInput, gloseCard, isReverse);
     const passed = result !== "wrong";
     setGloseChecked(true); setGloseResult(result);
     setGloseStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
@@ -388,14 +389,14 @@ export default function App() {
       const at = Math.min(3, remaining.length);
       const recycled = [...remaining.slice(0, at), { ...gloseCard }, ...remaining.slice(at)];
       setGloseQueue(recycled); setGloseCard(recycled[0]);
-      setGloseOptions(getQuizOptions(recycled[0], words));
+      setGloseOptions(getQuizOptions(recycled[0], words, !!recycled[0].reverse));
       setGloseMode(Math.random() < 0.5 ? "input" : "choice");
       setGloseInput(""); setGloseChecked(false); setGloseResult("");
       return;
     }
     if (!remaining.length) { setScreen("home"); return; }
     setGloseQueue(remaining); setGloseCard(remaining[0]);
-    setGloseOptions(getQuizOptions(remaining[0], words));
+    setGloseOptions(getQuizOptions(remaining[0], words, !!remaining[0].reverse));
     setGloseMode(Math.random() < 0.5 ? "input" : "choice");
     setGloseInput(""); setGloseChecked(false); setGloseResult("");
   };
@@ -454,7 +455,8 @@ export default function App() {
   // --- Grammatikk Ovelse handlers ---
   const submitGramOvelse = () => {
     if (!gramOvInput.trim()) return;
-    const result = checkQuizAnswer(gramOvInput, gramOvCard);
+    const isReverse = !!gramOvCard?.reverse;
+    const result = checkQuizAnswer(gramOvInput, gramOvCard, isReverse);
     const passed = result !== "wrong";
     setGramOvChecked(true); setGramOvResult(result);
     setGramOvStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
@@ -480,7 +482,7 @@ export default function App() {
     const remaining = gramOvQueue.slice(1);
     if (!remaining.length) { setScreen("home"); return; }
     setGramOvQueue(remaining); setGramOvCard(remaining[0]);
-    setGramOvOptions(getQuizOptions(remaining[0], grammarWords));
+    setGramOvOptions(getQuizOptions(remaining[0], grammarWords, !!remaining[0].reverse));
     setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult("");
   };

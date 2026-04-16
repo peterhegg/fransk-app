@@ -12,6 +12,7 @@ export default function QuizExerciseScreen({
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
   const isFromBank = !!card?.id;
+  const isReverse = !!card?.reverse;
   const grammarTip = card?.topicId ? GRAMMAR_TOPICS.find(t => t.id === card.topicId) : null;
 
   if (!card) return (
@@ -43,13 +44,22 @@ export default function QuizExerciseScreen({
         </div>
 
         <div style={{ background: "#fff", border: `1px solid ${brd}`, borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340 }}>
-          <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
-          <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8, fontFamily: "'Playfair Display', Georgia, serif" }}>{card.fr}</div>
-          {card.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({card.phonetic})</div>}
-          <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center" }}>
-            <button onClick={() => speak(card.fr)} title="Normal hastighet" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? gold : `${gold}88`, lineHeight: 1 }}>🔊</button>
-            <button onClick={() => speak(card.fr, 0.4)} title="Sakte" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? gold : `${gold}88`, lineHeight: 1 }}>🐢</button>
-          </div>
+          {isReverse ? (
+            <>
+              <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Oversett til fransk</div>
+              <div style={{ fontSize: 34, color: cream, marginBottom: 8, fontFamily: "'Playfair Display', Georgia, serif" }}>{card.no}</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 11, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
+              <div style={{ fontSize: 34, color: cream, fontStyle: "italic", marginBottom: 8, fontFamily: "'Playfair Display', Georgia, serif" }}>{card.fr}</div>
+              {card.phonetic && <div style={{ fontSize: 14, color: gold, opacity: 0.7, marginBottom: 8 }}>({card.phonetic})</div>}
+              <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center" }}>
+                <button onClick={() => speak(card.fr)} title="Normal hastighet" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? gold : `${gold}88`, lineHeight: 1 }}>🔊</button>
+                <button onClick={() => speak(card.fr, 0.4)} title="Sakte" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? gold : `${gold}88`, lineHeight: 1 }}>🐢</button>
+              </div>
+            </>
+          )}
         </div>
 
         {!checked ? (
@@ -72,7 +82,7 @@ export default function QuizExerciseScreen({
             <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && onSubmit()}
-                placeholder="Skriv norsk oversettelse..."
+                placeholder={isReverse ? "Skriv på fransk..." : "Skriv norsk oversettelse..."}
                 className="input-glow"
                 style={{ background: "#f5f0e6", border: `0.5px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
                 autoFocus />
@@ -93,7 +103,7 @@ export default function QuizExerciseScreen({
               <div style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${gold}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 16, color: gold, fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
                 <div style={{ fontSize: 13, color: `${cream}88`, marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
-                <div style={{ fontSize: 15, color: cream }}>Riktig: <strong>{card.no}</strong></div>
+                <div style={{ fontSize: 15, color: cream }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
                 {card.phonetic && <div style={{ fontSize: 13, color: gold, opacity: 0.8, marginTop: 6 }}>{card.phonetic}</div>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
                   <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🔊</button>
@@ -106,7 +116,7 @@ export default function QuizExerciseScreen({
                 <div style={{ background: "rgba(196,122,90,0.1)", border: `1px solid ${red}55`, borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
                   <div style={{ fontSize: 16, color: red, fontWeight: "bold", marginBottom: 6 }}>Prøv igjen neste gang</div>
                   <div style={{ fontSize: 13, color: `${cream}66`, marginBottom: 6 }}>Du svarte: <em>{input}</em></div>
-                  <div style={{ fontSize: 18, color: cream, marginBottom: 4 }}>{card.no}</div>
+                  <div style={{ fontSize: 18, color: cream, marginBottom: 4 }}>{isReverse ? card.fr : card.no}</div>
                   {card.phonetic && <div style={{ fontSize: 13, color: gold, opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 4 }}>
                     <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: `${gold}88`, fontSize: 18, cursor: "pointer" }}>🔊</button>

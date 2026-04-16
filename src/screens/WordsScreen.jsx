@@ -193,33 +193,27 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
               )}
             </div>
 
-            {filterTier !== null ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-                {words.filter(w => getWordTier(w.points || 0) === filterTier).map((w, i) => <WordCard key={i} w={w} />)}
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-                {VOCAB_CAT_ORDER.map(cat => {
-                  const catWords = words.filter(w => getCat(w) === cat);
-                  if (!catWords.length) return null;
-                  const closed = closedSections.has(cat);
-                  return (
-                    <div key={cat}>
-                      <button onClick={() => toggleSection(cat)}
-                        style={{ width: "100%", background: "none", border: "none", borderBottom: `1px solid ${brd}`, padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "'Jost', sans-serif", color: `${gold}cc`, fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
-                        <span>{cat} <span style={{ color: `${gold}66` }}>({catWords.length})</span></span>
-                        <span style={{ fontSize: 10, color: `${gold}66` }}>{closed ? "▸" : "▾"}</span>
-                      </button>
-                      {!closed && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          {catWords.map((w, i) => <WordCard key={i} w={w} />)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+              {VOCAB_CAT_ORDER.map(cat => {
+                const catWords = words.filter(w => getCat(w) === cat && (filterTier === null || getWordTier(w.points || 0) === filterTier));
+                if (!catWords.length) return null;
+                const closed = closedSections.has(cat);
+                return (
+                  <div key={cat}>
+                    <button onClick={() => toggleSection(cat)}
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: `1px solid ${brd}`, padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "'Jost', sans-serif", color: `${gold}cc`, fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                      <span>{cat} <span style={{ color: `${gold}66` }}>({catWords.length})</span></span>
+                      <span style={{ fontSize: 10, color: `${gold}66` }}>{closed ? "▸" : "▾"}</span>
+                    </button>
+                    {!closed && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {catWords.map((w, i) => <WordCard key={i} w={w} />)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
       </div>
