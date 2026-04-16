@@ -529,7 +529,7 @@ export const STARTER = {
 
 export const CHAT_MODES = ["teksthjelp", "fri"];
 
-export const MASTERY_LABELS = ["ny", "kjennskap", "bekjent", "lært", "godt lært", "mestret"];
+export const MASTERY_LABELS = ["ikke lært", "kjennskap", "bekjent", "lært", "godt lært", "mestret"];
 export const MASTERY_COLORS = [
   "rgba(26,18,16,0.25)",
   "#c8783a",
