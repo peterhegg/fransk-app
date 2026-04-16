@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { gold, dark, cream, card, brd, grn, red, MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_MAP, VOCAB_CAT_ORDER } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_MAP, VOCAB_CAT_ORDER } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
+import BottomNav from "../components/BottomNav.jsx";
 
 const getCat = (w) => VOCAB_CAT_MAP[w.fr] || w.cat || "Andre ord";
 
@@ -9,23 +10,22 @@ function WordCard({ w }) {
   const tier = getWordTier(pts);
   const isMastered = tier === 5;
   return (
-    <div style={{ background: card, border: `1px solid ${isMastered ? gold + "44" : brd}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(108,92,231,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ color: grn, marginRight: 6 }}>✓</span>
-        <span style={{ fontSize: 14 }}>{w.fr}</span>
-        {w.no && <span style={{ color: `${cream}66`, fontSize: 13 }}> = {w.no}</span>}
-        {w.phonetic && <span style={{ color: `${gold}88`, fontSize: 12 }}> ({w.phonetic})</span>}
+        <span style={{ color: "var(--color-success)", marginRight: 6 }}>✓</span>
+        <span style={{ fontSize: 14, color: "var(--text)" }}>{w.fr}</span>
+        {w.no && <span style={{ color: "var(--text-subtle)", fontSize: 13 }}> = {w.no}</span>}
+        {w.phonetic && <span style={{ color: "rgba(108,92,231,0.6)", fontSize: 12 }}> ({w.phonetic})</span>}
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, marginLeft: 8 }}>
-        <div style={{ fontSize: 10, color: isMastered ? gold : MASTERY_COLORS[tier], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
+        <div style={{ fontSize: 10, color: isMastered ? "var(--accent)" : MASTERY_COLORS[tier], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
           {isMastered ? "★ mestret" : MASTERY_LABELS[tier]}
         </div>
-        <div style={{ fontSize: 10, color: `rgba(29,22,16,0.35)`, letterSpacing: 0.5 }}>{pts} / {MASTERY_POINTS} pts</div>
+        <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 0.5 }}>{pts} / {MASTERY_POINTS} pts</div>
       </div>
     </div>
   );
 }
-import BottomNav from "../components/BottomNav.jsx";
 
 export default function WordsScreen({ words, setWords, onBack, screen, showWords, onNav, onClearGrammar }) {
   const [addOpen, setAddOpen] = useState(false);
@@ -64,11 +64,9 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
         const fr = clean.slice(0, eqIdx).trim();
         if (!fr) continue;
         let rest = clean.slice(eqIdx + 3).trim();
-        // Parse optional cat: [cat:Hilsener] (must be last tag)
         const catMatch = rest.match(/\[cat:([^\]]+)\]\s*$/);
         const importedCat = catMatch ? catMatch[1].trim() : null;
         if (catMatch) rest = rest.slice(0, catMatch.index).trim();
-        // Parse optional points: [pts:42]
         const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
         const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
         if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
@@ -121,26 +119,30 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
     localStorage.removeItem(DAGENS_GLOSE_KEY);
   };
 
+  const panelBg = "rgba(108,92,231,0.04)";
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'Jost', sans-serif", color: cream, paddingBottom: 66 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>← Tilbake</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 }}><span style={{ color: gold }}>◈</span> Ordsamlingen din</div>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
+          <span style={{ color: "var(--accent)" }}>◈</span> Ordsamlingen din
+        </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
-            style={{ background: importOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: importOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>↑ Importer</button>
+            style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(108,92,231,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
           <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
-            style={{ background: addOpen ? gold : "none", border: `1px solid ${gold}66`, borderRadius: 8, color: addOpen ? dark : gold, fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>+ Legg til</button>
+            style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(108,92,231,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
         </div>
       </div>
 
       {importOpen && (
-        <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 12, color: `rgba(29,22,16,0.55)`, lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur) [pts:42] [cat:Hilsener]</em> — tagene er valgfrie</div>
+        <div style={{ background: panelBg, borderBottom: "1px solid var(--border)", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ fontSize: 12, color: "var(--text-subtle)", lineHeight: 1.5 }}>Format: <em>✓ bonjour = hallo (bånsjur) [pts:42] [cat:Hilsener]</em> — tagene er valgfrie</div>
           <textarea placeholder={"✓ bonjour = hallo (bånsjur) [pts:42] [cat:Hilsener]\n✓ merci = takk (merssi)"} value={importText} onChange={e => { setImportText(e.target.value); setImportResult(null); }} rows={5}
-            style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 12px", outline: "none", resize: "vertical" }} />
+            style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 12px", outline: "none", resize: "vertical" }} />
           {importResult !== null && (
-            <div style={{ fontSize: 13, fontWeight: "bold", color: (importResult.added + importResult.updated) > 0 ? grn : gold }}>
+            <div style={{ fontSize: 13, fontWeight: "bold", color: (importResult.added + importResult.updated) > 0 ? "var(--color-success)" : "var(--accent)" }}>
               {importResult.added === 0 && importResult.updated === 0
                 ? "Ingen nye ord funnet."
                 : [
@@ -150,20 +152,20 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
             </div>
           )}
           <button onClick={importWords} disabled={!importText.trim()} className={importText.trim() ? "btn-shine" : ""}
-            style={{ background: importText.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : "rgba(200,120,58,0.25)", border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
+            style={{ background: importText.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: importText.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
             Importer ord
           </button>
         </div>
       )}
 
       {addOpen && (
-        <div style={{ background: "#F0E8D5", borderBottom: `1px solid ${brd}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-          <input placeholder="Fransk ord *" value={addFr} onChange={e => setAddFr(e.target.value)} style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
-          <input placeholder="Norsk oversettelse" value={addNo} onChange={e => setAddNo(e.target.value)} style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+        <div style={{ background: panelBg, borderBottom: "1px solid var(--border)", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <input placeholder="Fransk ord *" value={addFr} onChange={e => setAddFr(e.target.value)} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+          <input placeholder="Norsk oversettelse" value={addNo} onChange={e => setAddNo(e.target.value)} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "8px 12px", outline: "none" }} />
           <input placeholder="Uttale (f.eks. bånsjur)" value={addPhonetic} onChange={e => setAddPhonetic(e.target.value)} onKeyDown={e => e.key === "Enter" && addWord()}
-            style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 14, padding: "8px 12px", outline: "none" }} />
+            style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "8px 12px", outline: "none" }} />
           <button onClick={addWord} disabled={!addFr.trim()} className={addFr.trim() ? "btn-shine" : ""}
-            style={{ background: addFr.trim() ? `linear-gradient(135deg, #d98a4a, ${gold})` : "rgba(200,120,58,0.25)", border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px", cursor: addFr.trim() ? "pointer" : "default" }}>
+            style={{ background: addFr.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: addFr.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: addFr.trim() ? "pointer" : "default" }}>
             Lagre ord
           </button>
         </div>
@@ -173,23 +175,23 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
         {words.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "50vh" }}>
             <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 16 }}>◎</div>
-            <p style={{ color: "rgba(29,22,16,0.4)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Gloseøvelse, så lagres ordene automatisk her.</p>
+            <p style={{ color: "var(--text-subtle)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Gloseøvelse, så lagres ordene automatisk her.</p>
           </div>
         ) : (
           <>
-            <div style={{ display: "flex", gap: 8, marginBottom: 16, fontSize: 11, color: `${gold}88`, letterSpacing: 1, textTransform: "uppercase", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
               {MASTERY_LABELS.map((label, i) => {
                 const count = words.filter(w => getWordTier(w.points || 0) === i).length;
                 const active = filterTier === i;
                 return (
                   <button key={i} onClick={() => setFilterTier(active ? null : i)}
-                    style={{ background: active ? MASTERY_COLORS[i] + "33" : "none", border: `1px solid ${active ? MASTERY_COLORS[i] : "transparent"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "'Jost', sans-serif", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: active ? MASTERY_COLORS[i] : `${gold}88` }}>
+                    style={{ background: active ? MASTERY_COLORS[i] + "22" : "none", border: `1px solid ${active ? MASTERY_COLORS[i] : "transparent"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: active ? MASTERY_COLORS[i] : "var(--text-subtle)" }}>
                     <span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({count})
                   </button>
                 );
               })}
               {filterTier !== null && (
-                <button onClick={() => setFilterTier(null)} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "'Jost', sans-serif", fontSize: 11, color: `${gold}88` }}>✕ Vis alle</button>
+                <button onClick={() => setFilterTier(null)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, color: "var(--text-subtle)" }}>✕ Vis alle</button>
               )}
             </div>
 
@@ -201,9 +203,9 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
                 return (
                   <div key={cat}>
                     <button onClick={() => toggleSection(cat)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: `1px solid ${brd}`, padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "'Jost', sans-serif", color: `${gold}cc`, fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
-                      <span>{cat} <span style={{ color: `${gold}66` }}>({catWords.length})</span></span>
-                      <span style={{ fontSize: 10, color: `${gold}66` }}>{closed ? "▸" : "▾"}</span>
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(108,92,231,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                      <span>{cat} <span style={{ color: "rgba(108,92,231,0.4)" }}>({catWords.length})</span></span>
+                      <span style={{ fontSize: 10, color: "rgba(108,92,231,0.4)" }}>{closed ? "▸" : "▾"}</span>
                     </button>
                     {!closed && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -221,11 +223,11 @@ export default function WordsScreen({ words, setWords, onBack, screen, showWords
       {words.length > 0 && (
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
           <button onClick={copyWords}
-            style={{ background: copied ? grn : "none", border: `1px solid ${copied ? grn : gold}88`, borderRadius: 8, color: copied ? dark : gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
+            style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(108,92,231,0.35)"}`, borderRadius: 8, color: copied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
             {copied ? "✓ Kopiert!" : "Kopier ordlisten min"}
           </button>
           <button onClick={clearWords}
-            style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 8, color: red, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%" }}>
+            style={{ background: "none", border: "1px solid rgba(225,112,85,0.4)", borderRadius: 8, color: "var(--color-error)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%" }}>
             Nullstill alt (ord + grammatikk)
           </button>
         </div>

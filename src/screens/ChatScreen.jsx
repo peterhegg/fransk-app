@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN, SYSTEM_PROMPT, BOOK_EXCERPTS, SESSION_KEY, gold, dark, cream, card, brd, grn } from "../constants.js";
+import { PROXY_URL, APP_TOKEN, SYSTEM_PROMPT, BOOK_EXCERPTS, SESSION_KEY } from "../constants.js";
 import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
@@ -18,12 +18,8 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
   const abortRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+  useEffect(() => { return () => { abortRef.current?.abort(); }; }, []);
 
-  useEffect(() => {
-    return () => { abortRef.current?.abort(); };
-  }, []);
-
-  // Save words from the latest assistant message (if any ✓ LÆRT: markers)
   const processedMsgCount = useRef(0);
   useEffect(() => {
     const newMsgs = messages.slice(processedMsgCount.current);
@@ -52,7 +48,6 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
       try { localStorage.setItem(SESSION_KEY, JSON.stringify({ date: todayStr(), count: n })); } catch {}
       return n;
     });
-    // Limit to 80 least-mastered words to stay within MAX_SYSTEM_LENGTH (6000 chars)
     const wordSample = words.length > 0
       ? [...words].sort((a, b) => (a.points || 0) - (b.points || 0)).slice(0, 80)
       : [];
@@ -102,44 +97,46 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
   })();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'Jost', sans-serif", color: cream, paddingBottom: 66 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>← Tilbake</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 }}><span style={{ color: gold }}>{mode?.icon}</span><span>{mode?.label}</span></div>
-        <button onClick={onShowWords} style={{ background: "none", border: `1px solid ${gold}44`, borderRadius: 20, color: gold, fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "'Jost', sans-serif", letterSpacing: 1 }}>◈ {words.length}</button>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
+          <span style={{ color: "var(--accent)" }}>{mode?.icon}</span><span>{mode?.label}</span>
+        </div>
+        <button onClick={onShowWords} style={{ background: "none", border: "1px solid rgba(108,92,231,0.3)", borderRadius: 20, color: "var(--accent)", fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>◈ {words.length}</button>
       </div>
 
       {!isOnline && (
-        <div style={{ background: "#3a2a10", borderBottom: `1px solid ${gold}44`, padding: "8px 16px", fontSize: 13, color: gold, textAlign: "center", letterSpacing: 1 }}>
+        <div style={{ background: "rgba(108,92,231,0.08)", borderBottom: "1px solid var(--border)", padding: "8px 16px", fontSize: 13, color: "var(--accent)", textAlign: "center" }}>
           Ingen internettforbindelse — Claude er ikke tilgjengelig
         </div>
       )}
 
       {mode?.id === "teksthjelp" && (
         <button onClick={() => setShowBooks(b => !b)}
-          style={{ background: "rgba(201,168,76,0.06)", border: "none", borderBottom: `1px solid ${brd}`, color: gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", letterSpacing: 1, width: "100%" }}>
+          style={{ background: "rgba(108,92,231,0.04)", border: "none", borderBottom: "1px solid var(--border)", color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", width: "100%" }}>
           {showBooks ? "▲ Lukk boksamling" : "▼ Velg setning fra bøkene dine"}
         </button>
       )}
       {showBooks && (
-        <div style={{ background: card, borderBottom: `1px solid ${brd}`, padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 260, overflowY: "auto" }}>
+        <div style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8, maxHeight: 260, overflowY: "auto" }}>
           {recentTexts.length > 0 && (
             <>
-              <div style={{ fontSize: 10, color: `${gold}88`, letterSpacing: 2, textTransform: "uppercase" }}>Nylig brukt</div>
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 2, textTransform: "uppercase" }}>Nylig brukt</div>
               {recentTexts.map((t, i) => (
                 <button key={`r${i}`} onClick={() => { setInput(t); setShowBooks(false); }}
-                  style={{ background: "#f5f0e6", border: `1px solid ${gold}33`, borderRadius: 8, padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "'Jost', sans-serif", outline: "none" }}>
-                  <div style={{ fontSize: 13, color: cream, fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{t}"</div>
+                  style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", outline: "none" }}>
+                  <div style={{ fontSize: 13, color: "var(--text)", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{t}"</div>
                 </button>
               ))}
-              <div style={{ height: 1, background: brd, margin: "4px 0" }} />
+              <div style={{ height: 1, background: "var(--border)", margin: "4px 0" }} />
             </>
           )}
           {BOOK_EXCERPTS.map((ex, i) => (
             <button key={i} onClick={() => { setInput(ex.text); setShowBooks(false); }}
-              style={{ background: "#f5f0e6", border: `1px solid ${brd}`, borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "'Jost', sans-serif", outline: "none" }}>
-              <div style={{ fontSize: 11, color: gold, letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>{ex.book} · {ex.hint}</div>
-              <div style={{ fontSize: 14, color: cream, fontStyle: "italic" }}>"{ex.text}"</div>
+              style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", outline: "none" }}>
+              <div style={{ fontSize: 11, color: "var(--accent)", letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>{ex.book} · {ex.hint}</div>
+              <div style={{ fontSize: 14, color: "var(--text)", fontStyle: "italic" }}>"{ex.text}"</div>
             </button>
           ))}
         </div>
@@ -148,50 +145,50 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
         {messages.map((msg, i) => (
           <div key={i} style={msg.role === "user"
-            ? { alignSelf: "flex-end", maxWidth: "80%", background: "rgba(200,120,58,0.1)", border: `1px solid ${gold}44`, borderRadius: "18px 4px 18px 18px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 }
+            ? { alignSelf: "flex-end", maxWidth: "80%", background: "var(--accent-bg)", border: "1px solid rgba(108,92,231,0.2)", borderRadius: "18px 4px 18px 18px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 }
             : msg.content.includes("✓ LÆRT:")
-              ? { alignSelf: "flex-start", maxWidth: "88%", background: "rgba(76,175,122,0.08)", border: `1px solid ${grn}66`, borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }
-              : { alignSelf: "flex-start", maxWidth: "88%", background: card, border: `0.5px solid ${brd}`, borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }
+              ? { alignSelf: "flex-start", maxWidth: "88%", background: "rgba(0,184,148,0.08)", border: "1px solid rgba(0,184,148,0.3)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "var(--shadow-sm)" }
+              : { alignSelf: "flex-start", maxWidth: "88%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "var(--shadow-sm)" }
           }>
             {msg.role === "assistant" && (
-              <div style={{ fontSize: 10, color: gold, letterSpacing: 2, marginBottom: 6, textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Claude ✦</span>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => speak(stripSuggestions(msg.content))} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>🔊</button>
-                  <button onClick={() => speak(stripSuggestions(msg.content), 0.4)} style={{ background: "none", border: "none", color: speaking ? gold : `${gold}88`, fontSize: 14, cursor: "pointer", padding: 0 }}>🐢</button>
+                  <button onClick={() => speak(stripSuggestions(msg.content))} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.5)", fontSize: 14, cursor: "pointer", padding: 0 }}>🔊</button>
+                  <button onClick={() => speak(stripSuggestions(msg.content), 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.5)", fontSize: 14, cursor: "pointer", padding: 0 }}>🐢</button>
                 </div>
               </div>
             )}
-            <div style={{ fontSize: 15, lineHeight: 1.75, color: cream }}>{renderMessage(msg.role === "assistant" ? stripSuggestions(msg.content) : msg.content)}</div>
+            <div style={{ fontSize: 15, lineHeight: 1.75, color: "var(--text)" }}>{renderMessage(msg.role === "assistant" ? stripSuggestions(msg.content) : msg.content)}</div>
           </div>
         ))}
         {loading && (
-          <div style={{ alignSelf: "flex-start", maxWidth: "88%", background: card, border: `0.5px solid ${brd}`, borderRadius: "4px 18px 18px 18px", padding: "12px 16px" }}>
-            <div style={{ fontSize: 10, color: gold, letterSpacing: 2, marginBottom: 6, textTransform: "uppercase" }}>Claude ✦</div>
-            <div style={{ display: "flex", gap: 6, fontSize: 28, color: gold, opacity: 0.5 }}><span>·</span><span>·</span><span>·</span></div>
+          <div style={{ alignSelf: "flex-start", maxWidth: "88%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px" }}>
+            <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase" }}>Claude ✦</div>
+            <div style={{ display: "flex", gap: 6, fontSize: 28, color: "var(--accent)", opacity: 0.5 }}><span>·</span><span>·</span><span>·</span></div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
       {suggestions.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "8px 16px 0", background: card, borderTop: `1px solid ${brd}` }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "8px 16px 0", background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
           {suggestions.map((s, i) => (
             <button key={i} onClick={() => send(s)} className="suggestion-chip"
-              style={{ background: "none", border: `1px solid ${gold}55`, borderRadius: 20, color: gold, fontFamily: "'Jost', sans-serif", fontSize: 13, padding: "6px 14px", cursor: "pointer", letterSpacing: 0.5 }}>
+              style={{ background: "none", border: "1px solid rgba(108,92,231,0.35)", borderRadius: 20, color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "6px 14px", cursor: "pointer" }}>
               {s}
             </button>
           ))}
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 10, padding: "12px 16px", borderTop: `1px solid ${brd}`, background: card, alignItems: "flex-end" }}>
+      <div style={{ display: "flex", gap: 10, padding: "12px 16px", borderTop: "1px solid var(--border)", background: "var(--surface)", alignItems: "flex-end" }}>
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           placeholder="Skriv her..." className="input-glow"
-          style={{ flex: 1, background: "#f5f0e6", border: `0.5px solid ${brd}`, borderRadius: 10, color: cream, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "10px 14px", resize: "none", outline: "none", lineHeight: 1.5 }}
+          style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "10px 14px", resize: "none", outline: "none", lineHeight: 1.5 }}
           rows={2} />
         <button onClick={() => send()} disabled={loading || !input.trim()}
-          style={{ background: loading || !input.trim() ? "rgba(200,120,58,0.3)" : `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: loading || !input.trim() ? `${cream}88` : dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: loading || !input.trim() ? "default" : "pointer", letterSpacing: 1, whiteSpace: "nowrap" }}>
+          style={{ background: loading || !input.trim() ? "var(--accent-bg)" : "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: loading || !input.trim() ? "var(--text-subtle)" : "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: loading || !input.trim() ? "default" : "pointer", whiteSpace: "nowrap" }}>
           Send
         </button>
       </div>
