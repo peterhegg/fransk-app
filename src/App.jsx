@@ -300,6 +300,7 @@ export default function App() {
     setDagensChecked(true); setDagensResult(result);
     setDagensStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setDagensHistory(h => [...h, passed ? "correct" : "wrong"]);
+    bumpSession();
     const gc = incrementAnswerCount();
     const inBank = words.find(w => w.fr === dagensCard.fr);
     if (inBank) {
@@ -365,6 +366,7 @@ export default function App() {
     setGloseChecked(true); setGloseResult(result);
     setGloseStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setGloseHistory(h => [...h, passed ? "correct" : "wrong"]);
+    bumpSession();
     const gc = incrementAnswerCount();
     if (gloseCard.id) {
       setWords(prev => prev.map(w => {
@@ -416,6 +418,7 @@ export default function App() {
     const passed = result !== "wrong";
     setGrammarStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setGrammarHistory(h => [...h, passed ? "correct" : "wrong"]);
+    bumpSession();
   };
 
   const nextGrammar = () => {
@@ -461,6 +464,7 @@ export default function App() {
     setGramOvChecked(true); setGramOvResult(result);
     setGramOvStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setGramOvHistory(h => [...h, passed ? "correct" : "wrong"]);
+    bumpSession();
     const gc = incrementAnswerCount();
     if (gramOvCard?.id) {
       setGrammarWords(prev => prev.map(w => {
@@ -485,6 +489,15 @@ export default function App() {
     setGramOvOptions(getQuizOptions(remaining[0], grammarWords, !!remaining[0].reverse));
     setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult("");
+  };
+
+  // --- Session bump (called by all quiz submit handlers) ---
+  const bumpSession = () => {
+    setSessionMsgs(s => {
+      const n = s + 1;
+      try { localStorage.setItem("fransk-session-msgs", JSON.stringify({ date: todayStr(), count: n })); } catch {}
+      return n;
+    });
   };
 
   // --- Clear all data ---
@@ -571,7 +584,7 @@ export default function App() {
   return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <HomeScreen words={words} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
+      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
 }
