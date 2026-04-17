@@ -19,6 +19,7 @@ import QuizExerciseScreen from "./components/QuizExerciseScreen.jsx";
 import HomeScreen from "./screens/HomeScreen.jsx";
 import WordsScreen from "./screens/WordsScreen.jsx";
 import ChatScreen from "./screens/ChatScreen.jsx";
+import VoiceScreen from "./screens/VoiceScreen.jsx";
 
 export default function App() {
   // --- Navigation ---
@@ -286,7 +287,9 @@ export default function App() {
     else if (id === "glose") startGlose();
     else if (id === "dagens-grammatikk") startDagensGrammatikk();
     else if (id === "grammatikk-ovelse") startGramOvelse();
-    else {
+    else if (id === "fri") {
+      setScreen("voice");
+    } else {
       setMode(MODES.find(m => m.id === id)); setScreen("chat");
     }
   };
@@ -511,7 +514,7 @@ export default function App() {
     if (id === "words") { setShowWords(true); setScreen("home"); }
     else if (id === "home") { setShowWords(false); setScreen("home"); }
     else if (id === "glose") { setShowWords(false); startGlose(); }
-    else if (id === "fri") { setShowWords(false); startMode("fri"); }
+    else if (id === "fri") { setShowWords(false); setScreen("voice"); }
   };
 
   const navProps = { screen, showWords, onNav: handleNav };
@@ -571,6 +574,13 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "voice") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <VoiceScreen onBack={() => setScreen("home")} {...navProps} />
     </>
   );
 

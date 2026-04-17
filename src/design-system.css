@@ -137,6 +137,68 @@ body {
   box-shadow: 0 0 0 3px rgba(200, 120, 58, 0.18) !important;
 }
 
+/* ── Voice feature ─────────────────────────────────────────────────── */
+
+/* Orb states */
+.voice-orb--idle {
+  animation: orb-idle 2.8s ease-in-out infinite;
+}
+.voice-orb--listening {
+  animation: none;
+  transform: scale(1.06);
+}
+.voice-orb--thinking {
+  animation: orb-think 1.1s ease-in-out infinite;
+}
+.voice-orb--speaking {
+  animation: orb-speak 0.75s ease-in-out infinite;
+}
+
+@keyframes orb-idle {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.045); }
+}
+@keyframes orb-think {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%      { opacity: 0.72; transform: scale(0.965); }
+}
+@keyframes orb-speak {
+  0%, 100% { transform: scale(1);    }
+  20%      { transform: scale(1.09); }
+  50%      { transform: scale(0.96); }
+  80%      { transform: scale(1.06); }
+}
+
+/* Listening rings */
+.voice-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.voice-ring-1 { animation: ring-expand 1.8s ease-out infinite 0s;    }
+.voice-ring-2 { animation: ring-expand 1.8s ease-out infinite 0.45s; }
+.voice-ring-3 { animation: ring-expand 1.8s ease-out infinite 0.9s;  }
+
+@keyframes ring-expand {
+  0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.55; }
+  100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0;    }
+}
+
+/* CorrectionCard entrance */
+.correction-card {
+  animation: correction-in 0.28s ease both;
+}
+@keyframes correction-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
 /* Suggestion chips */
 .suggestion-chip {
   transition: background 0.2s ease, transform 0.15s ease;

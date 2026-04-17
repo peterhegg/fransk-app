@@ -15,7 +15,7 @@ const MODE_COLORS = {
 
 const MODE_EMOJI = {
   "dagens-glose": "🗼", "glose": "🃏", "dagens-grammatikk": "📖",
-  "grammatikk-ovelse": "✏️", "teksthjelp": "📝", "fri": "💬",
+  "grammatikk-ovelse": "✏️", "teksthjelp": "📝", "fri": "🎙️",
 };
 
 function timeGreeting() {
