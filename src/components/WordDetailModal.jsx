@@ -26,6 +26,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
   const [animated, setAnimated] = useState(false);
   const dragStartY = useRef(null);
   const sheetRef = useRef(null);
+  const insideScrolled = useRef(false);
 
   const allCats = [...VOCAB_CAT_ORDER, ...extraCats.filter(c => !VOCAB_CAT_ORDER.includes(c))];
 
@@ -44,7 +45,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
     const onMove = (e) => {
       if (dragStartY.current === null) return;
       const dy = e.touches[0].clientY - dragStartY.current;
-      if (dy > 0) { setDragY(dy); e.preventDefault(); }
+      if (dy > 0 && !insideScrolled.current) { setDragY(dy); e.preventDefault(); }
     };
     el.addEventListener("touchmove", onMove, { passive: false });
     return () => el.removeEventListener("touchmove", onMove);
@@ -53,6 +54,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
   const handleTouchStart = (e) => {
     dragStartY.current = e.touches[0].clientY;
     setDragY(0);
+    insideScrolled.current = (sheetRef.current?.scrollTop ?? 0) > 0;
   };
 
   const handleTouchEnd = () => {

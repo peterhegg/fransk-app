@@ -123,6 +123,7 @@ function SheetModal({ onClose, children, style = {} }) {
   const [animated, setAnimated] = useState(false);
   const dragStartY = useRef(null);
   const sheetRef = useRef(null);
+  const insideScrolled = useRef(false);
 
   useEffect(() => {
     document.body.style.overscrollBehavior = "none";
@@ -139,7 +140,7 @@ function SheetModal({ onClose, children, style = {} }) {
     const onMove = (e) => {
       if (dragStartY.current === null) return;
       const dy = e.touches[0].clientY - dragStartY.current;
-      if (dy > 0) { setDragY(dy); e.preventDefault(); }
+      if (dy > 0 && !insideScrolled.current) { setDragY(dy); e.preventDefault(); }
     };
     el.addEventListener("touchmove", onMove, { passive: false });
     return () => el.removeEventListener("touchmove", onMove);
@@ -148,6 +149,12 @@ function SheetModal({ onClose, children, style = {} }) {
   const handleTouchStart = (e) => {
     dragStartY.current = e.touches[0].clientY;
     setDragY(0);
+    let node = e.target;
+    insideScrolled.current = false;
+    while (node && node !== sheetRef.current) {
+      if (node.scrollTop > 0) { insideScrolled.current = true; break; }
+      node = node.parentElement;
+    }
   };
 
   const handleTouchEnd = () => {
