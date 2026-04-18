@@ -14,10 +14,19 @@ export function getOrderedGoals(customOrder) {
   return [...ordered, ...missing];
 }
 
+export function getWordCountByGoal(words) {
+  const counts = {};
+  for (const w of words) {
+    const g = w.goal || "core";
+    counts[g] = (counts[g] || 0) + 1;
+  }
+  return counts;
+}
+
 export function getActiveGoal(words, goalOrder) {
   const ordered = getOrderedGoals(goalOrder);
-  const cumTargets = ordered.reduce((acc, g, i) => { acc.push((acc[i - 1] || 0) + g.target); return acc; }, []);
-  const idx = cumTargets.findIndex(t => words.length < t);
+  const counts = getWordCountByGoal(words);
+  const idx = ordered.findIndex(g => (counts[g.id] || 0) < g.target);
   return ordered[idx === -1 ? ordered.length - 1 : idx] || ordered[0];
 }
 
@@ -325,17 +334,22 @@ export function saveGeneratedVocab(words) {
 
 // --- Today's exercise ---
 export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core") {
+  const learnedFr = new Set(words.map(w => w.fr));
   try {
     const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
-    if (saved.date === todayStr() && saved.goal === goalId) return saved;
+    if (saved.date === todayStr() && saved.goal === goalId) {
+      // Return cache only if exercise is in progress or still has new words
+      if (saved.phase1done || saved.phase2done) return saved;
+      const hasNew = (saved.words || []).some(w => !learnedFr.has(w.fr));
+      if (hasNew) return saved;
+      // Cache has only known words — fall through and rebuild
+    }
   } catch {}
-  const learnedFr = new Set(words.map(w => w.fr));
   const baseVocab = goalId === "core" ? VOCAB_LIST : [];
   const goalGenerated = generatedVocab.filter(v => !v.goal || v.goal === goalId);
   const allVocab = [...baseVocab, ...goalGenerated];
   const newVocab = allVocab.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
-  const due = getDue(words, loadAnswerCount()).slice(0, Math.max(0, 5 - newVocab.length));
-  const selected = [...newVocab, ...due].slice(0, 5);
+  const selected = newVocab.slice(0, 5);
   const exercise = { date: todayStr(), goal: goalId, words: selected, phase1done: false, phase2done: false };
   localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(exercise));
   return exercise;
@@ -345,7 +359,7 @@ export function needsNewVocab(words, generatedVocab = [], goalId = "core") {
   const learnedFr = new Set(words.map(w => w.fr));
   const baseVocab = goalId === "core" ? VOCAB_LIST : [];
   const goalGenerated = generatedVocab.filter(v => !v.goal || v.goal === goalId);
-  return [...baseVocab, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 5;
+  return [...baseVocab, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 10;
 }
 
 export function getCurrentGrammarTopic() {

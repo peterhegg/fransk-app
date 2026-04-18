@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN, BOOK_EXCERPTS, SESSION_KEY } from "../constants.js";
-import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine, buildSystemPrompt, loadUserProfile } from "../utils.jsx";
+import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine, buildSystemPrompt, loadUserProfile, getActiveGoal, loadGoalOrder } from "../utils.jsx";
 
 const SYSTEM_PROMPT = buildSystemPrompt(loadUserProfile());
 import BottomNav from "../components/BottomNav.jsx";
@@ -31,7 +31,8 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
           const parsed = parseLearnLine(m[0]);
           setWords(prev => {
             if (prev.some(w => w.fr === parsed.fr)) return prev;
-            return [...prev, { id: Date.now() + Math.random(), ...parsed, level: 0, nextReview: Date.now() + 86400000, added: Date.now() }];
+            const currentGoalId = getActiveGoal(prev, loadGoalOrder()).id;
+            return [...prev, { id: Date.now() + Math.random(), ...parsed, level: 0, nextReview: Date.now() + 86400000, added: Date.now(), goal: currentGoalId }];
           });
         });
       }

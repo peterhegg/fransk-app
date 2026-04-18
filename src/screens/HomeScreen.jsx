@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE } from "../utils.jsx";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
@@ -191,9 +191,10 @@ function SheetModal({ onClose, children, style = {} }) {
   );
 }
 
-function VocabGoalOrderModal({ onClose, onSave }) {
+function VocabGoalOrderModal({ onClose, onSave, words }) {
   const initialOrder = getOrderedGoals(loadGoalOrder()).map(g => g.id);
   const [order, setOrder] = useState(initialOrder);
+  const wordCountByGoal = getWordCountByGoal(words);
 
   const move = (i, dir) => {
     const next = [...order];
@@ -215,12 +216,17 @@ function VocabGoalOrderModal({ onClose, onSave }) {
         {order.map((id, i) => {
           const g = goalsMap[id];
           if (!g) return null;
+          const learned = wordCountByGoal[id] || 0;
+          const done = learned >= g.target;
           return (
             <div key={id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
               <div style={{ width: 20, textAlign: "center", fontSize: 11, color: "var(--text-subtle)", flexShrink: 0 }}>{i + 1}</div>
               <div style={{ flex: 1, lineHeight: 1.3 }}>
                 <div style={{ fontSize: 13, color: "var(--text)" }}>{g.label}</div>
-                <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 1 }}>{g.target} ord</div>
+                <div style={{ fontSize: 11, color: done ? "var(--color-success)" : "var(--text-subtle)", marginTop: 1 }}>
+                  {learned > 0 ? `${learned} / ${g.target} ord` : `${g.target} ord`}
+                  {done ? " ✓" : ""}
+                </div>
               </div>
               <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                 <button onClick={() => move(i, -1)} disabled={i === 0}
@@ -572,13 +578,12 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const grammarOvDue = getDue(grammarWords, answerCount).length;
 
   const orderedGoals = getOrderedGoals(goalOrder);
-  const cumTargets = orderedGoals.reduce((acc, g, i) => { acc.push((acc[i - 1] || 0) + g.target); return acc; }, []);
-  const activeIdx = cumTargets.findIndex(t => words.length < t);
+  const wordCountByGoal = getWordCountByGoal(words);
+  const activeIdx = orderedGoals.findIndex(g => (wordCountByGoal[g.id] || 0) < g.target);
   const idx = activeIdx === -1 ? orderedGoals.length - 1 : activeIdx;
   const activeGoal = orderedGoals[idx];
-  const prevTotal = idx === 0 ? 0 : cumTargets[idx - 1];
-  const goalTotal = cumTargets[idx];
-  const pct = Math.min(100, ((words.length - prevTotal) / (goalTotal - prevTotal)) * 100);
+  const activeWordCount = wordCountByGoal[activeGoal.id] || 0;
+  const pct = Math.min(100, (activeWordCount / activeGoal.target) * 100);
 
   const todaysGloseImg = GOAL_IMAGES[activeGoal?.id] || MODE_IMAGES["dagens-glose"];
 
@@ -818,7 +823,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(to right, var(--accent), var(--accent-light))", borderRadius: 99, transition: "width 0.8s ease" }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ fontSize: 11, color: "var(--text-subtle)" }}>{words.length - prevTotal} / {goalTotal - prevTotal} ord i bolken</span>
+            <span style={{ fontSize: 11, color: "var(--text-subtle)" }}>{activeWordCount} / {activeGoal.target} ord i bolken</span>
             <span style={{ fontSize: 11, color: "var(--accent)" }}>{Math.round(pct)}%</span>
           </div>
         </div>
@@ -850,6 +855,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       )}
       {goalOrderOpen && (
         <VocabGoalOrderModal
+          words={words}
           onClose={() => setGoalOrderOpen(false)}
           onSave={(newOrder) => { setGoalOrder(newOrder); setGoalOrderOpen(false); }}
         />

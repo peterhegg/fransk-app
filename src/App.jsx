@@ -258,7 +258,7 @@ export default function App() {
       setDagensLoading(true);
       try {
         const knownFr = new Set([...words.map(w => w.fr), ...genVocab.map(v => v.fr)]);
-        const knownList = [...knownFr].slice(0, 80).join(", ");
+        const knownList = [...knownFr].join(", ");
         const res = await fetch(PROXY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
@@ -278,9 +278,8 @@ export default function App() {
         if (match) {
           const generated = JSON.parse(match[0]);
           if (Array.isArray(generated) && generated.length) {
-            const existingFr = new Set(genVocab.map(v => v.fr));
             const fresh = generated
-              .filter(v => v.fr && v.no && !existingFr.has(v.fr))
+              .filter(v => v.fr && v.no && !knownFr.has(v.fr))
               .map(v => ({ ...v, goal: goalId }));
             genVocab = [...genVocab, ...fresh];
             saveGeneratedVocab(genVocab);
@@ -379,7 +378,8 @@ export default function App() {
       }));
     } else if (result === "correct") {
       logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, 1, result);
-      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1 };
+      const currentGoalId = getActiveGoal(words, loadGoalOrder()).id;
+      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1, goal: currentGoalId };
       setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
