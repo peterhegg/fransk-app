@@ -259,11 +259,11 @@ export default function WordsScreen({ words, setWords, grammarWords = [], onBack
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>← Tilbake</button>
-        <div style={{ flex: 1, minWidth: 0, textAlign: "center", fontSize: 16, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-          <span style={{ color: "var(--accent)" }}>◈</span>{" "}Ordsamlingen din
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
+          <span style={{ color: "var(--accent)" }}>◈</span> Ordsamlingen din
         </div>
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 6 }}>
           <button onClick={() => setCatManageOpen(true)}
             style={{ background: "none", border: "1px solid rgba(108,92,231,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
           <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
