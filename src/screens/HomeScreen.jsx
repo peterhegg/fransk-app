@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier } from "../utils.jsx";
+import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 
@@ -161,10 +161,161 @@ function WordDetailModal({ word, onClose, onSave }) {
   );
 }
 
+function getOrderedGoals(customOrder) {
+  if (!customOrder) return VOCAB_GOALS;
+  const ordered = customOrder.map(id => VOCAB_GOALS.find(g => g.id === id)).filter(Boolean);
+  const missing = VOCAB_GOALS.filter(g => !customOrder.includes(g.id));
+  return [...ordered, ...missing];
+}
+
+function SheetModal({ onClose, children, style = {} }) {
+  useEffect(() => {
+    document.body.style.overscrollBehavior = "none";
+    return () => { document.body.style.overscrollBehavior = ""; };
+  }, []);
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
+      <div style={{ position: "relative", background: "var(--surface)", borderRadius: "24px 24px 0 0", boxShadow: "0 -8px 40px rgba(108,92,231,0.15)", animation: "slideUp 0.25s ease both", display: "flex", flexDirection: "column", maxHeight: "85dvh", ...style }}>
+        <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "16px auto 0", flexShrink: 0 }} />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function VocabGoalOrderModal({ onClose, onSave }) {
+  const initialOrder = getOrderedGoals(loadGoalOrder()).map(g => g.id);
+  const [order, setOrder] = useState(initialOrder);
+
+  const move = (i, dir) => {
+    const next = [...order];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    setOrder(next);
+  };
+
+  const goalsMap = Object.fromEntries(VOCAB_GOALS.map(g => [g.id, g]));
+
+  return (
+    <SheetModal onClose={onClose}>
+      <div style={{ padding: "16px 24px 8px", flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Rekkefølge på læringsmål</div>
+        <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4 }}>Flytt bolkene opp eller ned for å tilpasse læringsveien.</div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px", scrollbarWidth: "none" }}>
+        {order.map((id, i) => {
+          const g = goalsMap[id];
+          if (!g) return null;
+          return (
+            <div key={id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ width: 20, textAlign: "center", fontSize: 11, color: "var(--text-subtle)", flexShrink: 0 }}>{i + 1}</div>
+              <div style={{ flex: 1, fontSize: 13, color: "var(--text)", lineHeight: 1.3 }}>{g.label}</div>
+              <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                <button onClick={() => move(i, -1)} disabled={i === 0}
+                  style={{ background: i === 0 ? "var(--bg)" : "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === 0 ? "default" : "pointer", fontSize: 14, color: i === 0 ? "var(--text-subtle)" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+                <button onClick={() => move(i, 1)} disabled={i === order.length - 1}
+                  style={{ background: i === order.length - 1 ? "var(--bg)" : "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === order.length - 1 ? "default" : "pointer", fontSize: 14, color: i === order.length - 1 ? "var(--text-subtle)" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>↓</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ padding: "12px 16px 40px", display: "flex", gap: 10, flexShrink: 0, borderTop: "1px solid var(--border)" }}>
+        <button onClick={() => { resetGoalOrder(); onSave(null); }}
+          style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-subtle)", fontSize: 13, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          Tilbakestill
+        </button>
+        <button onClick={() => { saveGoalOrder(order); onSave(order); }}
+          style={{ flex: 2, background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 500, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          Lagre rekkefølge
+        </button>
+      </div>
+    </SheetModal>
+  );
+}
+
+function OrdmesterEditModal({ onClose, onSave }) {
+  const defaultGoals = loadOrdmesterGoals() || ORDMESTER_GOALS;
+  const [goals, setGoals] = useState(defaultGoals.map(g => ({ ...g })));
+
+  const update = (i, field, val) => {
+    setGoals(prev => prev.map((g, idx) => idx === i ? { ...g, [field]: field === "target" ? val : val } : g));
+  };
+
+  const addGoal = () => {
+    const maxTarget = goals.reduce((m, g) => Math.max(m, g.target), 0);
+    setGoals(prev => [...prev, { target: maxTarget + 50, reward: "" }]);
+  };
+
+  const removeGoal = (i) => setGoals(prev => prev.filter((_, idx) => idx !== i));
+
+  const handleSave = () => {
+    const cleaned = goals
+      .map(g => ({ target: parseInt(g.target, 10) || 0, reward: String(g.reward).trim() }))
+      .filter(g => g.target > 0)
+      .sort((a, b) => a.target - b.target);
+    if (cleaned.length === 0) return;
+    saveOrdmesterGoals(cleaned);
+    onSave();
+  };
+
+  return (
+    <SheetModal onClose={onClose}>
+      <div style={{ padding: "16px 24px 8px", flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Tilpass Ordmestertelleren</div>
+        <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4 }}>Sett dine egne mål og belønninger.</div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px", scrollbarWidth: "none" }}>
+        {goals.map((g, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 4 }}>
+              <input
+                type="number" min="1" value={g.target}
+                onChange={e => update(i, "target", e.target.value)}
+                style={{ width: 70, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 8px", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", textAlign: "center", outline: "none" }}
+              />
+              <span style={{ fontSize: 11, color: "var(--text-subtle)", whiteSpace: "nowrap" }}>ord</span>
+            </div>
+            <input
+              type="text" placeholder="Belønning…" value={g.reward}
+              onChange={e => update(i, "reward", e.target.value)}
+              style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 10px", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", minWidth: 0 }}
+            />
+            {goals.length > 1 && (
+              <button onClick={() => removeGoal(i)}
+                style={{ background: "rgba(225,112,85,0.10)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: "pointer", fontSize: 16, color: "var(--color-error)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
+            )}
+          </div>
+        ))}
+        <button onClick={addGoal}
+          style={{ width: "100%", background: "none", border: "1px dashed var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px", cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 8 }}>
+          + Legg til mål
+        </button>
+      </div>
+      <div style={{ padding: "12px 16px 40px", display: "flex", gap: 10, flexShrink: 0, borderTop: "1px solid var(--border)" }}>
+        <button onClick={() => { resetOrdmesterGoals(); onSave(); }}
+          style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-subtle)", fontSize: 13, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          Tilbakestill
+        </button>
+        <button onClick={handleSave}
+          style={{ flex: 2, background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 500, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          Lagre mål
+        </button>
+      </div>
+    </SheetModal>
+  );
+}
+
 export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
+  const [goalOrderOpen, setGoalOrderOpen] = useState(false);
+  const [ordmesterEditOpen, setOrdmesterEditOpen] = useState(false);
+  const [goalOrder, setGoalOrder] = useState(() => loadGoalOrder());
+  const [ordmesterVersion, setOrdmesterVersion] = useState(0);
   const searchRef = useRef(null);
 
   const searchResults = searchQuery.trim().length > 0
@@ -187,10 +338,11 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const grammarProgress = `${completedGrammar.length}/${GRAMMAR_TOPICS.length}`;
   const grammarOvDue = getDue(grammarWords, answerCount).length;
 
-  const cumTargets = VOCAB_GOALS.reduce((acc, g, i) => { acc.push((acc[i - 1] || 0) + g.target); return acc; }, []);
+  const orderedGoals = getOrderedGoals(goalOrder);
+  const cumTargets = orderedGoals.reduce((acc, g, i) => { acc.push((acc[i - 1] || 0) + g.target); return acc; }, []);
   const activeIdx = cumTargets.findIndex(t => words.length < t);
-  const idx = activeIdx === -1 ? VOCAB_GOALS.length - 1 : activeIdx;
-  const activeGoal = VOCAB_GOALS[idx];
+  const idx = activeIdx === -1 ? orderedGoals.length - 1 : activeIdx;
+  const activeGoal = orderedGoals[idx];
   const prevTotal = idx === 0 ? 0 : cumTargets[idx - 1];
   const goalTotal = cumTargets[idx];
   const pct = Math.min(100, ((words.length - prevTotal) / (goalTotal - prevTotal)) * 100);
@@ -362,10 +514,13 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         </div>
 
         {/* Læringsmål */}
-        <div style={{ margin: "20px 24px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
+        <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "20px 24px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-subtle)", fontWeight: 500 }}>Læringsmål</span>
-            <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 500 }}>Bolk {idx + 1} av {VOCAB_GOALS.length}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 500 }}>Bolk {idx + 1} av {orderedGoals.length}</span>
+              <span style={{ fontSize: 13, color: "var(--text-subtle)" }}>›</span>
+            </div>
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 16, color: "var(--text)", marginBottom: 12 }}>{activeGoal.label}</div>
           <div style={{ height: 6, background: "var(--accent-bg)", borderRadius: 99, overflow: "hidden" }}>
@@ -378,7 +533,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         </div>
 
         <div style={{ margin: "20px 24px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
-          <OrdmesterTeller masteredCount={masteredCount} />
+          <OrdmesterTeller key={ordmesterVersion} masteredCount={masteredCount} onEdit={() => setOrdmesterEditOpen(true)} />
         </div>
 
         {noWordsMsg && (
@@ -399,6 +554,20 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             setWords(prev => prev.map(w => w.id === updated.id ? updated : w));
             setSelectedWord(null);
           }}
+        />
+      )}
+
+      {goalOrderOpen && (
+        <VocabGoalOrderModal
+          onClose={() => setGoalOrderOpen(false)}
+          onSave={(newOrder) => { setGoalOrder(newOrder); setGoalOrderOpen(false); }}
+        />
+      )}
+
+      {ordmesterEditOpen && (
+        <OrdmesterEditModal
+          onClose={() => setOrdmesterEditOpen(false)}
+          onSave={() => { setOrdmesterVersion(v => v + 1); setOrdmesterEditOpen(false); }}
         />
       )}
 

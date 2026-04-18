@@ -130,6 +130,34 @@ export function incrementAnswerCount() {
   return n;
 }
 
+const ORDMESTER_GOALS_KEY = "ordmester-custom-goals";
+export function loadOrdmesterGoals() {
+  try {
+    const s = localStorage.getItem(ORDMESTER_GOALS_KEY);
+    if (!s) return null;
+    const arr = JSON.parse(s);
+    if (Array.isArray(arr) && arr.length > 0 && arr.every(g => Number.isInteger(g.target) && g.target > 0 && typeof g.reward === "string")) return arr;
+  } catch {}
+  return null;
+}
+export function saveOrdmesterGoals(goals) {
+  try { localStorage.setItem(ORDMESTER_GOALS_KEY, JSON.stringify(goals)); } catch {}
+}
+export function resetOrdmesterGoals() {
+  try { localStorage.removeItem(ORDMESTER_GOALS_KEY); } catch {}
+}
+
+const VOCAB_GOAL_ORDER_KEY = "vocab-goals-order";
+export function loadGoalOrder() {
+  try { const s = localStorage.getItem(VOCAB_GOAL_ORDER_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+}
+export function saveGoalOrder(ids) {
+  try { localStorage.setItem(VOCAB_GOAL_ORDER_KEY, JSON.stringify(ids)); } catch {}
+}
+export function resetGoalOrder() {
+  try { localStorage.removeItem(VOCAB_GOAL_ORDER_KEY); } catch {}
+}
+
 // --- Points + mastery ---
 export function getWordTier(pts) {
   if (pts >= 20) return 5;

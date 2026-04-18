@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 import { ORDMESTER_GOALS } from "../constants.js";
+import { loadOrdmesterGoals } from "../utils.jsx";
 
-function getSegment(masteredCount) {
-  const idx = ORDMESTER_GOALS.findIndex(g => masteredCount < g.target);
-  if (idx === -1) return { goal: ORDMESTER_GOALS[ORDMESTER_GOALS.length - 1], start: ORDMESTER_GOALS[ORDMESTER_GOALS.length - 2].target, goalIdx: ORDMESTER_GOALS.length - 1 };
-  return {
-    goal: ORDMESTER_GOALS[idx],
-    start: idx === 0 ? 0 : ORDMESTER_GOALS[idx - 1].target,
-    goalIdx: idx,
-  };
+function getGoals() {
+  return loadOrdmesterGoals() || ORDMESTER_GOALS;
 }
 
-export default function OrdmesterTeller({ masteredCount }) {
+function getSegment(masteredCount, goals) {
+  const idx = goals.findIndex(g => masteredCount < g.target);
+  if (idx === -1) return { goal: goals[goals.length - 1], start: goals.length > 1 ? goals[goals.length - 2].target : 0, goalIdx: goals.length - 1 };
+  return { goal: goals[idx], start: idx === 0 ? 0 : goals[idx - 1].target, goalIdx: idx };
+}
+
+export default function OrdmesterTeller({ masteredCount, onEdit }) {
   const [displayed, setDisplayed] = useState(0);
   const [barWidth, setBarWidth] = useState(0);
 
-  const { goal, start } = getSegment(masteredCount);
+  const goals = getGoals();
+  const { goal, start } = getSegment(masteredCount, goals);
   const segmentSize = goal.target - start;
   const progressInSegment = Math.min(masteredCount - start, segmentSize);
   const pct = segmentSize > 0 ? (progressInSegment / segmentSize) * 100 : 0;
@@ -38,12 +40,20 @@ export default function OrdmesterTeller({ masteredCount }) {
     return () => clearTimeout(t);
   }, [pct]);
 
-  const allDone = masteredCount >= ORDMESTER_GOALS[ORDMESTER_GOALS.length - 1].target;
+  const allDone = masteredCount >= goals[goals.length - 1].target;
 
   return (
     <div style={{ textAlign: "center", width: "100%" }}>
-      <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-subtle)", textTransform: "uppercase", fontWeight: 500, marginBottom: 6 }}>
-        Ordmestertelleren
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-subtle)", textTransform: "uppercase", fontWeight: 500 }}>
+          Ordmestertelleren
+        </div>
+        {onEdit && (
+          <button onClick={onEdit}
+            style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 11, fontWeight: 500, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            Tilpass
+          </button>
+        )}
       </div>
 
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6, marginBottom: 12 }}>
@@ -78,9 +88,9 @@ export default function OrdmesterTeller({ masteredCount }) {
       )}
 
       <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12 }}>
-        {ORDMESTER_GOALS.map((g, i) => {
+        {goals.map((g, i) => {
           const done = masteredCount >= g.target;
-          const active = !done && masteredCount >= (i === 0 ? 0 : ORDMESTER_GOALS[i - 1].target);
+          const active = !done && masteredCount >= (i === 0 ? 0 : goals[i - 1].target);
           return (
             <div key={g.target} title={`${g.target} ord — ${g.reward}`}
               style={{
