@@ -11,7 +11,7 @@ const MODE_IMAGES = {
   "glose":             "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop",
   "dagens-grammatikk": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=70&auto=format&fit=crop",
   "grammatikk-ovelse": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop",
-  "teksthjelp":        "https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400&q=70&auto=format&fit=crop",
+  "teksthjelp":        `${import.meta.env.BASE_URL}houellebecq.jpeg`,
   "fri":               "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop",
 };
 
