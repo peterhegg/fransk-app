@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN, SYSTEM_PROMPT, BOOK_EXCERPTS, SESSION_KEY } from "../constants.js";
-import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine } from "../utils.jsx";
+import { PROXY_URL, APP_TOKEN, BOOK_EXCERPTS, SESSION_KEY } from "../constants.js";
+import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine, buildSystemPrompt, loadUserProfile } from "../utils.jsx";
+
+const SYSTEM_PROMPT = buildSystemPrompt(loadUserProfile());
 import BottomNav from "../components/BottomNav.jsx";
 
 export default function ChatScreen({ mode, words, setWords, isOnline, speak, speaking, sessionMsgs, setSessionMsgs, onBack, onShowWords, screen, showWords, onNav }) {

@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useVoiceRecognition } from "./useVoiceRecognition.jsx";
 import { useSpeechSynthesis } from "./useSpeechSynthesis.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { logVoiceSession } from "../utils.jsx";
 
 const VOICE_URL = PROXY_URL ? `${PROXY_URL.replace(/\/$/, "")}/voice` : "/voice";
 
@@ -80,6 +81,7 @@ export function useConversation() {
   }, [stopRec]);
 
   const reset = useCallback(() => {
+    if (historyRef.current.length > 0) logVoiceSession();
     stopSpeaking();
     historyRef.current = [];
     setHistory([]);

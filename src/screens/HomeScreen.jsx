@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder } from "../utils.jsx";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 
@@ -358,6 +358,225 @@ function OrdmesterEditModal({ onClose, onSave }) {
   );
 }
 
+function ActivityModal({ streak, onClose }) {
+  const log = loadActivityLog();
+  const today = todayStr();
+  const days = Array.from({ length: 20 }, (_, i) => {
+    const d = new Date(Date.now() - (19 - i) * 86400000);
+    const date = d.toISOString().split("T")[0];
+    return log.find(e => e.date === date) || { date, answers: 0, vocab: 0, grammar: 0, voice: 0 };
+  });
+  const maxAnswers = Math.max(...days.map(d => d.answers), 1);
+  const last7 = days.slice(-7);
+  const weekAnswers = last7.reduce((s, d) => s + d.answers, 0);
+  const weekVocab = last7.reduce((s, d) => s + d.vocab, 0);
+  const weekGrammar = last7.reduce((s, d) => s + d.grammar, 0);
+  const weekVoice = last7.reduce((s, d) => s + d.voice, 0);
+
+  return (
+    <SheetModal onClose={onClose}>
+      <div style={{ padding: "16px 24px 8px", flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Aktivitetshistorikk</div>
+        <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 2 }}>Siste 20 dager</div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, padding: "0 16px 16px", flexShrink: 0 }}>
+        {[
+          { label: "Svar", val: weekAnswers, color: "var(--accent)" },
+          { label: "Glose", val: weekVocab, color: "#00b894" },
+          { label: "Gram.", val: weekGrammar, color: "#0984e3" },
+          { label: "Snakk", val: weekVoice, color: "#f0a500" },
+        ].map(s => (
+          <div key={s.label} style={{ flex: 1, background: "var(--bg)", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
+            <div style={{ fontSize: 18, fontWeight: 600, color: s.color }}>{s.val}</div>
+            <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 8px", scrollbarWidth: "none" }}>
+        <div style={{ display: "flex", gap: 3, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4, alignItems: "flex-end" }}>
+          {days.map(day => {
+            const isToday = day.date === today;
+            const barH = day.answers === 0 ? 4 : Math.max(8, (day.answers / maxAnswers) * 100);
+            const dayN = parseInt(day.date.slice(-2));
+            return (
+              <div key={day.date} style={{ flexShrink: 0, width: 30, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
+                  {day.answers > 0 ? day.answers : ""}
+                </div>
+                <div style={{ width: 18, height: barH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(108,92,231,0.4)" : "var(--accent-bg)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
+                <div style={{ display: "flex", gap: 2, height: 12, alignItems: "center" }}>
+                  {day.vocab > 0 && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#00b894" }} title="Glose" />}
+                  {day.grammar > 0 && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#0984e3" }} title="Grammatikk" />}
+                  {day.voice > 0 && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#f0a500" }} title="Samtale" />}
+                </div>
+                <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
+                  {isToday ? "i dag" : dayN}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 11, color: "var(--text-subtle)", justifyContent: "center" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00b894", display: "inline-block" }} />Gloser</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#0984e3", display: "inline-block" }} />Grammatikk</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f0a500", display: "inline-block" }} />Samtale</span>
+        </div>
+
+        <div style={{ marginTop: 16, background: "var(--bg)", borderRadius: 14, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: 13, color: "var(--text)" }}>🔥 Streak</div>
+          <div style={{ fontSize: 18, fontWeight: 600, color: "var(--accent)" }}>{streak} dager</div>
+        </div>
+      </div>
+
+      <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)" }}>
+        <button onClick={onClose} style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-subtle)", fontSize: 13, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Lukk</button>
+      </div>
+    </SheetModal>
+  );
+}
+
+function TodaysAnswersModal({ onClose }) {
+  const entries = loadTodaysWordAnswers();
+
+  const wordMap = {};
+  entries.forEach(e => {
+    if (!wordMap[e.fr]) wordMap[e.fr] = { fr: e.fr, no: e.no, phonetic: e.phonetic, firstPts: e.pointsBefore, lastPts: e.pointsAfter, count: 0 };
+    wordMap[e.fr].lastPts = e.pointsAfter;
+    wordMap[e.fr].count++;
+  });
+  const words = Object.values(wordMap).sort((a, b) => (b.lastPts - b.firstPts) - (a.lastPts - a.firstPts));
+
+  const totalPos = words.filter(w => w.lastPts > w.firstPts).length;
+  const totalNeg = words.filter(w => w.lastPts < w.firstPts).length;
+
+  return (
+    <SheetModal onClose={onClose}>
+      <div style={{ padding: "16px 24px 8px", flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Svar i dag</div>
+        {words.length > 0 ? (
+          <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 2 }}>
+            {words.length} ord testet — <span style={{ color: "#00b894" }}>↑ {totalPos}</span> · <span style={{ color: "var(--color-error)" }}>↓ {totalNeg}</span>
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 2 }}>Ingen svar registrert ennå i dag</div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "4px 16px 8px", scrollbarWidth: "none" }}>
+        {words.map((w, i) => {
+          const net = w.lastPts - w.firstPts;
+          const netColor = net > 0 ? "#00b894" : net < 0 ? "var(--color-error)" : "var(--text-subtle)";
+          const tier = getWordTier(w.lastPts);
+          return (
+            <div key={w.fr} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: i < words.length - 1 ? "1px solid var(--border)" : "none" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.fr}</div>
+                <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 1 }}>{w.no}</div>
+              </div>
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: netColor }}>
+                  {net > 0 ? `+${net}` : net < 0 ? `${net}` : "="}
+                </div>
+                <div style={{ fontSize: 10, color: MASTERY_COLORS[tier] || "var(--text-subtle)", fontWeight: 500 }}>
+                  {w.lastPts} pts · {w.count} svar
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {words.length === 0 && (
+          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--text-subtle)", fontSize: 14 }}>
+            Start en øvelse for å se dagens fremgang her.
+          </div>
+        )}
+      </div>
+
+      <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: words.length > 0 ? "1px solid var(--border)" : "none" }}>
+        <button onClick={onClose} style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-subtle)", fontSize: 13, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Lukk</button>
+      </div>
+    </SheetModal>
+  );
+}
+
+const LEVELS = ["A1", "A1/A2", "A2", "A2/B1", "B1", "B1/B2", "B2", "C1", "C2"];
+
+function UserProfileModal({ onClose, onSave }) {
+  const [profile, setProfile] = useState(() => loadUserProfile());
+  const set = (k, v) => setProfile(p => ({ ...p, [k]: v }));
+
+  return (
+    <SheetModal onClose={onClose}>
+      <div style={{ padding: "16px 24px 8px", flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Brukerprofil</div>
+        <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 2 }}>Tilpass appen til deg</div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px", scrollbarWidth: "none" }}>
+        {[
+          { label: "Navn", key: "name", type: "text", placeholder: "Ditt fornavn" },
+          { label: "Lærernavn", key: "teacherName", type: "text", placeholder: "F.eks. Pierre" },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>{f.label}</div>
+            <input value={profile[f.key]} onChange={e => set(f.key, e.target.value)} placeholder={f.placeholder}
+              style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 14px", fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box" }} />
+          </div>
+        ))}
+
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Nivå</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {LEVELS.map(l => (
+              <button key={l} onClick={() => set("level", l)}
+                style={{ background: profile.level === l ? "var(--accent)" : "var(--bg)", border: `1px solid ${profile.level === l ? "var(--accent)" : "var(--border)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 12, color: profile.level === l ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {[
+          { label: "Ditt kjønn", key: "gender" },
+          { label: "Lærerens kjønn", key: "teacherGender" },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>{f.label}</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {["han", "hun"].map(g => (
+                <button key={g} onClick={() => set(f.key, g)}
+                  style={{ flex: 1, background: profile[f.key] === g ? "var(--accent)" : "var(--bg)", border: `1px solid ${profile[f.key] === g ? "var(--accent)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 13, color: profile[f.key] === g ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                  {g === "han" ? "Han/gutt" : "Hun/jente"}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
+          <div>
+            <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Dysleksi-tilpasning</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 2 }}>Kortere tekster, alltid fonetikk</div>
+          </div>
+          <button onClick={() => set("dysleksi", !profile.dysleksi)}
+            style={{ width: 44, height: 26, borderRadius: 13, background: profile.dysleksi ? "var(--accent)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+            <div style={{ position: "absolute", top: 3, left: profile.dysleksi ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+          </button>
+        </div>
+      </div>
+
+      <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)" }}>
+        <button onClick={() => { saveUserProfile(profile); onSave(profile); }}
+          style={{ width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 500, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          Lagre profil
+        </button>
+      </div>
+    </SheetModal>
+  );
+}
+
 export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -366,6 +585,10 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const [ordmesterEditOpen, setOrdmesterEditOpen] = useState(false);
   const [goalOrder, setGoalOrder] = useState(() => loadGoalOrder());
   const [ordmesterVersion, setOrdmesterVersion] = useState(0);
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [svarOpen, setSvarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profile, setProfile] = useState(() => loadUserProfile());
   const searchRef = useRef(null);
 
   const searchResults = searchQuery.trim().length > 0
@@ -438,7 +661,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         {/* Header */}
         <div style={{ padding: "52px 24px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: 13, color: "var(--text-subtle)", fontWeight: 400, marginBottom: 3 }}>Bonjour, Peter 👋</div>
+            <div style={{ fontSize: 13, color: "var(--text-subtle)", fontWeight: 400, marginBottom: 3 }}>Bonjour, {profile.name} 👋</div>
             <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>{timeGreeting()}</div>
           </div>
           <div style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "var(--shadow-sm)" }}>
@@ -462,11 +685,11 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
               <button onClick={() => { setSearchQuery(""); setSearchOpen(false); }} style={{ background: "none", border: "none", color: "var(--text-subtle)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
             )}
           </div>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(108,92,231,0.35)", flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+          <button onClick={() => setProfileOpen(true)} style={{ width: 48, height: 48, borderRadius: 14, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(108,92,231,0.35)", flexShrink: 0, border: "none", cursor: "pointer" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
             </svg>
-          </div>
+          </button>
         </div>
 
         {/* Search results dropdown */}
@@ -507,14 +730,14 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             <div style={{ fontSize: 22, fontWeight: 600, color: "var(--accent)", lineHeight: 1, marginBottom: 3 }}>{words.length}</div>
             <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Ord lært</div>
           </button>
-          <div style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
+          <button onClick={() => setActivityOpen(true)} style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
             <div style={{ fontSize: 22, fontWeight: 600, color: "var(--accent)", lineHeight: 1, marginBottom: 3 }}>🔥 {streak}</div>
             <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Dager</div>
-          </div>
-          <div style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
+          </button>
+          <button onClick={() => setSvarOpen(true)} style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
             <div style={{ fontSize: 22, fontWeight: 600, color: "var(--accent)", lineHeight: 1, marginBottom: 3 }}>{sessionMsgs}</div>
             <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Svar i dag</div>
-          </div>
+          </button>
         </div>
 
         {/* Øvelser */}
@@ -618,6 +841,21 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         <OrdmesterEditModal
           onClose={() => setOrdmesterEditOpen(false)}
           onSave={() => { setOrdmesterVersion(v => v + 1); setOrdmesterEditOpen(false); }}
+        />
+      )}
+
+      {activityOpen && (
+        <ActivityModal streak={streak} onClose={() => setActivityOpen(false)} />
+      )}
+
+      {svarOpen && (
+        <TodaysAnswersModal onClose={() => setSvarOpen(false)} />
+      )}
+
+      {profileOpen && (
+        <UserProfileModal
+          onClose={() => setProfileOpen(false)}
+          onSave={(p) => { setProfile(p); setProfileOpen(false); }}
         />
       )}
 

@@ -207,6 +207,98 @@ export function scheduleNext(level, correct) {
   return { level: newLevel, nextReview: Date.now() + SR_INTERVALS[newLevel] * 86400000 };
 }
 
+// ─── Activity log ────────────────────────────────────────────────────────────
+const ACTIVITY_LOG_KEY = "fransk-activity-log";
+
+function saveActivityLog(log) {
+  try { localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(log.sort((a, b) => a.date.localeCompare(b.date)).slice(-90))); } catch {}
+}
+
+export function loadActivityLog() {
+  try { return JSON.parse(localStorage.getItem(ACTIVITY_LOG_KEY) || "[]"); } catch { return []; }
+}
+
+function touchDay(update) {
+  const log = loadActivityLog();
+  const today = todayStr();
+  const idx = log.findIndex(e => e.date === today);
+  const entry = idx >= 0 ? { ...log[idx] } : { date: today, answers: 0, vocab: 0, grammar: 0, voice: 0 };
+  if (idx >= 0) log[idx] = update(entry); else log.push(update(entry));
+  saveActivityLog(log);
+}
+
+export function logDailyAnswer() { touchDay(e => ({ ...e, answers: (e.answers || 0) + 1 })); }
+export function logVocabSession() { touchDay(e => ({ ...e, vocab: (e.vocab || 0) + 1 })); }
+export function logGrammarSession() { touchDay(e => ({ ...e, grammar: (e.grammar || 0) + 1 })); }
+export function logVoiceSession() { touchDay(e => ({ ...e, voice: (e.voice || 0) + 1 })); }
+
+// ─── Today's word answers ────────────────────────────────────────────────────
+const TODAYS_ANSWERS_KEY = "fransk-todays-answers";
+
+export function logWordAnswer(fr, no, phonetic, pointsBefore, pointsAfter, result) {
+  try {
+    const today = todayStr();
+    const stored = JSON.parse(localStorage.getItem(TODAYS_ANSWERS_KEY) || "null");
+    const entries = stored?.date === today ? stored.entries : [];
+    entries.push({ fr, no, phonetic: phonetic || "", pointsBefore: pointsBefore || 0, pointsAfter: pointsAfter || 0, result });
+    localStorage.setItem(TODAYS_ANSWERS_KEY, JSON.stringify({ date: today, entries }));
+  } catch {}
+}
+
+export function loadTodaysWordAnswers() {
+  try {
+    const s = JSON.parse(localStorage.getItem(TODAYS_ANSWERS_KEY) || "null");
+    return (s?.date === todayStr()) ? (s.entries || []) : [];
+  } catch { return []; }
+}
+
+// ─── User profile ────────────────────────────────────────────────────────────
+const USER_PROFILE_KEY = "fransk-user-profile";
+
+export const DEFAULT_PROFILE = {
+  name: "Peter",
+  level: "A1/A2",
+  gender: "han",
+  teacherName: "Pierre",
+  teacherGender: "han",
+  dysleksi: true,
+};
+
+export function loadUserProfile() {
+  try { const s = localStorage.getItem(USER_PROFILE_KEY); return s ? { ...DEFAULT_PROFILE, ...JSON.parse(s) } : { ...DEFAULT_PROFILE }; }
+  catch { return { ...DEFAULT_PROFILE }; }
+}
+
+export function saveUserProfile(profile) {
+  try { localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile)); } catch {}
+}
+
+export function buildSystemPrompt(profile) {
+  const p = { ...DEFAULT_PROFILE, ...profile };
+  const dysleksi = p.dysleksi ? " med dysleksi" : "";
+  const genderNote = p.gender === "hun" ? "\n- Eleven er jente/kvinne — bruk hunkjønnsformer der det er relevant" : "";
+  const teacherDesc = p.teacherGender === "hun" ? "en franskvinne" : "en franskmann";
+  return `Du er en tålmodig fransktutor for en norsk nybegynner (${p.level})${dysleksi}. Eleven heter ${p.name}. Eleven har to bøker: en roman av Houellebecq og en bok om kulturlivet i Paris på 1920-tallet.
+
+KOMMUNIKASJON:
+- Norsk som hovedspråk — innfør gradvis mer fransk i takt med elevens fremgang
+- Aldri mer fransk enn eleven mestrer
+- Forklar grammatikk gjennom eksempler, aldri lange regelforklaringer
+- Korte avsnitt og tydelig struktur
+- Kort, oppmuntrende tilbakemelding — ikke overdrevet${genderNote}
+
+UTTALE:
+- Skriv alltid fonetisk uttale på norsk i parentes etter nye ord: bonjour (bånsjur)
+- Minn jevnlig eleven på å si ordene høyt
+
+PROGRESJON:
+- Bygg alltid videre på det eleven kan fra før
+- Bruk ord og temaer fra Houellebecq og Paris på 1920-tallet aktivt
+
+TEKSTHJELP: Eleven limer inn tekst på fransk. Bruk skjønn: én setning/par ord → bryt ned ord for ord. Lengre tekst → norsk sammendrag (2-3 setninger), oversett avsnitt for avsnitt, plukk ut 2-3 grammatiske mønstre. Avslutt med FORSLAG: [svar1] | [svar2] | [svar3].
+FRI: Svar fritt på spørsmål om fransk. Kan spille ${p.teacherName} (${teacherDesc}) hvis eleven vil — start på norsk og innfør gradvis mer fransk, bruk *kursiv* for handlinger. Avslutt gjerne med FORSLAG: [svar1] | [svar2] | [svar3].`;
+}
+
 // --- Today's exercise ---
 export function getTodaysGloseWords(words) {
   try {

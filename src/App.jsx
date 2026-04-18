@@ -11,6 +11,7 @@ import {
   getQuizOptions, checkQuizAnswer, todayStr,
   getTodaysGloseWords, getCurrentGrammarTopic,
   incrementAnswerCount, loadAnswerCount, updateWordPoints,
+  logDailyAnswer, logVocabSession, logGrammarSession, logWordAnswer,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -309,7 +310,9 @@ export default function App() {
     if (inBank) {
       setWords(prev => prev.map(w => {
         if (w.id !== inBank.id) return w;
+        const ptsBefore = w.points || 0;
         const updated = updateWordPoints(w, result, gc);
+        logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, updated.points, result);
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
@@ -320,6 +323,7 @@ export default function App() {
         return cleanUpdated;
       }));
     } else if (result === "correct") {
+      logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, 1, result);
       const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1 };
       setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
@@ -353,6 +357,7 @@ export default function App() {
         setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set()); setDagensHistory([]);
       } else {
         localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, phase2done: true }));
+        logVocabSession();
         setDagensPhase(3); setStreak(touchStreak());
       }
       return;
@@ -374,7 +379,9 @@ export default function App() {
     if (gloseCard.id) {
       setWords(prev => prev.map(w => {
         if (w.id !== gloseCard.id) return w;
+        const ptsBefore = w.points || 0;
         const updated = updateWordPoints(w, result, gc);
+        logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, updated.points, result);
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
@@ -399,7 +406,7 @@ export default function App() {
       setGloseInput(""); setGloseChecked(false); setGloseResult("");
       return;
     }
-    if (!remaining.length) { setScreen("home"); return; }
+    if (!remaining.length) { logVocabSession(); setScreen("home"); return; }
     setGloseQueue(remaining); setGloseCard(remaining[0]);
     setGloseOptions(getQuizOptions(remaining[0], words, !!remaining[0].reverse));
     setGloseMode(Math.random() < 0.5 ? "input" : "choice");
@@ -452,6 +459,7 @@ export default function App() {
       setGrammarWords(prev => [...prev, ...newGW.filter(nw => !prev.some(ow => ow.fr === nw.fr && ow.topicId === nw.topicId))]);
       const progress = [...loadGrammarProgress(), grammarTopic.id];
       saveGrammarProgress(progress);
+      logGrammarSession();
       setGrammarPhase(3);
       return;
     }
@@ -472,7 +480,9 @@ export default function App() {
     if (gramOvCard?.id) {
       setGrammarWords(prev => prev.map(w => {
         if (w.id !== gramOvCard.id) return w;
+        const ptsBefore = w.points || 0;
         const updated = updateWordPoints(w, result, gc);
+        logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, updated.points, result);
         const srOverride = updated._srOverride;
         const { _srOverride: _, ...cleanUpdated } = updated;
         if (srOverride) return { ...cleanUpdated, ...srOverride };
@@ -487,7 +497,7 @@ export default function App() {
 
   const nextGramOvelse = () => {
     const remaining = gramOvQueue.slice(1);
-    if (!remaining.length) { setScreen("home"); return; }
+    if (!remaining.length) { logGrammarSession(); setScreen("home"); return; }
     setGramOvQueue(remaining); setGramOvCard(remaining[0]);
     setGramOvOptions(getQuizOptions(remaining[0], grammarWords, !!remaining[0].reverse));
     setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
@@ -496,6 +506,7 @@ export default function App() {
 
   // --- Session bump (called by all quiz submit handlers) ---
   const bumpSession = () => {
+    logDailyAnswer();
     setSessionMsgs(s => {
       const n = s + 1;
       try { localStorage.setItem("fransk-session-msgs", JSON.stringify({ date: todayStr(), count: n })); } catch {}
