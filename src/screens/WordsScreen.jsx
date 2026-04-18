@@ -36,12 +36,12 @@ function WordCard({ w, onClick }) {
   );
 }
 
-function GrammarWordCard({ w }) {
+function GrammarWordCard({ w, onClick }) {
   const pts = w.points || 0;
   const tier = getWordTier(pts);
   const isMastered = tier === 5;
   return (
-    <div style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(108,92,231,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div onClick={onClick} style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(108,92,231,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: onClick ? "pointer" : "default" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 14, fontStyle: "italic", color: "var(--text)" }}>{w.fr}</span>
         {w.no && <span style={{ color: "var(--text-subtle)", fontSize: 13 }}> = {w.no}</span>}
@@ -102,7 +102,7 @@ function CatManageModal({ onClose, customCats, onSave, words, setWords }) {
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 20px" }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Administrer kategorier</div>
 
-        <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
           {allCats.map(cat => {
             const isBuiltIn = builtInCats.includes(cat);
             const count = words.filter(w => getCatForWord(w) === cat).length;
@@ -380,7 +380,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], onBack
                     </button>
                     {!closed && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {gw.map((w, i) => <GrammarWordCard key={w.id || i} w={w} />)}
+                        {gw.map((w, i) => <GrammarWordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />)}
                       </div>
                     )}
                   </div>
@@ -388,7 +388,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], onBack
               })}
               {ungroupedGrammar.length > 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {ungroupedGrammar.map((w, i) => <GrammarWordCard key={w.id || i} w={w} />)}
+                  {ungroupedGrammar.map((w, i) => <GrammarWordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />)}
                 </div>
               )}
             </div>
