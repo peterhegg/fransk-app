@@ -61,7 +61,7 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
           {displayed}
         </span>
         <span style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1, textTransform: "uppercase" }}>
-          mestrede ord
+          mestrede
         </span>
       </div>
 
