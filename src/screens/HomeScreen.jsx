@@ -25,12 +25,56 @@ function timeGreeting() {
 
 const getCat = (w) => w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
 
+function speakFr(text) {
+  window.speechSynthesis?.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = "fr-FR";
+  utt.rate = 0.9;
+  window.speechSynthesis?.speak(utt);
+}
+
 function WordDetailModal({ word, onClose, onSave }) {
   const pts = word.points || 0;
   const tier = getWordTier(pts);
   const currentCat = getCat(word);
   const [editingCat, setEditingCat] = useState(false);
   const [selectedCat, setSelectedCat] = useState(currentCat);
+  const [dragY, setDragY] = useState(0);
+  const [animated, setAnimated] = useState(false);
+  const dragStartY = useRef(null);
+  const sheetRef = useRef(null);
+
+  useEffect(() => {
+    document.body.style.overscrollBehavior = "none";
+    const timer = setTimeout(() => setAnimated(true), 260);
+    return () => {
+      document.body.style.overscrollBehavior = "";
+      clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const onMove = (e) => {
+      if (dragStartY.current === null) return;
+      const dy = e.touches[0].clientY - dragStartY.current;
+      if (dy > 0) { setDragY(dy); e.preventDefault(); }
+    };
+    el.addEventListener("touchmove", onMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onMove);
+  }, []);
+
+  const handleTouchStart = (e) => {
+    dragStartY.current = e.touches[0].clientY;
+    setDragY(0);
+  };
+
+  const handleTouchEnd = () => {
+    if (dragY > 80) onClose();
+    else setDragY(0);
+    dragStartY.current = null;
+  };
 
   const save = () => {
     onSave({ ...word, cat: selectedCat });
@@ -40,13 +84,32 @@ function WordDetailModal({ word, onClose, onSave }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "24px 24px 40px", boxShadow: "0 -8px 40px rgba(108,92,231,0.15)", animation: "slideUp 0.25s ease" }}>
+      <div
+        ref={sheetRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          position: "relative",
+          background: "var(--surface)",
+          borderRadius: "24px 24px 0 0",
+          padding: "24px 24px 40px",
+          boxShadow: "0 -8px 40px rgba(108,92,231,0.15)",
+          animation: animated ? "none" : "slideUp 0.25s ease both",
+          transform: animated ? `translateY(${dragY}px)` : undefined,
+          transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",
+          touchAction: "pan-y",
+        }}>
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 20px" }} />
 
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <div style={{ textAlign: "center", marginBottom: 20, position: "relative" }}>
           <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{word.fr}</div>
           {word.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({word.phonetic})</div>}
           <div style={{ fontSize: 18, color: "var(--text-subtle)" }}>{word.no}</div>
+          <button
+            onClick={() => speakFr(word.fr)}
+            style={{ position: "absolute", top: 0, right: 0, background: "var(--accent-bg)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 17 }}>
+            🔊
+          </button>
         </div>
 
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
@@ -212,14 +275,20 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             ) : searchResults.map((w, i) => {
               const tier = getWordTier(w.points || 0);
               return (
-                <button key={w.id || i} onClick={() => { setSelectedWord(w); setSearchOpen(false); }}
-                  style={{ width: "100%", background: "none", border: "none", borderBottom: i < searchResults.length - 1 ? "1px solid var(--border)" : "none", padding: "12px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-body)", textAlign: "left" }}>
+                <div key={w.id || i} onClick={() => { setSelectedWord(w); setSearchOpen(false); }}
+                  style={{ width: "100%", borderBottom: i < searchResults.length - 1 ? "1px solid var(--border)" : "none", padding: "10px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-body)" }}>
                   <div>
                     <span style={{ fontSize: 15, fontStyle: "italic", color: "var(--text)", fontFamily: "var(--font-display)" }}>{w.fr}</span>
                     {w.no && <span style={{ fontSize: 13, color: "var(--text-subtle)", marginLeft: 8 }}>= {w.no}</span>}
                   </div>
-                  <span style={{ fontSize: 11, color: MASTERY_COLORS[tier] || "var(--accent)", fontWeight: 500 }}>{MASTERY_LABELS[tier]}</span>
-                </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <button onClick={(e) => { e.stopPropagation(); speakFr(w.fr); }}
+                      style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>
+                      🔊
+                    </button>
+                    <span style={{ fontSize: 11, color: MASTERY_COLORS[tier] || "var(--accent)", fontWeight: 500 }}>{MASTERY_LABELS[tier]}</span>
+                  </div>
+                </div>
               );
             })}
           </div>
