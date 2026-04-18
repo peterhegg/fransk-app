@@ -4,18 +4,65 @@ import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCoun
 import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 
-const MODE_COLORS = {
-  "dagens-glose":      "linear-gradient(135deg, #6C5CE7, #a29bf7)",
-  "glose":             "linear-gradient(135deg, #00b894, #55efc4)",
-  "dagens-grammatikk": "linear-gradient(135deg, #0984e3, #74b9ff)",
-  "grammatikk-ovelse": "linear-gradient(135deg, #5a4fcf, #9b8ff5)",
-  "teksthjelp":        "linear-gradient(135deg, #e17055, #fab1a0)",
-  "fri":               "linear-gradient(135deg, #f0a500, #ffd166)",
+const MODE_IMAGES = {
+  "dagens-glose":      "https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=700&q=70&auto=format&fit=crop",
+  "glose":             "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop",
+  "dagens-grammatikk": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=70&auto=format&fit=crop",
+  "grammatikk-ovelse": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop",
+  "teksthjelp":        "https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400&q=70&auto=format&fit=crop",
+  "fri":               "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop",
 };
 
-const MODE_EMOJI = {
-  "dagens-glose": "🗼", "glose": "🃏", "dagens-grammatikk": "📖",
-  "grammatikk-ovelse": "✏️", "teksthjelp": "📝", "fri": "🎙️",
+const GOAL_IMAGES = {
+  "core":        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=700&q=70&auto=format&fit=crop",
+  "everyday":    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=70&auto=format&fit=crop",
+  "tdf":         "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?w=700&q=70&auto=format&fit=crop",
+  "senses":      "https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=700&q=70&auto=format&fit=crop",
+  "food":        "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=700&q=70&auto=format&fit=crop",
+  "body":        "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=700&q=70&auto=format&fit=crop",
+  "family":      "https://images.unsplash.com/photo-1511895426328-dc8714191011?w=700&q=70&auto=format&fit=crop",
+  "travel":      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=700&q=70&auto=format&fit=crop",
+  "core2":       "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=700&q=70&auto=format&fit=crop",
+  "geo":         "https://images.unsplash.com/photo-1566230724840-9b6fc11e3e5c?w=700&q=70&auto=format&fit=crop",
+  "everyday2":   "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=700&q=70&auto=format&fit=crop",
+  "identity":    "https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=700&q=70&auto=format&fit=crop",
+  "popculture":  "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=700&q=70&auto=format&fit=crop",
+  "history":     "https://images.unsplash.com/photo-1590736969955-71cc94901144?w=700&q=70&auto=format&fit=crop",
+  "arts":        "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=700&q=70&auto=format&fit=crop",
+  "politics":    "https://images.unsplash.com/photo-1568205631302-c7d88eCcbFd1?w=700&q=70&auto=format&fit=crop",
+  "tdf2":        "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=700&q=70&auto=format&fit=crop",
+  "gastro":      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=70&auto=format&fit=crop",
+  "prose1":      "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=700&q=70&auto=format&fit=crop",
+  "work":        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=700&q=70&auto=format&fit=crop",
+  "abstract":    "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=700&q=70&auto=format&fit=crop",
+  "geo2":        "https://images.unsplash.com/photo-1549144511-f099e773c147?w=700&q=70&auto=format&fit=crop",
+  "body2":       "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=700&q=70&auto=format&fit=crop",
+  "popculture2": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=700&q=70&auto=format&fit=crop",
+  "everyday3":   "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=70&auto=format&fit=crop",
+  "prose2":      "https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=700&q=70&auto=format&fit=crop",
+  "history2":    "https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=700&q=70&auto=format&fit=crop",
+  "politics2":   "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=700&q=70&auto=format&fit=crop",
+  "aesthetics":  "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=700&q=70&auto=format&fit=crop",
+  "paris1920":   "https://images.unsplash.com/photo-1520520731457-9283dd14aa66?w=700&q=70&auto=format&fit=crop",
+  "nature":      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=700&q=70&auto=format&fit=crop",
+  "core3":       "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=700&q=70&auto=format&fit=crop",
+  "medicine":    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=700&q=70&auto=format&fit=crop",
+  "philosophy":  "https://images.unsplash.com/photo-1544717305-2782549b5136?w=700&q=70&auto=format&fit=crop",
+  "gastro2":     "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=70&auto=format&fit=crop",
+  "prose3":      "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=700&q=70&auto=format&fit=crop",
+  "tdf3":        "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=700&q=70&auto=format&fit=crop",
+  "houellebecq": "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=700&q=70&auto=format&fit=crop",
+  "paris_adv":   "https://images.unsplash.com/photo-1503917988258-f87a78e3c995?w=700&q=70&auto=format&fit=crop",
+  "free":        "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=700&q=70&auto=format&fit=crop",
+};
+
+const MODE_SHORT = {
+  "dagens-glose":      "Dagens gloser",
+  "glose":             "Glosekort",
+  "dagens-grammatikk": "Daglig grammatikk",
+  "grammatikk-ovelse": "Grammatikkøvelse",
+  "teksthjelp":        "Teksthjelp",
+  "fri":               "Spør fritt",
 };
 
 function timeGreeting() {
@@ -31,6 +78,33 @@ function speakFr(text) {
   utt.lang = "fr-FR";
   utt.rate = 0.9;
   window.speechSynthesis?.speak(utt);
+}
+
+function MiniGraph({ days, onTap }) {
+  const maxAnswers = Math.max(...days.map(d => d.answers), 1);
+  const today = todayStr();
+  return (
+    <button onClick={onTap} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+      <div style={{ display: "flex", gap: 5, alignItems: "flex-end", height: 58 }}>
+        {days.map(day => {
+          const isToday = day.date === today;
+          const barH = day.answers === 0 ? 3 : Math.max(8, (day.answers / maxAnswers) * 44);
+          const d = new Date(day.date + "T12:00:00");
+          const dayLabel = isToday ? "i dag" : d.toLocaleDateString("nb", { weekday: "short" }).slice(0, 2);
+          return (
+            <div key={day.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              {day.answers > 0 && (
+                <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: 600, lineHeight: 1 }}>{day.answers}</div>
+              )}
+              {day.answers === 0 && <div style={{ height: 13 }} />}
+              <div style={{ width: "100%", height: barH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(123,114,240,0.45)" : "var(--border)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
+              <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400, whiteSpace: "nowrap" }}>{dayLabel}</div>
+            </div>
+          );
+        })}
+      </div>
+    </button>
+  );
 }
 
 function WordDetailModal({ word, onClose, onSave }) {
@@ -623,46 +697,49 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const goalTotal = cumTargets[idx];
   const pct = Math.min(100, ((words.length - prevTotal) / (goalTotal - prevTotal)) * 100);
 
-  const recCards = [
+  const todaysGloseImg = GOAL_IMAGES[activeGoal?.id] || MODE_IMAGES["dagens-glose"];
+
+  const grammarDoneToday = (() => {
+    const log = loadActivityLog();
+    const entry = log.find(e => e.date === todayStr());
+    return (entry?.grammar || 0) > 0;
+  })();
+
+  const dagensOvelse = [
     {
       id: "dagens-glose",
-      emoji: "🗼",
-      gradient: "linear-gradient(135deg, #6C5CE7, #a29bf7)",
       title: "Dagens 5 gloser",
-      sub: dagensDone ? "Fullført i dag ✓" : "Ny øvelse klar nå",
-      badge: dagensDone ? "✓" : null,
-      badgeDone: dagensDone,
-    },
-    {
-      id: "glose",
-      emoji: "🃏",
-      gradient: "linear-gradient(135deg, #00b894, #55efc4)",
-      title: "Klar til repetisjon",
-      sub: dueCount > 0 ? `${dueCount} ord venter på deg` : "Ingen ord forfalt",
-      badge: dueCount > 0 ? dueCount : null,
-      badgeDone: false,
+      sub: dagensDone ? "Fullført i dag ✓" : dagensLoading ? "Henter…" : "Ny øvelse klar nå",
+      done: dagensDone,
+      img: todaysGloseImg,
     },
     {
       id: "dagens-grammatikk",
-      emoji: "📖",
-      gradient: "linear-gradient(135deg, #0984e3, #74b9ff)",
       title: "Daglig grammatikk",
-      sub: `${grammarProgress} temaer fullført`,
-      badge: grammarOvDue > 0 ? grammarOvDue : null,
-      badgeDone: false,
+      sub: grammarDoneToday ? "Fullført i dag ✓" : `${grammarProgress} temaer fullført`,
+      done: grammarDoneToday,
+      img: MODE_IMAGES["dagens-grammatikk"],
     },
-  ];
+  ].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+
+  const last7Days = (() => {
+    const log = loadActivityLog();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(Date.now() - (6 - i) * 86400000);
+      const date = d.toISOString().split("T")[0];
+      return log.find(e => e.date === date) || { date, answers: 0 };
+    });
+  })();
 
   return (
     <div style={{ height: "100dvh", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {offlineBanner}
 
-      {/* Scrollable area */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 84, scrollbarWidth: "none" }}>
 
         {/* Header */}
-        <div style={{ padding: "52px 24px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ padding: "52px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontSize: 13, color: "var(--text-subtle)", fontWeight: 400, marginBottom: 3 }}>Bonjour, {profile.name} 👋</div>
             <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>{timeGreeting()}</div>
@@ -672,9 +749,9 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
         </div>
 
-        {/* Search row */}
-        <div style={{ padding: "0 24px 20px", display: "flex", gap: 10, position: "relative" }}>
-          <div style={{ flex: 1, background: "var(--surface)", border: `1.5px solid ${searchOpen ? "var(--accent)" : "var(--border)"}`, borderRadius: 14, padding: "0 16px", fontSize: 14, boxShadow: "var(--shadow-sm)", display: "flex", alignItems: "center", gap: 8, transition: "border-color 0.2s" }}>
+        {/* Search + profile */}
+        <div style={{ padding: "0 20px 16px", display: "flex", gap: 10, position: "relative" }}>
+          <div style={{ flex: 1, background: "var(--surface)", border: `1.5px solid ${searchOpen ? "var(--accent)" : "var(--border)"}`, borderRadius: 14, padding: "0 16px", display: "flex", alignItems: "center", gap: 8, transition: "border-color 0.2s" }}>
             <span style={{ opacity: 0.4, flexShrink: 0 }}>🔍</span>
             <input
               ref={searchRef}
@@ -695,16 +772,16 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </button>
         </div>
 
-        {/* Search results dropdown */}
+        {/* Search results */}
         {searchOpen && searchQuery.trim().length > 0 && (
-          <div style={{ margin: "0 24px 16px", background: "var(--surface)", borderRadius: 16, boxShadow: "var(--shadow-md)", border: "1px solid var(--border)", overflow: "hidden", maxHeight: 280, overflowY: "auto" }}>
+          <div style={{ margin: "0 20px 16px", background: "var(--surface)", borderRadius: 16, boxShadow: "var(--shadow-md)", border: "1px solid var(--border)", overflow: "hidden", maxHeight: 280, overflowY: "auto" }}>
             {searchResults.length === 0 ? (
               <div style={{ padding: "16px", textAlign: "center", color: "var(--text-subtle)", fontSize: 14 }}>Ingen ord funnet</div>
             ) : searchResults.map((w, i) => {
               const tier = getWordTier(w.points || 0);
               return (
                 <div key={w.id || i} onClick={() => { setSelectedWord(w); setSearchOpen(false); }}
-                  style={{ width: "100%", borderBottom: i < searchResults.length - 1 ? "1px solid var(--border)" : "none", padding: "10px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-body)" }}>
+                  style={{ borderBottom: i < searchResults.length - 1 ? "1px solid var(--border)" : "none", padding: "10px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-body)" }}>
                   <div>
                     <span style={{ fontSize: 15, fontStyle: "italic", color: "var(--text)", fontFamily: "var(--font-display)" }}>{w.fr}</span>
                     {w.no && <span style={{ fontSize: 13, color: "var(--text-subtle)", marginLeft: 8 }}>= {w.no}</span>}
@@ -721,18 +798,16 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             })}
           </div>
         )}
-
-        {/* Backdrop to close search */}
         {searchOpen && !searchQuery && (
           <div style={{ position: "fixed", inset: 0, zIndex: 10 }} onClick={() => setSearchOpen(false)} />
         )}
 
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 10, padding: "0 24px 28px" }}>
+        {/* Stats row */}
+        <div style={{ display: "flex", gap: 10, padding: "0 20px 28px" }}>
           {[
-            { label: "Ord lært",  value: words.length,  emoji: "📚", onClick: onShowWords,           color: "#6C5CE7" },
-            { label: "Dager",     value: streak,        emoji: "🔥", onClick: () => setActivityOpen(true), color: "#e17055" },
-            { label: "Svar i dag",value: sessionMsgs,   emoji: "✓",  onClick: () => setSvarOpen(true),     color: "#00b894" },
+            { label: "Ord lært",   value: words.length,  emoji: "📚", onClick: onShowWords,                color: "var(--accent)" },
+            { label: "Dager",      value: streak,         emoji: "🔥", onClick: () => setActivityOpen(true), color: "#e17055" },
+            { label: "Svar i dag", value: sessionMsgs,    emoji: "✓",  onClick: () => setSvarOpen(true),     color: "#00c896" },
           ].map(s => (
             <button key={s.label} onClick={s.onClick} style={{
               flex: 1, background: "var(--surface)", borderRadius: 16,
@@ -748,79 +823,103 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           ))}
         </div>
 
-        {/* Øvelser */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 24px 14px" }}>
-          <span style={{ fontSize: 20, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Øvelser</span>
-        </div>
-
-        <div className="fade-stagger" style={{ display: "flex", gap: 12, padding: "0 24px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
-          {MODES.map(m => {
-            const isLoading = m.id === "dagens-glose" && dagensLoading;
-            const shortLabel = m.label.split("–")[0].trim();
-            return (
-              <button key={m.id} onClick={() => !isLoading && onStart(m.id)}
-                style={{
-                  flexShrink: 0, width: 120, background: "var(--surface)",
-                  borderRadius: 18, overflow: "hidden",
-                  boxShadow: "var(--shadow-sm)", border: "none",
-                  cursor: isLoading ? "default" : "pointer",
-                  textAlign: "left", fontFamily: "var(--font-body)", padding: 0,
-                  opacity: isLoading ? 0.7 : 1,
-                  transition: "transform 0.18s ease, box-shadow 0.18s ease",
-                }}
-                onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
-                <div style={{
-                  height: 82,
-                  background: MODE_COLORS[m.id] || "var(--accent)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 30,
-                }}>
-                  {isLoading ? "⏳" : (MODE_EMOJI[m.id] || m.icon)}
-                </div>
-                <div style={{ padding: "9px 11px 11px" }}>
-                  <div style={{
-                    fontSize: 12, fontWeight: 600, color: "var(--text)",
-                    lineHeight: 1.35, overflow: "hidden", height: 32,
-                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+        {/* Dagens øvelse — horisontal scroll */}
+        <div style={{ padding: "0 0 28px" }}>
+          <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Dagens øvelse</span>
+          </div>
+          <div style={{ display: "flex", gap: 12, padding: "0 20px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
+            {dagensOvelse.map(card => {
+              const isLoading = card.id === "dagens-glose" && dagensLoading;
+              return (
+                <button key={card.id}
+                  onClick={() => !card.done && !isLoading && onStart(card.id)}
+                  style={{
+                    flexShrink: 0, width: "calc(80vw)", maxWidth: 320, height: 200,
+                    borderRadius: 20, overflow: "hidden", position: "relative",
+                    border: "none", padding: 0,
+                    cursor: card.done || isLoading ? "default" : "pointer",
+                    opacity: isLoading ? 0.75 : 1,
+                    boxShadow: "var(--shadow-md)",
                   }}>
-                    {isLoading ? "Henter…" : shortLabel}
+                  <img src={card.img} alt={card.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <div style={{ position: "absolute", inset: 0, background: card.done
+                    ? "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 100%)"
+                    : "linear-gradient(to top, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.04) 100%)"
+                  }} />
+                  {card.done && (
+                    <div style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "white", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>✓</div>
+                  )}
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px 18px", textAlign: "left" }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 4, letterSpacing: "-0.2px" }}>
+                      {isLoading ? "Henter øvelse…" : card.title}
+                    </div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.72)" }}>{card.sub}</div>
                   </div>
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Anbefalt i dag */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "28px 24px 14px" }}>
-          <span style={{ fontSize: 20, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Anbefalt i dag</span>
-        </div>
-
-        <div style={{ display: "flex", gap: 16, padding: "0 24px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
-          {recCards.map(c => (
-            <button key={c.id} onClick={() => onStart(c.id)}
-              style={{ flexShrink: 0, width: 260, background: "var(--surface)", borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-md)", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", padding: 0, transition: "transform 0.2s ease, box-shadow 0.2s ease" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-md)"; }}>
-              <div style={{ height: 148, background: c.gradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, position: "relative" }}>
-                {c.emoji}
-                {c.badge !== null && (
-                  <div style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", background: c.badgeDone ? "var(--accent)" : "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: c.badgeDone ? "white" : "var(--accent)", boxShadow: "var(--shadow-sm)" }}>
-                    {c.badge}
-                  </div>
-                )}
-              </div>
-              <div style={{ padding: "12px 14px 14px" }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 3 }}>{c.title}</div>
-                <div style={{ fontSize: 12, color: "var(--text-subtle)" }}>{c.sub}</div>
-              </div>
+        {/* Fremgang i dag — mini sparkline */}
+        <div style={{ margin: "0 20px 28px", background: "var(--surface)", borderRadius: 20, padding: "16px 18px 14px", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>Fremgang siste 7 dager</span>
+            <button onClick={() => setSvarOpen(true)} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>
+              Svar i dag ›
             </button>
-          ))}
+          </div>
+          <MiniGraph days={last7Days} onTap={() => setActivityOpen(true)} />
+        </div>
+
+        {/* Oppgaver — horisontal scroll med bilder */}
+        <div style={{ padding: "0 0 28px" }}>
+          <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Oppgaver</span>
+          </div>
+          <div className="fade-stagger" style={{ display: "flex", gap: 12, padding: "0 20px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
+            {MODES.filter(m => m.id !== "dagens-glose" && m.id !== "dagens-grammatikk").map(m => {
+              const isLoading = false;
+              return (
+                <button key={m.id} onClick={() => !isLoading && onStart(m.id)}
+                  style={{
+                    flexShrink: 0, width: 148,
+                    background: "var(--surface)", borderRadius: 18,
+                    overflow: "hidden", boxShadow: "var(--shadow-sm)",
+                    border: "1px solid var(--border)",
+                    cursor: isLoading ? "default" : "pointer",
+                    textAlign: "left", fontFamily: "var(--font-body)",
+                    padding: 0, opacity: isLoading ? 0.7 : 1,
+                    transition: "transform 0.18s ease, box-shadow 0.18s ease",
+                  }}
+                  onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
+                  <div style={{ position: "relative", height: 104, overflow: "hidden" }}>
+                    <img
+                      src={MODE_IMAGES[m.id]}
+                      alt={MODE_SHORT[m.id]}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 45%, rgba(0,0,0,0.38) 100%)" }} />
+                  </div>
+                  <div style={{ padding: "10px 12px 13px" }}>
+                    <div style={{
+                      fontSize: 12, fontWeight: 600, color: "var(--text)",
+                      lineHeight: 1.35, overflow: "hidden",
+                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                    }}>
+                      {isLoading ? "Henter…" : MODE_SHORT[m.id]}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Læringsmål */}
-        <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "20px 24px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer" }}>
+        <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "0 20px 16px", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-subtle)", fontWeight: 500 }}>Læringsmål</span>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -838,12 +937,13 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
         </div>
 
-        <div style={{ margin: "20px 24px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
+        {/* Ordmestertelleren */}
+        <div style={{ margin: "0 20px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
           <OrdmesterTeller key={ordmesterVersion} masteredCount={masteredCount} onEdit={() => setOrdmesterEditOpen(true)} />
         </div>
 
         {noWordsMsg && (
-          <div style={{ fontSize: 13, color: "var(--text-subtle)", textAlign: "center", margin: "16px 24px 0" }}>
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", textAlign: "center", margin: "16px 20px 0" }}>
             Alle ord er mestret! Kom tilbake i morgen.
           </div>
         )}
@@ -862,29 +962,20 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           }}
         />
       )}
-
       {goalOrderOpen && (
         <VocabGoalOrderModal
           onClose={() => setGoalOrderOpen(false)}
           onSave={(newOrder) => { setGoalOrder(newOrder); setGoalOrderOpen(false); }}
         />
       )}
-
       {ordmesterEditOpen && (
         <OrdmesterEditModal
           onClose={() => setOrdmesterEditOpen(false)}
           onSave={() => { setOrdmesterVersion(v => v + 1); setOrdmesterEditOpen(false); }}
         />
       )}
-
-      {activityOpen && (
-        <ActivityModal streak={streak} onClose={() => setActivityOpen(false)} />
-      )}
-
-      {svarOpen && (
-        <TodaysAnswersModal onClose={() => setSvarOpen(false)} />
-      )}
-
+      {activityOpen && <ActivityModal streak={streak} onClose={() => setActivityOpen(false)} />}
+      {svarOpen && <TodaysAnswersModal onClose={() => setSvarOpen(false)} />}
       {profileOpen && (
         <UserProfileModal
           onClose={() => setProfileOpen(false)}

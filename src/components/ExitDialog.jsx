@@ -11,11 +11,11 @@ export default function ExitDialog({ phraseIdx, onStay, onExit }) {
         </div>
         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
           <button onClick={onStay} className="btn-shine"
-            style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'Jost', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>
+            style={{ background: `linear-gradient(135deg, #d98a4a, ${gold})`, border: "none", borderRadius: 14, color: dark, fontFamily: "'DM Sans', sans-serif", fontWeight: "500", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>
             Bli værende
           </button>
           <button onClick={onExit}
-            style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'Jost', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>
+            style={{ background: "none", border: `1px solid ${red}55`, borderRadius: 14, color: red, fontFamily: "'DM Sans', sans-serif", fontSize: 15, padding: "12px 24px", cursor: "pointer" }}>
             Avslutt
           </button>
         </div>

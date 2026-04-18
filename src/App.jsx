@@ -619,9 +619,9 @@ export default function App() {
       {grammarTopic ? (
         <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'Jost', sans-serif", color: cream, paddingBottom: 66 }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'DM Sans', sans-serif", color: cream, paddingBottom: 66 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card }}>
-            <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'Jost', sans-serif" }}>← Tilbake</button>
+            <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>← Tilbake</button>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 }}><span style={{ color: gold }}>◑</span> Daglig grammatikk</div>
             <div style={{ width: 60 }} />
           </div>

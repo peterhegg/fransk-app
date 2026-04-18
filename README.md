@@ -131,6 +131,12 @@ https://peterhegg.github.io/fransk-app/
 
 ---
 
+## Claude Code-stil
+
+Claude bruker «huleboer»-språk i chat for å spare tokens — korte, direkte svar uten høflighetsfraser. Kvaliteten på arbeidet er den samme. Svar kan gis på engelsk når det sparer tokens ytterligere.
+
+---
+
 ## Personvern
 
 API-nøkkelen din ligger aldri i koden eller JS-bundles. Den er lagret kun i Cloudflare og brukes server-side. Ordlisten lagres lokalt i nettleseren din og sendes aldri noe sted.

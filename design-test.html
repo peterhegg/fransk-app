@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Design Test – Mon Français</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f0f8;
+      --surface: #ffffff;
+      --accent: #6C5CE7;
+      --accent-light: #8B7FF0;
+      --accent-bg: rgba(108, 92, 231, 0.10);
+      --text: #1a1a2e;
+      --text-subtle: rgba(26,26,46,0.45);
+      --border: rgba(108, 92, 231, 0.10);
+      --shadow-sm: 0 2px 12px rgba(108,92,231,0.08);
+      --shadow-md: 0 6px 24px rgba(108,92,231,0.13);
+      --font: 'Jost', sans-serif;
+      --font-display: 'Playfair Display', serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: #e8e8f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    /* Phone shell */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 48px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .status-icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+
+    /* Scrollable content */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 84px;
+      scrollbar-width: none;
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* Header */
+    .header {
+      padding: 20px 24px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .greeting-label {
+      font-size: 13px;
+      color: var(--text-subtle);
+      font-weight: 400;
+      margin-bottom: 2px;
+    }
+
+    .greeting-name {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Search */
+    .search-row {
+      padding: 0 24px 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-subtle);
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-icon { opacity: 0.4; font-size: 15px; }
+
+    .filter-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(108,92,231,0.35);
+      flex-shrink: 0;
+    }
+
+    /* Stats pill row */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 24px 24px;
+    }
+
+    .stat-pill {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 12px 10px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0 24px 14px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .show-all {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Popular horizontal scroll */
+    .h-scroll {
+      display: flex;
+      gap: 14px;
+      padding: 0 24px 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .h-scroll::-webkit-scrollbar { display: none; }
+
+    /* Mode chips (like city cards) */
+    .mode-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .mode-chip-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.18s ease;
+    }
+
+    .mode-chip:active .mode-chip-icon { transform: scale(0.95); }
+
+    .mode-chip-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      max-width: 72px;
+      line-height: 1.3;
+    }
+
+    /* Recommended cards */
+    .rec-scroll {
+      display: flex;
+      gap: 16px;
+      padding: 0 24px 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .rec-scroll::-webkit-scrollbar { display: none; }
+
+    .rec-card {
+      flex-shrink: 0;
+      width: 240px;
+      background: var(--surface);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .rec-card:active { transform: scale(0.97); }
+
+    .rec-card-img {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      position: relative;
+    }
+
+    .rec-card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .rec-card-badge.done { background: var(--accent); }
+    .rec-card-badge.done span { filter: brightness(10); }
+
+    .rec-card-body {
+      padding: 14px 16px 16px;
+    }
+
+    .rec-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .rec-card-sub {
+      font-size: 12px;
+      color: var(--text-subtle);
+    }
+
+    /* Progress bar card */
+    .progress-card {
+      margin: 20px 24px 0;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .progress-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .progress-card-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-subtle);
+      font-weight: 500;
+    }
+
+    .progress-card-count {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .progress-card-label {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .progress-bar-track {
+      height: 6px;
+      background: var(--accent-bg);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 38%;
+      background: linear-gradient(to right, var(--accent), var(--accent-light));
+      border-radius: 99px;
+      transition: width 0.8s ease;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px 16px;
+      gap: 4px;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 14px;
+      gap: 4px;
+      transition: background 0.15s;
+      font-family: var(--font);
+    }
+
+    .nav-item.active {
+      background: var(--accent-bg);
+    }
+
+    .nav-icon { font-size: 20px; }
+    .nav-label { font-size: 10px; font-weight: 500; color: var(--text-subtle); letter-spacing: 0.3px; }
+    .nav-item.active .nav-label { color: var(--accent); }
+    .nav-item.active .nav-icon { filter: none; }
+
+    /* Home pill */
+    .nav-home-pill {
+      flex: 1.6;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 4px 16px rgba(108,92,231,0.30);
+      transition: transform 0.15s ease;
+    }
+
+    .nav-home-pill:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span>▲▲▲</span>
+        <span>WiFi</span>
+        <span>🔋</span>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- Header -->
+      <div class="header">
+        <div>
+          <div class="greeting-label">Bonjour, Peter 👋</div>
+          <div class="greeting-name">God morgen</div>
+        </div>
+        <div class="avatar">🇫🇷</div>
+      </div>
+
+      <!-- Search row -->
+      <div class="search-row">
+        <div class="search-input">
+          <span class="search-icon">🔍</span>
+          <span>Søk på ord eller tema…</span>
+        </div>
+        <button class="filter-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-pill">
+          <div class="stat-num">47</div>
+          <div class="stat-label">Ord lært</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-num">🔥 5</div>
+          <div class="stat-label">Dager</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-num">12</div>
+          <div class="stat-label">Svar i dag</div>
+        </div>
+      </div>
+
+      <!-- Popular / Modes -->
+      <div class="section-header">
+        <span class="section-title">Øvelser</span>
+        <span class="show-all">Vis alle</span>
+      </div>
+
+      <div class="h-scroll">
+        <div class="mode-chip">
+          <div class="mode-chip-icon" style="background: linear-gradient(135deg, #6C5CE7, #a29bf7);">◆</div>
+          <div class="mode-chip-label">Dagens glose</div>
+        </div>
+        <div class="mode-chip">
+          <div class="mode-chip-icon" style="background: linear-gradient(135deg, #00b894, #55efc4);">◈</div>
+          <div class="mode-chip-label">Gloseøvelse</div>
+        </div>
+        <div class="mode-chip">
+          <div class="mode-chip-icon" style="background: linear-gradient(135deg, #0984e3, #74b9ff);">◑</div>
+          <div class="mode-chip-label">Grammatikk</div>
+        </div>
+        <div class="mode-chip">
+          <div class="mode-chip-icon" style="background: linear-gradient(135deg, #e17055, #fab1a0);">◫</div>
+          <div class="mode-chip-label">Teksthjelp</div>
+        </div>
+        <div class="mode-chip">
+          <div class="mode-chip-icon" style="background: linear-gradient(135deg, #fdcb6e, #ffeaa7);">✦</div>
+          <div class="mode-chip-label">Spør fritt</div>
+        </div>
+      </div>
+
+      <!-- Recommended today -->
+      <div class="section-header" style="padding-top: 28px;">
+        <span class="section-title">Anbefalt i dag</span>
+        <span class="show-all">Se mer</span>
+      </div>
+
+      <div class="rec-scroll">
+        <div class="rec-card">
+          <div class="rec-card-img" style="background: linear-gradient(135deg, #6C5CE7 0%, #a29bf7 100%);">
+            🗼
+            <div class="rec-card-badge">◆</div>
+          </div>
+          <div class="rec-card-body">
+            <div class="rec-card-title">Dagens 5 gloser</div>
+            <div class="rec-card-sub">Ny øvelse klar nå</div>
+          </div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-card-img" style="background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);">
+            📖
+            <div class="rec-card-badge done"><span>✓</span></div>
+          </div>
+          <div class="rec-card-body">
+            <div class="rec-card-title">Daglig grammatikk</div>
+            <div class="rec-card-sub">4/7 temaer fullført</div>
+          </div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-card-img" style="background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);">
+            🃏
+            <div class="rec-card-badge">8</div>
+          </div>
+          <div class="rec-card-body">
+            <div class="rec-card-title">Klar til repetisjon</div>
+            <div class="rec-card-sub">8 ord venter på deg</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress card -->
+      <div class="progress-card">
+        <div class="progress-card-header">
+          <span class="progress-card-title">Læringsmål</span>
+          <span class="progress-card-count">Bolk 2 av 8</span>
+        </div>
+        <div class="progress-card-label">Les enkle avistekster</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px;">
+          <span style="font-size:11px; color:var(--text-subtle);">19 / 50 ord i bolken</span>
+          <span style="font-size:11px; color:var(--accent);">38%</span>
+        </div>
+      </div>
+
+    </div><!-- /scroll-area -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="nav-home-pill">
+        <span>⌂</span>
+        <span>Hjem</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span class="nav-label">Øv</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span class="nav-label">Snakk</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">◎</span>
+        <span class="nav-label">Ordbank</span>
+      </button>
+    </div>
+
+  </div>
+</body>
+</html>
