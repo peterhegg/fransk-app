@@ -83,6 +83,8 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
           touchAction: "pan-y",
           maxHeight: "88dvh",
           overflowY: "auto",
+          overflowX: "hidden",
+          width: "100%",
         }}>
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 20px" }} />
 
