@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   MODES, EXIT_PHRASES,
   DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS,
+  PROXY_URL, APP_TOKEN,
   gold, cream, card, brd,
 } from "./constants.js";
 import {
@@ -12,6 +13,8 @@ import {
   getTodaysGloseWords, getCurrentGrammarTopic,
   incrementAnswerCount, loadAnswerCount, updateWordPoints,
   logDailyAnswer, logVocabSession, logGrammarSession, logWordAnswer,
+  loadGeneratedVocab, saveGeneratedVocab, needsNewVocab,
+  getActiveGoal, loadGoalOrder,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -35,6 +38,7 @@ export default function App() {
   const [sessionMsgs, setSessionMsgs] = useState(() => { try { const s = JSON.parse(localStorage.getItem("fransk-session-msgs") || "{}"); return s.date === todayStr() ? (s.count || 0) : 0; } catch { return 0; } });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [noWordsMsg, setNoWordsMsg] = useState(false);
+  const [dagensLoading, setDagensLoading] = useState(false);
 
   // --- Speech ---
   const [speaking, setSpeaking] = useState(false);
@@ -234,8 +238,59 @@ export default function App() {
   };
 
   // --- Start modes ---
-  const startDagensGlose = () => {
-    const ex = getTodaysGloseWords(words);
+  const startDagensGlose = async () => {
+    const activeGoal = getActiveGoal(words, loadGoalOrder());
+    const goalId = activeGoal.id;
+    let genVocab = loadGeneratedVocab();
+
+    // If today's exercise is cached for this goal and in progress (or has new words), use it
+    let cached = null;
+    try {
+      const s = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
+      if (s.date === todayStr() && s.goal === goalId) {
+        const learnedFr = new Set(words.map(w => w.fr));
+        const hasNew = (s.words || []).some(w => !learnedFr.has(w.fr));
+        if (s.phase1done || s.phase2done || hasNew) cached = s;
+      }
+    } catch {}
+
+    if (!cached && needsNewVocab(words, genVocab, goalId)) {
+      setDagensLoading(true);
+      try {
+        const knownFr = new Set([...words.map(w => w.fr), ...genVocab.map(v => v.fr)]);
+        const knownList = [...knownFr].slice(0, 80).join(", ");
+        const res = await fetch(PROXY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 400,
+            system: "You are a French vocabulary generator. Respond only with a valid JSON array, no markdown.",
+            messages: [{
+              role: "user",
+              content: `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${knownList}. Return a JSON array only: [{"fr":"...","no":"...","phonetic":"..."}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Pick words relevant to the topic and appropriate for A1/A2 level.`,
+            }],
+          }),
+        });
+        const data = await res.json();
+        const text = data.content?.find(b => b.type === "text")?.text || "";
+        const match = text.match(/\[[\s\S]*\]/);
+        if (match) {
+          const generated = JSON.parse(match[0]);
+          if (Array.isArray(generated) && generated.length) {
+            const existingFr = new Set(genVocab.map(v => v.fr));
+            const fresh = generated
+              .filter(v => v.fr && v.no && !existingFr.has(v.fr))
+              .map(v => ({ ...v, goal: goalId }));
+            genVocab = [...genVocab, ...fresh];
+            saveGeneratedVocab(genVocab);
+          }
+        }
+      } catch { /* continue with what we have */ }
+      setDagensLoading(false);
+    }
+
+    const ex = getTodaysGloseWords(words, genVocab, goalId);
     if (!ex.words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
     const phase = ex.phase2done ? 3 : ex.phase1done ? 2 : 1;
     setDagensWords(ex.words); setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set());
@@ -605,7 +660,7 @@ export default function App() {
   return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
+      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} {...navProps} />
     </>
   );
 }

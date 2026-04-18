@@ -261,7 +261,10 @@ function VocabGoalOrderModal({ onClose, onSave }) {
           return (
             <div key={id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
               <div style={{ width: 20, textAlign: "center", fontSize: 11, color: "var(--text-subtle)", flexShrink: 0 }}>{i + 1}</div>
-              <div style={{ flex: 1, fontSize: 13, color: "var(--text)", lineHeight: 1.3 }}>{g.label}</div>
+              <div style={{ flex: 1, lineHeight: 1.3 }}>
+                <div style={{ fontSize: 13, color: "var(--text)" }}>{g.label}</div>
+                <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 1 }}>{g.target} ord</div>
+              </div>
               <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                 <button onClick={() => move(i, -1)} disabled={i === 0}
                   style={{ background: i === 0 ? "var(--bg)" : "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === 0 ? "default" : "pointer", fontSize: 14, color: i === 0 ? "var(--text-subtle)" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
@@ -577,7 +580,7 @@ function UserProfileModal({ onClose, onSave }) {
   );
 }
 
-export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
+export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -746,17 +749,22 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         </div>
 
         <div className="fade-stagger" style={{ display: "flex", gap: 14, padding: "0 24px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
-          {MODES.map(m => (
-            <button key={m.id} onClick={() => onStart(m.id)}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0, background: "none", border: "none", padding: 0, fontFamily: "var(--font-body)" }}>
-              <div style={{ width: 72, height: 72, borderRadius: 20, background: MODE_COLORS[m.id] || "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "var(--shadow-md)", transition: "transform 0.18s ease" }}
-                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.06)"}
-                onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-                {MODE_EMOJI[m.id] || m.icon}
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text)", textAlign: "center", maxWidth: 72, lineHeight: 1.3 }}>{m.label.split("–")[0].split("–")[0].trim()}</div>
-            </button>
-          ))}
+          {MODES.map(m => {
+            const isLoading = m.id === "dagens-glose" && dagensLoading;
+            return (
+              <button key={m.id} onClick={() => !isLoading && onStart(m.id)}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: isLoading ? "default" : "pointer", flexShrink: 0, background: "none", border: "none", padding: 0, fontFamily: "var(--font-body)", opacity: isLoading ? 0.7 : 1 }}>
+                <div style={{ width: 72, height: 72, borderRadius: 20, background: MODE_COLORS[m.id] || "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "var(--shadow-md)", transition: "transform 0.18s ease" }}
+                  onMouseEnter={e => { if (!isLoading) e.currentTarget.style.transform = "scale(1.06)"; }}
+                  onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                  {isLoading ? "⏳" : (MODE_EMOJI[m.id] || m.icon)}
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text)", textAlign: "center", maxWidth: 72, lineHeight: 1.3 }}>
+                  {isLoading ? "Henter ord…" : m.label.split("–")[0].split("–")[0].trim()}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* Anbefalt i dag */}

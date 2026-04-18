@@ -1,9 +1,25 @@
 import {
   SR_INTERVALS, WORDS_KEY, GRAMMAR_WORDS_KEY, GRAMMAR_PROGRESS_KEY,
-  STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, GRAMMAR_TOPICS,
+  STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, GRAMMAR_TOPICS, VOCAB_GOALS,
   MASTERY_POINTS, MASTERY_PAUSE_MIN, MASTERY_PAUSE_MAX, ANSWER_COUNT_KEY,
+  GENERATED_VOCAB_KEY,
   gold, cream, grn, red, card, brd,
 } from "./constants.js";
+
+// --- Goal helpers ---
+export function getOrderedGoals(customOrder) {
+  if (!customOrder) return VOCAB_GOALS;
+  const ordered = customOrder.map(id => VOCAB_GOALS.find(g => g.id === id)).filter(Boolean);
+  const missing = VOCAB_GOALS.filter(g => !customOrder.includes(g.id));
+  return [...ordered, ...missing];
+}
+
+export function getActiveGoal(words, goalOrder) {
+  const ordered = getOrderedGoals(goalOrder);
+  const cumTargets = ordered.reduce((acc, g, i) => { acc.push((acc[i - 1] || 0) + g.target); return acc; }, []);
+  const idx = cumTargets.findIndex(t => words.length < t);
+  return ordered[idx === -1 ? ordered.length - 1 : idx] || ordered[0];
+}
 
 // --- Text helpers ---
 export function normalizeAnswer(s) {
@@ -299,19 +315,37 @@ TEKSTHJELP: Eleven limer inn tekst på fransk. Bruk skjønn: én setning/par ord
 FRI: Svar fritt på spørsmål om fransk. Kan spille ${p.teacherName} (${teacherDesc}) hvis eleven vil — start på norsk og innfør gradvis mer fransk, bruk *kursiv* for handlinger. Avslutt gjerne med FORSLAG: [svar1] | [svar2] | [svar3].`;
 }
 
+export function loadGeneratedVocab() {
+  try { return JSON.parse(localStorage.getItem(GENERATED_VOCAB_KEY) || "[]"); } catch { return []; }
+}
+
+export function saveGeneratedVocab(words) {
+  try { localStorage.setItem(GENERATED_VOCAB_KEY, JSON.stringify(words)); } catch {}
+}
+
 // --- Today's exercise ---
-export function getTodaysGloseWords(words) {
+export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core") {
   try {
     const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
-    if (saved.date === todayStr()) return saved;
+    if (saved.date === todayStr() && saved.goal === goalId) return saved;
   } catch {}
   const learnedFr = new Set(words.map(w => w.fr));
-  const newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
+  const baseVocab = goalId === "core" ? VOCAB_LIST : [];
+  const goalGenerated = generatedVocab.filter(v => !v.goal || v.goal === goalId);
+  const allVocab = [...baseVocab, ...goalGenerated];
+  const newVocab = allVocab.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
   const due = getDue(words, loadAnswerCount()).slice(0, Math.max(0, 5 - newVocab.length));
   const selected = [...newVocab, ...due].slice(0, 5);
-  const exercise = { date: todayStr(), words: selected, phase1done: false, phase2done: false };
+  const exercise = { date: todayStr(), goal: goalId, words: selected, phase1done: false, phase2done: false };
   localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(exercise));
   return exercise;
+}
+
+export function needsNewVocab(words, generatedVocab = [], goalId = "core") {
+  const learnedFr = new Set(words.map(w => w.fr));
+  const baseVocab = goalId === "core" ? VOCAB_LIST : [];
+  const goalGenerated = generatedVocab.filter(v => !v.goal || v.goal === goalId);
+  return [...baseVocab, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 5;
 }
 
 export function getCurrentGrammarTopic() {

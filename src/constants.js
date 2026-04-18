@@ -610,6 +610,7 @@ export const DAGENS_GLOSE_KEY = "fransk-dagens-glose";
 export const SESSION_KEY = "fransk-session-msgs";
 export const SESSION_SCREEN_KEY = "fransk-session-screen";
 export const ANSWER_COUNT_KEY = "fransk-global-answer-count";
+export const GENERATED_VOCAB_KEY = "fransk-generated-vocab";
 
 export const gold = "#c8783a";
 export const dark = "#f5f0e6";
