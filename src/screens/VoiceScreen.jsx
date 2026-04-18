@@ -145,7 +145,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
 
       {/* Orb area */}
       <div style={{
-        padding: "20px 0 12px",
+        padding: "20px 0 104px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

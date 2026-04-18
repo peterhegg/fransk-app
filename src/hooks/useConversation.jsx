@@ -13,6 +13,7 @@ export function useConversation() {
 
   const historyRef = useRef([]);
   const pendingCorrectionRef = useRef(null);
+  const startListeningRef = useRef(null);
 
   const { status: recStatus, startListening: startRec, stopListening: stopRec } = useVoiceRecognition();
   const { speak, stop: stopSpeaking, isSpeaking } = useSpeechSynthesis();
@@ -55,6 +56,7 @@ export function useConversation() {
             setCurrentCorrection(pendingCorrectionRef.current);
             pendingCorrectionRef.current = null;
           }
+          setTimeout(() => startListeningRef.current?.(), 800);
         },
       });
     } catch {
@@ -70,6 +72,8 @@ export function useConversation() {
     setStatus("listening");
     startRec(sendToApi);
   }, [isSpeaking, stopSpeaking, startRec, sendToApi]);
+
+  startListeningRef.current = startListening;
 
   const stopListening = useCallback(() => {
     stopRec();
