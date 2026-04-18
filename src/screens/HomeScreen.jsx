@@ -169,14 +169,64 @@ function getOrderedGoals(customOrder) {
 }
 
 function SheetModal({ onClose, children, style = {} }) {
+  const [dragY, setDragY] = useState(0);
+  const [animated, setAnimated] = useState(false);
+  const dragStartY = useRef(null);
+  const sheetRef = useRef(null);
+
   useEffect(() => {
     document.body.style.overscrollBehavior = "none";
-    return () => { document.body.style.overscrollBehavior = ""; };
+    const timer = setTimeout(() => setAnimated(true), 260);
+    return () => {
+      document.body.style.overscrollBehavior = "";
+      clearTimeout(timer);
+    };
   }, []);
+
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const onMove = (e) => {
+      if (dragStartY.current === null) return;
+      const dy = e.touches[0].clientY - dragStartY.current;
+      if (dy > 0) { setDragY(dy); e.preventDefault(); }
+    };
+    el.addEventListener("touchmove", onMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onMove);
+  }, []);
+
+  const handleTouchStart = (e) => {
+    dragStartY.current = e.touches[0].clientY;
+    setDragY(0);
+  };
+
+  const handleTouchEnd = () => {
+    if (dragY > 80) onClose();
+    else setDragY(0);
+    dragStartY.current = null;
+  };
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "var(--surface)", borderRadius: "24px 24px 0 0", boxShadow: "0 -8px 40px rgba(108,92,231,0.15)", animation: "slideUp 0.25s ease both", display: "flex", flexDirection: "column", maxHeight: "85dvh", ...style }}>
+      <div
+        ref={sheetRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          position: "relative",
+          background: "var(--surface)",
+          borderRadius: "24px 24px 0 0",
+          boxShadow: "0 -8px 40px rgba(108,92,231,0.15)",
+          animation: animated ? "none" : "slideUp 0.25s ease both",
+          transform: animated ? `translateY(${dragY}px)` : undefined,
+          transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",
+          touchAction: "pan-y",
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "85dvh",
+          ...style,
+        }}>
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "16px auto 0", flexShrink: 0 }} />
         {children}
       </div>
