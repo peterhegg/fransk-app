@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MASTERY_COLORS, MASTERY_LABELS, MASTERY_POINTS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP } from "../constants.js";
+import { MASTERY_COLORS, MASTERY_LABELS, MASTERY_POINTS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
 
 function speakFr(text) {
@@ -17,7 +17,9 @@ export function getCatForWord(w) {
 export default function WordDetailModal({ word, onClose, onSave, extraCats = [] }) {
   const pts = word.points || 0;
   const tier = getWordTier(pts);
-  const currentCat = getCatForWord(word);
+  const isGrammar = !!word.topicId;
+  const grammarTopic = isGrammar ? GRAMMAR_TOPICS.find(t => t.id === word.topicId)?.title || word.topicId : null;
+  const currentCat = isGrammar ? grammarTopic : getCatForWord(word);
   const [editingCat, setEditingCat] = useState(false);
   const [selectedCat, setSelectedCat] = useState(currentCat);
   const [dragY, setDragY] = useState(0);
@@ -118,15 +120,17 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
         <div style={{ background: "var(--bg)", borderRadius: 14, padding: "14px 16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: editingCat ? 12 : 0 }}>
             <div>
-              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 3 }}>Kategori</div>
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 3 }}>{isGrammar ? "Emne" : "Kategori"}</div>
               <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 500 }}>{selectedCat}</div>
             </div>
-            <button onClick={() => setEditingCat(e => !e)}
-              style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, color: "var(--accent)", fontSize: 12, fontWeight: 500, padding: "6px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              {editingCat ? "Avbryt" : "Endre"}
-            </button>
+            {!isGrammar && (
+              <button onClick={() => setEditingCat(e => !e)}
+                style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, color: "var(--accent)", fontSize: 12, fontWeight: 500, padding: "6px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                {editingCat ? "Avbryt" : "Endre"}
+              </button>
+            )}
           </div>
-          {editingCat && (
+          {!isGrammar && editingCat && (
             <>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                 {allCats.map(cat => (
