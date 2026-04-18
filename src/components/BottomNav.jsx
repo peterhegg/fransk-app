@@ -13,7 +13,7 @@ export default function BottomNav({ screen, showWords, onNav }) {
     : null;
 
   return (
-    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 84, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px)", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", padding: "0 16px 16px", gap: 4, zIndex: 200 }}>
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 84, background: "var(--nav-bg)", backdropFilter: "blur(24px)", boxShadow: "0 -1px 0 var(--border), 0 -8px 32px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", padding: "0 16px 16px", gap: 4, zIndex: 200 }}>
       {tabs.map(t => {
         const active = activeId === t.id;
         if (t.id === "home") {

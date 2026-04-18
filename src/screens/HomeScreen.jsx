@@ -729,18 +729,23 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
 
         {/* Stats */}
         <div style={{ display: "flex", gap: 10, padding: "0 24px 28px" }}>
-          <button onClick={onShowWords} style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            <div style={{ fontSize: 22, fontWeight: 600, color: "var(--accent)", lineHeight: 1, marginBottom: 3 }}>{words.length}</div>
-            <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Ord lært</div>
-          </button>
-          <button onClick={() => setActivityOpen(true)} style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            <div style={{ fontSize: 22, fontWeight: 600, color: "var(--accent)", lineHeight: 1, marginBottom: 3 }}>🔥 {streak}</div>
-            <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Dager</div>
-          </button>
-          <button onClick={() => setSvarOpen(true)} style={{ flex: 1, background: "var(--surface)", borderRadius: 14, padding: "12px 10px", textAlign: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            <div style={{ fontSize: 22, fontWeight: 600, color: "var(--accent)", lineHeight: 1, marginBottom: 3 }}>{sessionMsgs}</div>
-            <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Svar i dag</div>
-          </button>
+          {[
+            { label: "Ord lært",  value: words.length,  emoji: "📚", onClick: onShowWords,           color: "#6C5CE7" },
+            { label: "Dager",     value: streak,        emoji: "🔥", onClick: () => setActivityOpen(true), color: "#e17055" },
+            { label: "Svar i dag",value: sessionMsgs,   emoji: "✓",  onClick: () => setSvarOpen(true),     color: "#00b894" },
+          ].map(s => (
+            <button key={s.label} onClick={s.onClick} style={{
+              flex: 1, background: "var(--surface)", borderRadius: 16,
+              padding: "14px 8px 12px", textAlign: "center",
+              boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
+              cursor: "pointer", fontFamily: "var(--font-body)",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+            }}>
+              <div style={{ fontSize: 13, lineHeight: 1 }}>{s.emoji}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.6px", fontWeight: 500 }}>{s.label}</div>
+            </button>
+          ))}
         </div>
 
         {/* Øvelser */}
@@ -748,19 +753,39 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           <span style={{ fontSize: 20, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Øvelser</span>
         </div>
 
-        <div className="fade-stagger" style={{ display: "flex", gap: 14, padding: "0 24px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
+        <div className="fade-stagger" style={{ display: "flex", gap: 12, padding: "0 24px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
           {MODES.map(m => {
             const isLoading = m.id === "dagens-glose" && dagensLoading;
+            const shortLabel = m.label.split("–")[0].trim();
             return (
               <button key={m.id} onClick={() => !isLoading && onStart(m.id)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: isLoading ? "default" : "pointer", flexShrink: 0, background: "none", border: "none", padding: 0, fontFamily: "var(--font-body)", opacity: isLoading ? 0.7 : 1 }}>
-                <div style={{ width: 72, height: 72, borderRadius: 20, background: MODE_COLORS[m.id] || "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "var(--shadow-md)", transition: "transform 0.18s ease" }}
-                  onMouseEnter={e => { if (!isLoading) e.currentTarget.style.transform = "scale(1.06)"; }}
-                  onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                style={{
+                  flexShrink: 0, width: 120, background: "var(--surface)",
+                  borderRadius: 18, overflow: "hidden",
+                  boxShadow: "var(--shadow-sm)", border: "none",
+                  cursor: isLoading ? "default" : "pointer",
+                  textAlign: "left", fontFamily: "var(--font-body)", padding: 0,
+                  opacity: isLoading ? 0.7 : 1,
+                  transition: "transform 0.18s ease, box-shadow 0.18s ease",
+                }}
+                onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
+                <div style={{
+                  height: 82,
+                  background: MODE_COLORS[m.id] || "var(--accent)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 30,
+                }}>
                   {isLoading ? "⏳" : (MODE_EMOJI[m.id] || m.icon)}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text)", textAlign: "center", maxWidth: 72, lineHeight: 1.3 }}>
-                  {isLoading ? "Henter ord…" : m.label.split("–")[0].split("–")[0].trim()}
+                <div style={{ padding: "9px 11px 11px" }}>
+                  <div style={{
+                    fontSize: 12, fontWeight: 600, color: "var(--text)",
+                    lineHeight: 1.35, overflow: "hidden", height: 32,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                  }}>
+                    {isLoading ? "Henter…" : shortLabel}
+                  </div>
                 </div>
               </button>
             );
@@ -775,10 +800,10 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         <div style={{ display: "flex", gap: 16, padding: "0 24px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
           {recCards.map(c => (
             <button key={c.id} onClick={() => onStart(c.id)}
-              style={{ flexShrink: 0, width: 220, background: "var(--surface)", borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-md)", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", padding: 0, transition: "transform 0.2s ease" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
-              <div style={{ height: 120, background: c.gradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, position: "relative" }}>
+              style={{ flexShrink: 0, width: 260, background: "var(--surface)", borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-md)", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", padding: 0, transition: "transform 0.2s ease, box-shadow 0.2s ease" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-md)"; }}>
+              <div style={{ height: 148, background: c.gradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, position: "relative" }}>
                 {c.emoji}
                 {c.badge !== null && (
                   <div style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", background: c.badgeDone ? "var(--accent)" : "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: c.badgeDone ? "white" : "var(--accent)", boxShadow: "var(--shadow-sm)" }}>
