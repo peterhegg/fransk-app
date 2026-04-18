@@ -13,8 +13,8 @@ export default defineConfig({
         navigateFallback: "/fransk-app/index.html",
       },
       manifest: {
-        name: "Mon Français",
-        short_name: "Fransk",
+        name: "Heggolingo",
+        short_name: "Heggolingo",
         description: "Lær fransk på din måte",
         theme_color: "#6C5CE7",
         background_color: "#f0f0f8",
