@@ -81,6 +81,8 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
           transform: animated ? `translateY(${dragY}px)` : undefined,
           transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",
           touchAction: "pan-y",
+          maxHeight: "88dvh",
+          overflowY: "auto",
         }}>
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 20px" }} />
 

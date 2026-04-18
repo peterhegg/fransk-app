@@ -116,13 +116,13 @@ function CatManageModal({ onClose, customCats, onSave, words, setWords }) {
                   </>
                 ) : (
                   <>
-                    <div style={{ flex: 1, fontSize: 14, color: "var(--text)" }}>
-                      {cat} <span style={{ fontSize: 11, color: "var(--text-subtle)" }}>({count})</span>
-                      {isBuiltIn && <span style={{ fontSize: 10, color: "rgba(108,92,231,0.5)", marginLeft: 6 }}>innebygd</span>}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cat}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-subtle)" }}>{count} ord{isBuiltIn ? " · innebygd" : ""}</div>
                     </div>
-                    <button onClick={() => startRename(cat)} style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 12, padding: "6px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Gi nytt navn</button>
+                    <button onClick={() => startRename(cat)} style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 12, padding: "6px 10px", cursor: "pointer", fontFamily: "var(--font-body)", whiteSpace: "nowrap", flexShrink: 0 }}>Endre</button>
                     {cat !== "Andre ord" && (
-                      <button onClick={() => deleteCat(cat)} style={{ background: "none", border: "1px solid rgba(225,112,85,0.4)", borderRadius: 8, color: "var(--color-error)", fontSize: 12, padding: "6px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Slett</button>
+                      <button onClick={() => deleteCat(cat)} style={{ background: "none", border: "1px solid rgba(225,112,85,0.4)", borderRadius: 8, color: "var(--color-error)", fontSize: 12, padding: "6px 10px", cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>✕</button>
                     )}
                   </>
                 )}
