@@ -1,6 +1,6 @@
 import {
   SR_INTERVALS, WORDS_KEY, GRAMMAR_WORDS_KEY, GRAMMAR_PROGRESS_KEY,
-  STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, GRAMMAR_TOPICS, VOCAB_GOALS,
+  STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, STATIC_VOCAB, GRAMMAR_TOPICS, VOCAB_GOALS,
   MASTERY_POINTS, MASTERY_PAUSE_MIN, MASTERY_PAUSE_MAX, ANSWER_COUNT_KEY,
   GENERATED_VOCAB_KEY,
   gold, cream, grn, red, card, brd,
@@ -345,14 +345,12 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
       // Cache has only known words — fall through and rebuild
     }
   } catch {}
-  const baseVocab = goalId === "core" ? VOCAB_LIST : [];
+  const staticBase = goalId === "core"
+    ? [...VOCAB_LIST, ...(STATIC_VOCAB.core || [])]
+    : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
-  const allVocab = [...baseVocab, ...goalGenerated];
-  let newVocab = allVocab.filter(v => !learnedFr.has(v.fr));
-  // Fallback: if no words for this goal yet, use VOCAB_LIST unlearned words
-  if (newVocab.length === 0 && goalId !== "core") {
-    newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr));
-  }
+  const allVocab = [...staticBase, ...goalGenerated];
+  const newVocab = allVocab.filter(v => !learnedFr.has(v.fr));
   const selected = newVocab.slice(0, 5);
   const exercise = { date: todayStr(), goal: goalId, words: selected, phase1done: false, phase2done: false };
   localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(exercise));
@@ -361,9 +359,11 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
 
 export function needsNewVocab(words, generatedVocab = [], goalId = "core") {
   const learnedFr = new Set(words.map(w => w.fr));
-  const baseVocab = goalId === "core" ? VOCAB_LIST : [];
+  const staticBase = goalId === "core"
+    ? [...VOCAB_LIST, ...(STATIC_VOCAB.core || [])]
+    : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
-  return [...baseVocab, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 10;
+  return [...staticBase, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 10;
 }
 
 export function getCurrentGrammarTopic() {

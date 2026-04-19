@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, GRAMMAR_TOPICS, GENERATED_VOCAB_KEY } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, GRAMMAR_TOPICS } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import WordDetailModal, { getCatForWord } from "../components/WordDetailModal.jsx";
@@ -249,7 +249,6 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
     localStorage.removeItem(WORDS_KEY);
     localStorage.removeItem("fransk-laering-ord");
     localStorage.removeItem(DAGENS_GLOSE_KEY);
-    localStorage.removeItem(GENERATED_VOCAB_KEY);
   };
 
   const copyGrammarWords = () => {
