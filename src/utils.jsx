@@ -346,7 +346,7 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
     }
   } catch {}
   const baseVocab = goalId === "core" ? VOCAB_LIST : [];
-  const goalGenerated = generatedVocab.filter(v => !v.goal || v.goal === goalId);
+  const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
   const allVocab = [...baseVocab, ...goalGenerated];
   const newVocab = allVocab.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
   const selected = newVocab.slice(0, 5);
@@ -358,7 +358,7 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
 export function needsNewVocab(words, generatedVocab = [], goalId = "core") {
   const learnedFr = new Set(words.map(w => w.fr));
   const baseVocab = goalId === "core" ? VOCAB_LIST : [];
-  const goalGenerated = generatedVocab.filter(v => !v.goal || v.goal === goalId);
+  const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
   return [...baseVocab, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 10;
 }
 

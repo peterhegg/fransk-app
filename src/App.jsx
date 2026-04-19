@@ -256,14 +256,17 @@ export default function App() {
 
     if (!cached && needsNewVocab(words, genVocab, goalId)) {
       setDagensLoading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       try {
         const knownFr = new Set([...words.map(w => w.fr), ...genVocab.map(v => v.fr)]);
         const knownList = [...knownFr].join(", ");
         const res = await fetch(PROXY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+          signal: controller.signal,
           body: JSON.stringify({
-            model: "claude-sonnet-4-20250514",
+            model: "claude-sonnet-4-5-20251001",
             max_tokens: 400,
             system: "You are a French vocabulary generator. Respond only with a valid JSON array, no markdown.",
             messages: [{
@@ -286,7 +289,10 @@ export default function App() {
           }
         }
       } catch { /* continue with what we have */ }
-      setDagensLoading(false);
+      finally {
+        clearTimeout(timeoutId);
+        setDagensLoading(false);
+      }
     }
 
     const ex = getTodaysGloseWords(words, genVocab, goalId);
