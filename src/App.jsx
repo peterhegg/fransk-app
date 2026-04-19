@@ -632,7 +632,7 @@ export default function App() {
   if (showWords) return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <WordsScreen words={words} setWords={setWords} grammarWords={grammarWords} onBack={() => setShowWords(false)} onClearGrammar={clearAllData} {...navProps} />
+      <WordsScreen words={words} setWords={setWords} grammarWords={grammarWords} setGrammarWords={setGrammarWords} onBack={() => setShowWords(false)} onClearGrammar={clearAllData} {...navProps} />
     </>
   );
 

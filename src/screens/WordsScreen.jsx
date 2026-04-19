@@ -147,7 +147,7 @@ function CatManageModal({ onClose, customCats, onSave, words, setWords }) {
   );
 }
 
-export default function WordsScreen({ words, setWords, grammarWords = [], onBack, screen, showWords, onNav, onClearGrammar }) {
+export default function WordsScreen({ words, setWords, grammarWords = [], setGrammarWords, onBack, screen, showWords, onNav, onClearGrammar }) {
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [addFr, setAddFr] = useState("");
@@ -156,6 +156,10 @@ export default function WordsScreen({ words, setWords, grammarWords = [], onBack
   const [importText, setImportText] = useState("");
   const [importResult, setImportResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [gramImportOpen, setGramImportOpen] = useState(false);
+  const [gramImportText, setGramImportText] = useState("");
+  const [gramImportResult, setGramImportResult] = useState(null);
+  const [gramCopied, setGramCopied] = useState(false);
   const [filterTier, setFilterTier] = useState(null);
   const [closedSections, setClosedSections] = useState(new Set());
   const [selectedWord, setSelectedWord] = useState(null);
@@ -242,6 +246,65 @@ export default function WordsScreen({ words, setWords, grammarWords = [], onBack
     localStorage.removeItem(WORDS_KEY);
     localStorage.removeItem("fransk-laering-ord");
     localStorage.removeItem(DAGENS_GLOSE_KEY);
+  };
+
+  const copyGrammarWords = () => {
+    if (!grammarWords.length) return;
+    navigator.clipboard.writeText(
+      "Mine franske grammatikkord:\n" +
+      grammarWords.map(w => {
+        const pts = w.points || 0;
+        const topic = w.topicId ? ` [topic:${w.topicId}]` : "";
+        return `◐ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}]${topic}`;
+      }).join("\n")
+    ).then(() => { setGramCopied(true); setTimeout(() => setGramCopied(false), 2500); });
+  };
+
+  const importGrammarWords = () => {
+    if (!setGrammarWords) return;
+    const lines = gramImportText.split("\n").map(l => l.trim()).filter(Boolean);
+    let added = 0, updated_count = 0;
+    setGrammarWords(prev => {
+      let updated = [...prev];
+      for (const line of lines) {
+        const clean = line.replace(/^[◐✓✗•\-*]\s*/, "").trim();
+        const eqIdx = clean.indexOf(" = ");
+        if (eqIdx === -1) continue;
+        const fr = clean.slice(0, eqIdx).trim();
+        if (!fr) continue;
+        let rest = clean.slice(eqIdx + 3).trim();
+        const topicMatch = rest.match(/\[topic:([^\]]+)\]\s*$/);
+        const importedTopic = topicMatch ? topicMatch[1].trim() : null;
+        if (topicMatch) rest = rest.slice(0, topicMatch.index).trim();
+        const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
+        const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
+        if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
+        const pm = rest.match(/\(([^)]+)\)\s*$/);
+        const phonetic = pm ? pm[1].trim() : "";
+        const no = pm ? rest.slice(0, pm.index).trim() : rest;
+        const existing = updated.find(w => w.fr === fr);
+        if (existing) {
+          if (importedPoints !== null || importedTopic !== null) {
+            updated = updated.map(w => {
+              if (w.fr !== fr) return w;
+              const patch = {};
+              if (importedPoints !== null) patch.points = importedPoints;
+              if (importedTopic !== null) patch.topicId = importedTopic;
+              return { ...w, ...patch };
+            });
+            updated_count++;
+          }
+          continue;
+        }
+        const topicProp = importedTopic ? { topicId: importedTopic } : {};
+        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: importedPoints ?? 0, ...topicProp });
+        added++;
+      }
+      return updated;
+    });
+    const total = added + updated_count;
+    setGramImportResult({ added, updated: updated_count });
+    if (total > 0) { setGramImportText(""); setTimeout(() => { setGramImportOpen(false); setGramImportResult(null); }, 1800); }
   };
 
   const panelBg = "rgba(108,92,231,0.04)";
@@ -362,11 +425,42 @@ export default function WordsScreen({ words, setWords, grammarWords = [], onBack
         {/* Grammatikkbanken section */}
         {(grammarByTopic.length > 0 || ungroupedGrammar.length > 0) && (
           <div style={{ marginBottom: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, paddingBottom: 8, borderBottom: "2px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, paddingBottom: 8, borderBottom: "2px solid var(--border)" }}>
               <span style={{ color: "var(--accent)" }}>◐</span>
               <span style={{ fontSize: 13, letterSpacing: 2, color: "var(--text-subtle)", textTransform: "uppercase", fontWeight: 500 }}>Grammatikkbanken</span>
               <span style={{ fontSize: 11, color: "rgba(108,92,231,0.45)", marginLeft: "auto" }}>{grammarWords.length} strofer</span>
+              <button onClick={copyGrammarWords}
+                style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(108,92,231,0.35)"}`, borderRadius: 6, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", transition: "all 0.3s", whiteSpace: "nowrap" }}>
+                {gramCopied ? "✓" : "Kopier"}
+              </button>
+              {setGrammarWords && (
+                <button onClick={() => setGramImportOpen(o => !o)}
+                  style={{ background: gramImportOpen ? "rgba(108,92,231,0.12)" : "none", border: "1px solid rgba(108,92,231,0.35)", borderRadius: 6, color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", whiteSpace: "nowrap" }}>
+                  Importer
+                </button>
+              )}
             </div>
+            {gramImportOpen && (
+              <div style={{ background: panelBg, borderRadius: 10, padding: 12, marginBottom: 12 }}>
+                <textarea
+                  value={gramImportText}
+                  onChange={e => setGramImportText(e.target.value)}
+                  placeholder={"◐ je suis = jeg er (sjø swi) [pts:5] [topic:etre]\n◐ tu es = du er (tü e) [pts:3] [topic:etre]"}
+                  style={{ width: "100%", minHeight: 90, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 12, padding: 8, resize: "vertical", boxSizing: "border-box" }}
+                />
+                {gramImportResult && (
+                  <div style={{ fontSize: 12, color: (gramImportResult.added + gramImportResult.updated) > 0 ? "var(--color-success)" : "var(--accent)", marginTop: 6 }}>
+                    {(gramImportResult.added + gramImportResult.updated) > 0
+                      ? `✓ ${gramImportResult.added} nye lagt til, ${gramImportResult.updated} oppdatert`
+                      : "Ingen nye ord funnet"}
+                  </div>
+                )}
+                <button onClick={importGrammarWords}
+                  style={{ marginTop: 8, width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 8, color: "white", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px", cursor: "pointer" }}>
+                  Importer grammatikk
+                </button>
+              </div>
+            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {grammarByTopic.map(({ topic, words: gw }) => {
