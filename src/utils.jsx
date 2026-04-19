@@ -348,7 +348,11 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
   const baseVocab = goalId === "core" ? VOCAB_LIST : [];
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
   const allVocab = [...baseVocab, ...goalGenerated];
-  const newVocab = allVocab.filter(v => !learnedFr.has(v.fr)).slice(0, 5);
+  let newVocab = allVocab.filter(v => !learnedFr.has(v.fr));
+  // Fallback: if no words for this goal yet, use VOCAB_LIST unlearned words
+  if (newVocab.length === 0 && goalId !== "core") {
+    newVocab = VOCAB_LIST.filter(v => !learnedFr.has(v.fr));
+  }
   const selected = newVocab.slice(0, 5);
   const exercise = { date: todayStr(), goal: goalId, words: selected, phase1done: false, phase2done: false };
   localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(exercise));

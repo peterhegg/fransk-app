@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, GRAMMAR_TOPICS } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, GRAMMAR_TOPICS, GENERATED_VOCAB_KEY } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import WordDetailModal, { getCatForWord } from "../components/WordDetailModal.jsx";
@@ -196,6 +196,9 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
         const catMatch = rest.match(/\[cat:([^\]]+)\]\s*$/);
         const importedCat = catMatch ? catMatch[1].trim() : null;
         if (catMatch) rest = rest.slice(0, catMatch.index).trim();
+        const goalMatch = rest.match(/\[goal:([^\]]+)\]\s*$/);
+        const importedGoal = goalMatch ? goalMatch[1].trim() : "core";
+        if (goalMatch) rest = rest.slice(0, goalMatch.index).trim();
         const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
         const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
         if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
@@ -218,7 +221,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
         }
         const pts = importedPoints ?? 0;
         const catProp = importedCat ? { cat: importedCat } : {};
-        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: pts, ...catProp });
+        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: pts, goal: importedGoal, ...catProp });
         added++;
       }
       return updated;
@@ -235,7 +238,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
       words.map(w => {
         const pts = w.points || 0;
         const cat = getCatForWord(w);
-        return `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}] [cat:${cat}]`;
+        return `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}] [goal:${w.goal || "core"}] [cat:${cat}]`;
       }).join("\n")
     ).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
@@ -246,6 +249,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
     localStorage.removeItem(WORDS_KEY);
     localStorage.removeItem("fransk-laering-ord");
     localStorage.removeItem(DAGENS_GLOSE_KEY);
+    localStorage.removeItem(GENERATED_VOCAB_KEY);
   };
 
   const copyGrammarWords = () => {
