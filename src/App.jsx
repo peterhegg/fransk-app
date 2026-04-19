@@ -243,7 +243,7 @@ export default function App() {
     const goalId = activeGoal.id;
     let genVocab = loadGeneratedVocab();
 
-    // If today's exercise is cached for this goal and in progress (or has new words), use it
+    // Check cached exercise for today
     let cached = null;
     try {
       const s = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
@@ -254,24 +254,23 @@ export default function App() {
       }
     } catch {}
 
-    if (!cached && needsNewVocab(words, genVocab, goalId)) {
-      setDagensLoading(true);
+    // Helper: fetch new vocab (with 15s timeout, always background-safe)
+    const fetchNewVocab = async (currentGenVocab) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
       try {
-        const knownFr = new Set([...words.map(w => w.fr), ...genVocab.map(v => v.fr)]);
-        const knownList = [...knownFr].join(", ");
+        const knownFr = new Set([...words.map(w => w.fr), ...currentGenVocab.map(v => v.fr)]);
         const res = await fetch(PROXY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
           signal: controller.signal,
           body: JSON.stringify({
-            model: "claude-sonnet-4-5-20251001",
+            model: "claude-haiku-4-5-20251001",
             max_tokens: 400,
             system: "You are a French vocabulary generator. Respond only with a valid JSON array, no markdown.",
             messages: [{
               role: "user",
-              content: `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${knownList}. Return a JSON array only: [{"fr":"...","no":"...","phonetic":"..."}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Pick words relevant to the topic and appropriate for A1/A2 level.`,
+              content: `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${[...knownFr].join(", ")}. Return a JSON array only: [{"fr":"...","no":"...","phonetic":"..."}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Pick words relevant to the topic and appropriate for A1/A2 level.`,
             }],
           }),
         });
@@ -284,31 +283,63 @@ export default function App() {
             const fresh = generated
               .filter(v => v.fr && v.no && !knownFr.has(v.fr))
               .map(v => ({ ...v, goal: goalId }));
-            genVocab = [...genVocab, ...fresh];
-            saveGeneratedVocab(genVocab);
+            const updated = [...currentGenVocab, ...fresh];
+            saveGeneratedVocab(updated);
+            return updated;
           }
         }
-      } catch { /* continue with what we have */ }
-      finally {
-        clearTimeout(timeoutId);
-        setDagensLoading(false);
+      } catch { /* ignore */ }
+      finally { clearTimeout(timeoutId); }
+      return currentGenVocab;
+    };
+
+    // Helper: launch exercise from data
+    const launchExercise = (ex) => {
+      const phase = ex.phase2done ? 3 : ex.phase1done ? 2 : 1;
+      setDagensWords(ex.words); setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set());
+      setDagensInput(""); setDagensChecked(false); setDagensResult(""); setDagensHistory([]);
+      if (phase === 1) { const q = shuffle([...ex.words]); setDagensQueue(q); setDagensCard(q[0]); }
+      else if (phase === 2) {
+        const savedFill = Array.isArray(ex.fillFr)
+          ? words.filter(w => ex.fillFr.includes(w.fr))
+          : words.filter(w => !ex.words.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
+        const all = [...ex.words, ...savedFill]; setDagensWords(all);
+        const p2 = shuffle(all).map(w => ({ ...w, reverse: true })); setDagensQueue(p2); setDagensCard(p2[0]);
       }
+      setDagensPhase(phase); setScreen("dagens-glose");
+    };
+
+    // Use cached exercise directly — fetch more in background if needed
+    if (cached) {
+      launchExercise(cached);
+      if (needsNewVocab(words, genVocab, goalId)) fetchNewVocab(genVocab); // fire & forget
+      return;
     }
 
+    // Check if we have any words available right now
     const ex = getTodaysGloseWords(words, genVocab, goalId);
-    if (!ex.words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
-    const phase = ex.phase2done ? 3 : ex.phase1done ? 2 : 1;
-    setDagensWords(ex.words); setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set());
-    setDagensInput(""); setDagensChecked(false); setDagensResult(""); setDagensHistory([]);
-    if (phase === 1) { const q = shuffle([...ex.words]); setDagensQueue(q); setDagensCard(q[0]); }
-    else if (phase === 2) {
-      const savedFill = Array.isArray(ex.fillFr)
-        ? words.filter(w => ex.fillFr.includes(w.fr))
-        : words.filter(w => !ex.words.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
-      const all = [...ex.words, ...savedFill]; setDagensWords(all);
-      const p2 = shuffle(all).map(w => ({ ...w, reverse: true })); setDagensQueue(p2); setDagensCard(p2[0]);
+
+    if (ex.words.length > 0) {
+      // Start immediately — fetch more vocab in background, never block the user
+      launchExercise(ex);
+      if (needsNewVocab(words, genVocab, goalId)) fetchNewVocab(genVocab); // fire & forget
+    } else if (needsNewVocab(words, genVocab, goalId)) {
+      // Zero words available — only case where we block and show loading
+      setDagensLoading(true);
+      const updated = await fetchNewVocab(genVocab);
+      setDagensLoading(false);
+      const newEx = getTodaysGloseWords(words, updated, goalId);
+      if (newEx.words.length > 0) {
+        launchExercise(newEx);
+      } else {
+        setNoWordsMsg(true);
+        setTimeout(() => setNoWordsMsg(false), 3000);
+      }
+    } else {
+      setNoWordsMsg(true);
+      setTimeout(() => setNoWordsMsg(false), 3000);
     }
-    setDagensPhase(phase); setScreen("dagens-glose");
+
   };
 
   const startGlose = () => {
