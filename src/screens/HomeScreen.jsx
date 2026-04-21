@@ -11,14 +11,14 @@ const MODE_IMAGES = {
   "glose":             "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop",
   "dagens-grammatikk": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=70&auto=format&fit=crop",
   "grammatikk-ovelse": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop",
-  "teksthjelp":        `${import.meta.env.BASE_URL}houellebecq.jpeg`,
+  "teksthjelp":        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop",
   "fri":               "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop",
 };
 
 const GOAL_IMAGES = {
   "core":        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=700&q=70&auto=format&fit=crop",
   "everyday":    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=70&auto=format&fit=crop",
-  "tdf":         "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?w=700&q=70&auto=format&fit=crop",
+  "tdf":         "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=700&q=70&auto=format&fit=crop",
   "senses":      "https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=700&q=70&auto=format&fit=crop",
   "food":        "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=700&q=70&auto=format&fit=crop",
   "body":        "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=700&q=70&auto=format&fit=crop",
@@ -52,7 +52,7 @@ const GOAL_IMAGES = {
   "philosophy":  "https://images.unsplash.com/photo-1544717305-2782549b5136?w=700&q=70&auto=format&fit=crop",
   "gastro2":     "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=70&auto=format&fit=crop",
   "prose3":      "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=700&q=70&auto=format&fit=crop",
-  "tdf3":        "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=700&q=70&auto=format&fit=crop",
+  "tdf3":        "https://images.unsplash.com/photo-1534787238916-9ba6764efd4f?w=700&q=70&auto=format&fit=crop",
   "houellebecq": "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=700&q=70&auto=format&fit=crop",
   "paris_adv":   "https://images.unsplash.com/photo-1503917988258-f87a78e3c995?w=700&q=70&auto=format&fit=crop",
   "free":        "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=700&q=70&auto=format&fit=crop",
