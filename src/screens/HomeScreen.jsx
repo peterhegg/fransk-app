@@ -327,6 +327,10 @@ function OrdmesterEditModal({ onClose, onSave }) {
 function ActivityModal({ streak, onClose }) {
   const log = loadActivityLog();
   const today = todayStr();
+  const chartRef = useRef(null);
+  useEffect(() => {
+    if (chartRef.current) chartRef.current.scrollLeft = chartRef.current.scrollWidth;
+  }, []);
   const days = Array.from({ length: 20 }, (_, i) => {
     const d = new Date(Date.now() - (19 - i) * 86400000);
     const date = d.toISOString().split("T")[0];
@@ -361,7 +365,7 @@ function ActivityModal({ streak, onClose }) {
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 8px", scrollbarWidth: "none" }}>
-        <div style={{ display: "flex", gap: 3, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4, alignItems: "flex-end" }}>
+        <div ref={chartRef} style={{ display: "flex", gap: 3, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4, alignItems: "flex-end" }}>
           {days.map(day => {
             const isToday = day.date === today;
             const barH = day.answers === 0 ? 4 : Math.max(8, (day.answers / maxAnswers) * 100);

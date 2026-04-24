@@ -8,7 +8,7 @@ import BottomNav from "../components/BottomNav.jsx";
 export default function ChatScreen({ mode, words, setWords, isOnline, speak, speaking, sessionMsgs, setSessionMsgs, onBack, onShowWords, screen, showWords, onNav }) {
   const [messages, setMessages] = useState(() => {
     const starter = mode?.id === "teksthjelp"
-      ? "Lim inn en setning eller lengre tekst på fransk — jeg tilpasser meg automatisk.\n\nDu kan også velge en setning fra bøkene dine nedenfor."
+      ? "Lim inn fransk tekst, still spørsmål om ord, eller be meg oversette noe.\n\nDu kan også velge en setning fra bøkene dine nedenfor."
       : "Hva lurer du på om fransk? Du kan også skrive «Pierre» hvis du vil øve med en virtuell franskmann.";
     return [{ role: "assistant", content: starter, mode: mode?.id }];
   });
@@ -68,7 +68,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
         headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
         signal: controller.signal,
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-6",
           max_tokens: 800,
           system: SYSTEM_PROMPT + wordCtx + `\nModus: ${mode?.label?.toUpperCase()}`,
           messages: next.map(m => ({ role: m.role, content: m.content })),
@@ -100,7 +100,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
   })();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 84 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
@@ -145,7 +145,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
         </div>
       )}
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16, justifyContent: "flex-end" }}>
         {messages.map((msg, i) => (
           <div key={i} style={msg.role === "user"
             ? { alignSelf: "flex-end", maxWidth: "80%", background: "var(--accent-bg)", border: "1px solid rgba(108,92,231,0.2)", borderRadius: "18px 4px 18px 18px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 }
