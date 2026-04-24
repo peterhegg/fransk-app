@@ -369,21 +369,34 @@ function ActivityModal({ streak, onClose }) {
           {days.map(day => {
             const isToday = day.date === today;
             const barH = day.answers === 0 ? 4 : Math.max(8, (day.answers / maxAnswers) * 100);
-            const dayN = parseInt(day.date.slice(-2));
+            const d = new Date(day.date + "T12:00:00");
+            const dayN = d.getDate();
+            const monthAbbr = d.toLocaleDateString("nb", { month: "short" });
+            const total = day.vocab + day.grammar + day.voice;
+            const vH = total > 0 && day.answers > 0 ? Math.round((day.vocab / total) * barH) : 0;
+            const gH = total > 0 && day.answers > 0 ? Math.round((day.grammar / total) * barH) : 0;
+            const sH = total > 0 && day.answers > 0 ? Math.round((day.voice / total) * barH) : 0;
+            const restH = barH - vH - gH - sH;
             return (
               <div key={day.date} style={{ flexShrink: 0, width: 30, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
                 <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
                   {day.answers > 0 ? day.answers : ""}
                 </div>
-                <div style={{ width: 18, height: barH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(108,92,231,0.4)" : "var(--accent-bg)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
-                <div style={{ display: "flex", gap: 2, height: 12, alignItems: "center" }}>
-                  {day.vocab > 0 && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#00b894" }} title="Glose" />}
-                  {day.grammar > 0 && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#0984e3" }} title="Grammatikk" />}
-                  {day.voice > 0 && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#f0a500" }} title="Samtale" />}
+                <div style={{ width: 18, height: barH, borderRadius: "4px 4px 0 0", overflow: "hidden", display: "flex", flexDirection: "column-reverse" }}>
+                  {vH > 0 && <div style={{ width: "100%", height: vH, background: "#00b894", flexShrink: 0 }} />}
+                  {gH > 0 && <div style={{ width: "100%", height: gH, background: "#0984e3", flexShrink: 0 }} />}
+                  {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f0a500", flexShrink: 0 }} />}
+                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(108,92,231,0.4)" : "var(--accent-bg)", flexShrink: 0 }} />}
+                  {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "var(--accent-bg)", flexShrink: 0 }} />}
                 </div>
-                <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
-                  {isToday ? "i dag" : dayN}
-                </div>
+                {isToday ? (
+                  <div style={{ fontSize: 9, color: "var(--accent)", fontWeight: 700, textAlign: "center", lineHeight: 1.3 }}>i dag</div>
+                ) : (
+                  <div style={{ textAlign: "center", lineHeight: 1.2 }}>
+                    <div style={{ fontSize: 9, color: "var(--text-subtle)" }}>{dayN}.</div>
+                    <div style={{ fontSize: 8, color: "var(--text-subtle)", opacity: 0.7 }}>{monthAbbr}</div>
+                  </div>
+                )}
               </div>
             );
           })}
