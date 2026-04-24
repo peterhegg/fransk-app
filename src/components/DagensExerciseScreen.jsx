@@ -3,33 +3,28 @@ import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
 
 function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav }) {
-  const step1 = words.map(w => ({ ...w, step: 1 }));
-  const [step2] = useState(() =>
-    Array.from({ length: 5 }, () => shuffle([...words]).map(w => ({ ...w, step: 2 }))).flat()
+  const [allCards] = useState(() =>
+    Array.from({ length: 5 }, () => shuffle([...words])).flat()
   );
-  const allCards = [...step1, ...step2];
   const [idx, setIdx] = useState(0);
   const [noInput, setNoInput] = useState("");
   const [frInput, setFrInput] = useState("");
-  const [practiceChecked, setPracticeChecked] = useState(false);
+  const [checked, setChecked] = useState(false);
   const [noResult, setNoResult] = useState("");
   const [frResult, setFrResult] = useState("");
 
   const card = allCards[idx];
   const isLast = idx === allCards.length - 1;
-  const inStep2 = card.step === 2;
-  const step1Count = step1.length;
-  const step2Idx = idx - step1Count;
-  const round = Math.floor(step2Idx / words.length) + 1;
+  const round = Math.floor(idx / words.length) + 1;
 
-  const reset = () => { setNoInput(""); setFrInput(""); setPracticeChecked(false); setNoResult(""); setFrResult(""); };
+  const reset = () => { setNoInput(""); setFrInput(""); setChecked(false); setNoResult(""); setFrResult(""); };
   const next = () => { reset(); if (isLast) onDone(); else setIdx(i => i + 1); };
 
-  const submitPractice = () => {
+  const submit = () => {
     if (!noInput.trim() || !frInput.trim()) return;
     setNoResult(checkQuizAnswer(noInput, card, false));
     setFrResult(checkQuizAnswer(frInput, card, true));
-    setPracticeChecked(true);
+    setChecked(true);
   };
 
   return (
@@ -45,74 +40,58 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
         <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / allCards.length) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>
-          {inStep2 ? "Øv på stavingen" : "Lær de nye ordene — fr → no"}
-        </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 16 }}>
+        <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>Øv på stavingen</div>
 
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 36px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
-          {!inStep2 ? (
-            <>
-              <div style={{ fontSize: 32, color: "var(--text)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 8 }}>{card.fr}</div>
-              {card.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 12 }}>({card.phonetic})</div>}
-              <div style={{ fontSize: 20, color: "var(--text-subtle)", marginBottom: 16 }}>{card.no}</div>
-              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 20, cursor: "pointer" }}>🔊</button>
-                <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 20, cursor: "pointer" }}>🐢</button>
-              </div>
-            </>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px 28px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
+          <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
+          {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginBottom: 4 }}>({card.phonetic})</div>}
+          <div style={{ fontSize: 18, color: "var(--text-subtle)", marginBottom: 10 }}>{card.no}</div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 16 }}>
+            <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+            <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+          </div>
+
+          {checked ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[
+                { label: "Norsk", result: noResult, input: noInput, correct: card.no },
+                { label: "Fransk", result: frResult, input: frInput, correct: card.fr },
+              ].map(({ label, result, input, correct }) => (
+                <div key={label} style={{
+                  borderRadius: 10, padding: "8px 12px", textAlign: "left",
+                  background: result === "correct" ? "rgba(0,184,148,0.10)" : result === "close" ? "rgba(108,92,231,0.07)" : "rgba(225,112,85,0.08)",
+                  border: `1px solid ${result === "correct" ? "rgba(0,184,148,0.35)" : result === "close" ? "rgba(108,92,231,0.2)" : "rgba(225,112,85,0.3)"}`,
+                }}>
+                  <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 13, color: result === "correct" ? "var(--color-success)" : result === "close" ? "var(--accent)" : "var(--color-error)", fontWeight: 500 }}>
+                    {result === "correct" ? `✓ ${input}` : `${input} → ${correct}`}
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <>
-              <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 4 }}>{card.fr}</div>
-              {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginBottom: 8 }}>({card.phonetic})</div>}
-              <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 14 }}>
-                <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 18, cursor: "pointer" }}>🐢</button>
-              </div>
-              {practiceChecked ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {[
-                    { label: "Norsk", result: noResult, input: noInput, correct: card.no },
-                    { label: "Fransk", result: frResult, input: frInput, correct: card.fr },
-                  ].map(({ label, result, input, correct }) => (
-                    <div key={label} style={{
-                      borderRadius: 10, padding: "8px 12px", textAlign: "left",
-                      background: result === "correct" ? "rgba(0,184,148,0.10)" : result === "close" ? "rgba(108,92,231,0.07)" : "rgba(225,112,85,0.08)",
-                      border: `1px solid ${result === "correct" ? "rgba(0,184,148,0.35)" : result === "close" ? "rgba(108,92,231,0.2)" : "rgba(225,112,85,0.3)"}`,
-                    }}>
-                      <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 13, color: result === "correct" ? "var(--color-success)" : result === "close" ? "var(--accent)" : "var(--color-error)", fontWeight: 500 }}>
-                        {result === "correct" ? `✓ ${input}` : `✗ ${input} → ${correct}`}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <input value={noInput} onChange={e => setNoInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && frInput.trim() ? submitPractice() : null}
-                    placeholder="Norsk oversettelse…" className="input-glow"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }}
-                    autoFocus />
-                  <input value={frInput} onChange={e => setFrInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && noInput.trim() ? submitPractice() : null}
-                    placeholder="Skriv det franske ordet…" className="input-glow"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }} />
-                  <button onClick={submitPractice} disabled={!noInput.trim() || !frInput.trim()} className={noInput.trim() && frInput.trim() ? "btn-shine" : ""}
-                    style={{ background: noInput.trim() && frInput.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 12, color: noInput.trim() && frInput.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "12px", cursor: noInput.trim() && frInput.trim() ? "pointer" : "default" }}>
-                    Sjekk
-                  </button>
-                </div>
-              )}
-            </>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <input value={noInput} onChange={e => setNoInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && frInput.trim() && submit()}
+                placeholder="Norsk oversettelse…" className="input-glow"
+                style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }}
+                autoFocus />
+              <input value={frInput} onChange={e => setFrInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && noInput.trim() && submit()}
+                placeholder="Skriv det franske ordet…" className="input-glow"
+                style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }} />
+              <button onClick={submit} disabled={!noInput.trim() || !frInput.trim()} className={noInput.trim() && frInput.trim() ? "btn-shine" : ""}
+                style={{ background: noInput.trim() && frInput.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 12, color: noInput.trim() && frInput.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "12px", cursor: noInput.trim() && frInput.trim() ? "pointer" : "default" }}>
+                Sjekk
+              </button>
+            </div>
           )}
         </div>
 
-        <div style={{ fontSize: 11, color: "var(--text-subtle)", textAlign: "center" }}>
-          {inStep2 ? `Runde ${round} av 5` : `Ord ${idx + 1} av ${step1Count}`}
-        </div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)" }}>Runde {round} av 5</div>
 
-        {(!inStep2 || practiceChecked) && (
+        {checked && (
           <button onClick={next} className="btn-shine"
             style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
             {isLast ? "Start testing →" : "Neste →"}
