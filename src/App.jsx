@@ -298,15 +298,15 @@ export default function App() {
       const phase = ex.phase2done ? 3 : ex.phase1done ? 2 : 1;
       setDagensWords(ex.words); setDagensStats({ correct: 0, wrong: 0 }); setDagensMastered(new Set());
       setDagensInput(""); setDagensChecked(false); setDagensResult(""); setDagensHistory([]);
-      if (phase === 1) { const q = shuffle([...ex.words]); setDagensQueue(q); setDagensCard(q[0]); }
-      else if (phase === 2) {
+      // phase 1 = fresh start → show intro first (phase 0), queue set later by startDagensTestPhase1
+      if (phase === 2) {
         const savedFill = Array.isArray(ex.fillFr)
           ? words.filter(w => ex.fillFr.includes(w.fr))
           : words.filter(w => !ex.words.some(d => d.fr === w.fr)).sort(() => Math.random() - 0.5).slice(0, 5);
         const all = [...ex.words, ...savedFill]; setDagensWords(all);
         const p2 = shuffle(all).map(w => ({ ...w, reverse: true })); setDagensQueue(p2); setDagensCard(p2[0]);
       }
-      setDagensPhase(phase); setScreen("dagens-glose");
+      setDagensPhase(phase === 1 ? 0 : phase); setScreen("dagens-glose");
     };
 
     // Use cached exercise directly — fetch more in background if needed
@@ -340,6 +340,12 @@ export default function App() {
       setTimeout(() => setNoWordsMsg(false), 3000);
     }
 
+  };
+
+  const startDagensTestPhase1 = () => {
+    const q = shuffle([...dagensWords]);
+    setDagensQueue(q); setDagensCard(q[0]);
+    setDagensPhase(1);
   };
 
   const startGlose = () => {
@@ -639,7 +645,7 @@ export default function App() {
   if (screen === "dagens-glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <DagensExerciseScreen title="Dagens øvelse – glose" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 

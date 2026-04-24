@@ -596,7 +596,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const dagensOvelse = [
     {
       id: "dagens-glose",
-      title: "Dagens 5 gloser",
+      title: "Dagens fem gloser",
       sub: dagensDone ? "Fullført i dag ✓" : dagensLoading ? "Henter…" : "Ny øvelse klar nå",
       done: dagensDone,
       img: todaysGloseImg,

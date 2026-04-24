@@ -1,4 +1,78 @@
+import { useState } from "react";
 import BottomNav from "./BottomNav.jsx";
+
+function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav }) {
+  const step1 = words.map(w => ({ ...w, step: 1 }));
+  const step2 = words.flatMap(w => Array(5).fill(null).map(() => ({ ...w, step: 2 })));
+  const allCards = [...step1, ...step2];
+  const [idx, setIdx] = useState(0);
+  const card = allCards[idx];
+  const isLast = idx === allCards.length - 1;
+  const inStep2 = card.step === 2;
+  const step1Count = step1.length;
+  const step2Idx = idx - step1Count;
+
+  const next = () => { if (isLast) onDone(); else setIdx(i => i + 1); };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
+          <span style={{ color: "var(--accent)" }}>{icon}</span>{title}
+        </div>
+        <div style={{ width: 60 }} />
+      </div>
+      <div style={{ height: 3, background: "var(--border)" }}>
+        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / allCards.length) * 100}%`, transition: "width 0.3s" }} />
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
+        <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>
+          {inStep2 ? "Øv på stavingen — no → fr" : "Lær de nye ordene — fr → no"}
+        </div>
+
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px 36px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
+          {!inStep2 ? (
+            <>
+              <div style={{ fontSize: 32, color: "var(--text)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 8 }}>{card.fr}</div>
+              {card.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 12 }}>({card.phonetic})</div>}
+              <div style={{ fontSize: 20, color: "var(--text-subtle)", marginBottom: 16 }}>{card.no}</div>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 20, cursor: "pointer" }}>🔊</button>
+                <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 20, cursor: "pointer" }}>🐢</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Norsk</div>
+              <div style={{ fontSize: 24, color: "var(--text)", marginBottom: 16 }}>{card.no}</div>
+              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Fransk</div>
+              <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 6 }}>{card.fr}</div>
+              {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7 }}>({card.phonetic})</div>}
+            </>
+          )}
+        </div>
+
+        <div style={{ fontSize: 11, color: "var(--text-subtle)", textAlign: "center" }}>
+          {inStep2 ? `Repetisjon ${step2Idx + 1} av ${step2.length}` : `Ord ${idx + 1} av ${step1Count}`}
+        </div>
+
+        <button onClick={next} className="btn-shine"
+          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
+          {isLast ? "Start testing →" : "Neste →"}
+        </button>
+
+        <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "center" }}>
+          {allCards.map((_, i) => (
+            <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i < idx ? "rgba(108,92,231,0.4)" : i === idx ? "var(--accent)" : "var(--border)" }} />
+          ))}
+        </div>
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+}
 
 // Shared screen for Dagens øvelse – glose AND Daglig grammatikk
 export default function DagensExerciseScreen({
@@ -28,6 +102,10 @@ export default function DagensExerciseScreen({
       </div>
       <div style={{ width: 60 }} />
     </div>
+  );
+
+  if (phase === 0 && !topic) return (
+    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} />
   );
 
   if (phase === 0 && topic) return (
