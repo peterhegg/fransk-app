@@ -1,18 +1,32 @@
 import { useState } from "react";
 import BottomNav from "./BottomNav.jsx";
+import { checkQuizAnswer } from "../utils.jsx";
 
 function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav }) {
   const step1 = words.map(w => ({ ...w, step: 1 }));
   const step2 = words.flatMap(w => Array(5).fill(null).map(() => ({ ...w, step: 2 })));
   const allCards = [...step1, ...step2];
   const [idx, setIdx] = useState(0);
+  const [practiceInput, setPracticeInput] = useState("");
+  const [practiceChecked, setPracticeChecked] = useState(false);
+  const [practiceResult, setPracticeResult] = useState("");
+
   const card = allCards[idx];
   const isLast = idx === allCards.length - 1;
   const inStep2 = card.step === 2;
   const step1Count = step1.length;
   const step2Idx = idx - step1Count;
 
-  const next = () => { if (isLast) onDone(); else setIdx(i => i + 1); };
+  const next = () => {
+    setPracticeInput(""); setPracticeChecked(false); setPracticeResult("");
+    if (isLast) onDone(); else setIdx(i => i + 1);
+  };
+
+  const submitPractice = () => {
+    if (!practiceInput.trim()) return;
+    setPracticeResult(checkQuizAnswer(practiceInput, card, true));
+    setPracticeChecked(true);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
@@ -29,10 +43,10 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
         <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>
-          {inStep2 ? "Øv på stavingen — no → fr" : "Lær de nye ordene — fr → no"}
+          {inStep2 ? "Øv på stavingen — ingen straff" : "Lær de nye ordene — fr → no"}
         </div>
 
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px 36px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 36px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
           {!inStep2 ? (
             <>
               <div style={{ fontSize: 32, color: "var(--text)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 8 }}>{card.fr}</div>
@@ -45,11 +59,47 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
             </>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Norsk</div>
-              <div style={{ fontSize: 24, color: "var(--text)", marginBottom: 16 }}>{card.no}</div>
-              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Fransk</div>
-              <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 6 }}>{card.fr}</div>
-              {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7 }}>({card.phonetic})</div>}
+              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Skriv på fransk</div>
+              <div style={{ fontSize: 26, color: "var(--text)", marginBottom: 16, fontWeight: 500 }}>{card.no}</div>
+              {practiceChecked ? (
+                <>
+                  {practiceResult === "correct" && (
+                    <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
+                      <div style={{ fontSize: 14, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
+                    </div>
+                  )}
+                  {practiceResult === "close" && (
+                    <div style={{ background: "rgba(108,92,231,0.07)", border: "1px solid rgba(108,92,231,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
+                      <div style={{ fontSize: 13, color: "var(--accent)", fontWeight: "bold", marginBottom: 4 }}>~ Nesten!</div>
+                      <div style={{ fontSize: 12, color: "var(--text-subtle)" }}>Du svarte: <em>{practiceInput}</em></div>
+                    </div>
+                  )}
+                  {practiceResult === "wrong" && (
+                    <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, color: "var(--color-error)", marginBottom: 4 }}>Du svarte: <em>{practiceInput}</em></div>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Riktig svar:</div>
+                  <div style={{ fontSize: 26, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)" }}>{card.fr}</div>
+                  {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginTop: 4 }}>({card.phonetic})</div>}
+                </>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <input
+                    value={practiceInput}
+                    onChange={e => setPracticeInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && submitPractice()}
+                    placeholder="Skriv det franske ordet..."
+                    className="input-glow"
+                    style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "12px 14px", outline: "none", textAlign: "center" }}
+                    autoFocus
+                  />
+                  <button onClick={submitPractice} disabled={!practiceInput.trim()} className={practiceInput.trim() ? "btn-shine" : ""}
+                    style={{ background: practiceInput.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 12, color: practiceInput.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "12px", cursor: practiceInput.trim() ? "pointer" : "default" }}>
+                    Sjekk
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -58,10 +108,12 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
           {inStep2 ? `Repetisjon ${step2Idx + 1} av ${step2.length}` : `Ord ${idx + 1} av ${step1Count}`}
         </div>
 
-        <button onClick={next} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
-          {isLast ? "Start testing →" : "Neste →"}
-        </button>
+        {(!inStep2 || practiceChecked) && (
+          <button onClick={next} className="btn-shine"
+            style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
+            {isLast ? "Start testing →" : "Neste →"}
+          </button>
+        )}
 
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "center" }}>
           {allCards.map((_, i) => (
