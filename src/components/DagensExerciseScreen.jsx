@@ -43,7 +43,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
         <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>
-          {inStep2 ? "Øv på stavingen — ingen straff" : "Lær de nye ordene — fr → no"}
+          {inStep2 ? "Øv på stavingen" : "Lær de nye ordene — fr → no"}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 36px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
@@ -59,29 +59,28 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
             </>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Skriv på fransk</div>
-              <div style={{ fontSize: 26, color: "var(--text)", marginBottom: 16, fontWeight: 500 }}>{card.no}</div>
+              <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Norsk</div>
+              <div style={{ fontSize: 22, color: "var(--text)", marginBottom: 14, fontWeight: 500 }}>{card.no}</div>
+              <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 4 }}>{card.fr}</div>
+              {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginBottom: 14 }}>({card.phonetic})</div>}
               {practiceChecked ? (
                 <>
                   {practiceResult === "correct" && (
-                    <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
+                    <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 10, padding: "10px 14px" }}>
                       <div style={{ fontSize: 14, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
                     </div>
                   )}
                   {practiceResult === "close" && (
-                    <div style={{ background: "rgba(108,92,231,0.07)", border: "1px solid rgba(108,92,231,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
-                      <div style={{ fontSize: 13, color: "var(--accent)", fontWeight: "bold", marginBottom: 4 }}>~ Nesten!</div>
+                    <div style={{ background: "rgba(108,92,231,0.07)", border: "1px solid rgba(108,92,231,0.2)", borderRadius: 10, padding: "10px 14px" }}>
+                      <div style={{ fontSize: 13, color: "var(--accent)", fontWeight: "bold", marginBottom: 2 }}>~ Nesten!</div>
                       <div style={{ fontSize: 12, color: "var(--text-subtle)" }}>Du svarte: <em>{practiceInput}</em></div>
                     </div>
                   )}
                   {practiceResult === "wrong" && (
-                    <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
-                      <div style={{ fontSize: 12, color: "var(--color-error)", marginBottom: 4 }}>Du svarte: <em>{practiceInput}</em></div>
+                    <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 10, padding: "10px 14px" }}>
+                      <div style={{ fontSize: 12, color: "var(--color-error)" }}>Du svarte: <em>{practiceInput}</em></div>
                     </div>
                   )}
-                  <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Riktig svar:</div>
-                  <div style={{ fontSize: 26, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)" }}>{card.fr}</div>
-                  {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginTop: 4 }}>({card.phonetic})</div>}
                 </>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
