@@ -504,7 +504,7 @@ export default function App() {
       setGloseInput(""); setGloseChecked(false); setGloseResult("");
       return;
     }
-    if (!remaining.length) { logVocabSession(); setScreen("home"); return; }
+    if (!remaining.length) { logVocabSession(); setStreak(touchStreak()); setScreen("home"); return; }
     setGloseQueue(remaining); setGloseCard(remaining[0]);
     setGloseOptions(getQuizOptions(remaining[0], words, !!remaining[0].reverse));
     setGloseMode(Math.random() < 0.5 ? "input" : "choice");
@@ -558,6 +558,7 @@ export default function App() {
       const progress = [...loadGrammarProgress(), grammarTopic.id];
       saveGrammarProgress(progress);
       logGrammarSession();
+      setStreak(touchStreak());
       setGrammarPhase(3);
       return;
     }
@@ -595,7 +596,7 @@ export default function App() {
 
   const nextGramOvelse = () => {
     const remaining = gramOvQueue.slice(1);
-    if (!remaining.length) { logGrammarSession(); setScreen("home"); return; }
+    if (!remaining.length) { logGrammarSession(); setStreak(touchStreak()); setScreen("home"); return; }
     setGramOvQueue(remaining); setGramOvCard(remaining[0]);
     setGramOvOptions(getQuizOptions(remaining[0], grammarWords, !!remaining[0].reverse));
     setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
