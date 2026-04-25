@@ -99,7 +99,7 @@ function MiniGraph({ days, onTap }) {
                 <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: 600, lineHeight: 1 }}>{day.answers}</div>
               )}
               {day.answers === 0 && <div style={{ height: 13 }} />}
-              <div style={{ width: "100%", height: barH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(123,114,240,0.45)" : "var(--border)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
+              <div style={{ width: "100%", height: barH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(46,107,230,0.42)" : "var(--border)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
               <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400, whiteSpace: "nowrap" }}>{dayLabel}</div>
             </div>
           );
@@ -626,19 +626,19 @@ function IcoVoice() {
 }
 
 const GLOSE_ITEMS = [
-  { id: "glose",            label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoFlashcard },
-  { id: "ordoversettelse",  label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoTranslate },
-  { id: "flervalg",         label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoMultiChoice },
-  { id: "si-ordet",         label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMic },
+  { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoFlashcard,  img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
+  { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoTranslate,  img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
+  { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoMultiChoice,img: "https://images.unsplash.com/photo-1566230724840-9b6fc11e3e5c?w=400&q=70&auto=format&fit=crop" },
+  { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMic,        img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [
-  { id: "grammatikk-ovelse",    label: "Grammatikkøvelse",   sub: "Repeter lærte regler",             Icon: IcoGrammar },
-  { id: "oversett-grammatikken",label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate },
-  { id: "grammatikk-flervalg",  label: "Grammatikkflervalg", sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice },
-  { id: "oversett-setningen",   label: "Oversett setningen", sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence },
-  { id: "teksthjelp",           label: "Teksthjelpen",       sub: "Lim inn eller spør om tekst",      Icon: IcoChat },
-  { id: "fri",                  label: "Spørfritt",          sub: "Snakk med Pierre",                 Icon: IcoVoice },
+  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoGrammar,     img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
+  { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate,   img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
+  { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice, img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
+  { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence,    img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
+  { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChat,        img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
+  { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoVoice,       img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
 ];
 
 function TaskSection({ title, items, onStart }) {
@@ -647,7 +647,7 @@ function TaskSection({ title, items, onStart }) {
       <div style={{ padding: "0 20px 12px" }}>
         <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>{title}</span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: "0 20px" }}>
+      <div style={{ display: "flex", gap: 12, padding: "0 20px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
         {items.map(item => (
           <TaskCard key={item.id} item={item} onStart={onStart} />
         ))}
@@ -661,28 +661,29 @@ function TaskCard({ item, onStart }) {
     <button
       onClick={() => onStart(item.id)}
       style={{
-        background: "var(--surface)",
-        border: "1px solid var(--border)",
+        flexShrink: 0,
+        width: 160,
+        height: 148,
         borderRadius: 18,
-        padding: "16px 14px 14px",
-        textAlign: "left",
+        overflow: "hidden",
+        position: "relative",
+        border: "none",
+        padding: 0,
         cursor: "pointer",
-        fontFamily: "var(--font-body)",
-        boxShadow: "var(--shadow-sm)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
+        boxShadow: "var(--shadow-md)",
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
       }}
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
     >
-      <div style={{ color: "var(--accent)", display: "flex", alignItems: "center" }}>
+      <img src={item.img} alt={item.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.04) 100%)" }} />
+      <div style={{ position: "absolute", top: 11, left: 12, color: "rgba(255,255,255,0.85)" }}>
         <item.Icon />
       </div>
-      <div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", lineHeight: 1.3, marginBottom: 3 }}>{item.label}</div>
-        <div style={{ fontSize: 11, color: "var(--text-subtle)", lineHeight: 1.4 }}>{item.sub}</div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px 13px", textAlign: "left" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "white", letterSpacing: "-0.1px", lineHeight: 1.25, marginBottom: 2 }}>{item.label}</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.62)", lineHeight: 1.3 }}>{item.sub}</div>
       </div>
     </button>
   );
@@ -933,16 +934,46 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
         </div>
 
-        {/* Fremgang i dag — mini sparkline */}
-        <div style={{ margin: "0 20px 28px", background: "var(--surface)", borderRadius: 20, padding: "16px 18px 14px", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>Fremgang siste 7 dager</span>
-            <button onClick={() => setSvarOpen(true)} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>
-              Svar i dag ›
-            </button>
-          </div>
-          <MiniGraph days={last7Days} onTap={() => setActivityOpen(true)} />
-        </div>
+        {/* Fremgang siste 7 dager */}
+        {(() => {
+          const weekTotal = last7Days.reduce((s, d) => s + d.answers, 0);
+          const bestDay = last7Days.reduce((best, d) => d.answers > best.answers ? d : best, { answers: 0 });
+          const todayAnswers = last7Days[6]?.answers || 0;
+          return (
+            <div style={{ margin: "0 20px 28px", borderRadius: 20, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)", background: "var(--surface)" }}>
+              {/* Top strip — accent gradient */}
+              <div style={{ background: "linear-gradient(102deg, rgba(30,61,122,0.9) 0%, rgba(28,46,80,0.9) 50%, rgba(52,17,32,0.9) 100%)", padding: "16px 18px 14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>Siste 7 dager</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                      <span style={{ fontSize: 32, fontWeight: 700, color: "white", fontFamily: "var(--font-display)", lineHeight: 1 }}>{weekTotal}</span>
+                      <span style={{ fontSize: 12, color: "rgba(232,237,245,0.55)" }}>svar totalt</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    {todayAnswers > 0 && (
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-light)" }}>+{todayAnswers} i dag</div>
+                    )}
+                    {bestDay.answers > 0 && (
+                      <div style={{ fontSize: 11, color: "rgba(232,237,245,0.45)", marginTop: 2 }}>Beste: {bestDay.answers} svar</div>
+                    )}
+                  </div>
+                </div>
+                <MiniGraph days={last7Days} onTap={() => setActivityOpen(true)} />
+              </div>
+              {/* Bottom row */}
+              <div style={{ display: "flex", borderTop: "1px solid var(--border)" }}>
+                <button onClick={() => setActivityOpen(true)} style={{ flex: 1, background: "none", border: "none", borderRight: "1px solid var(--border)", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "10px 0" }}>
+                  Historikk ›
+                </button>
+                <button onClick={() => setSvarOpen(true)} style={{ flex: 1, background: "none", border: "none", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "10px 0" }}>
+                  Svar i dag ›
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Gloser */}
         <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
