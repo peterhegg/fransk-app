@@ -6,9 +6,10 @@ export default function BottomNav({ screen, showWords, onNav }) {
     { id: "words", label: "Ordbank", emoji: "◎" },
   ];
 
+  const GLOSE_SCREENS = new Set(["glose", "ordoversettelse", "flervalg", "si-ordet", "dagens-glose", "dagens-grammatikk", "grammatikk-ovelse", "oversett-grammatikken", "grammatikk-flervalg", "oversett-setningen"]);
   const activeId = showWords ? "words"
     : screen === "home" ? "home"
-    : (screen === "glose" || screen === "dagens-glose" || screen === "dagens-grammatikk" || screen === "grammatikk-ovelse") ? "glose"
+    : GLOSE_SCREENS.has(screen) ? "glose"
     : (screen === "chat" || screen === "voice") ? "fri"
     : null;
 

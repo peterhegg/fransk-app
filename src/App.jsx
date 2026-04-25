@@ -20,10 +20,32 @@ import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
 import DagensExerciseScreen from "./components/DagensExerciseScreen.jsx";
 import QuizExerciseScreen from "./components/QuizExerciseScreen.jsx";
+import TranslationExerciseScreen from "./components/TranslationExerciseScreen.jsx";
+import MultipleChoiceOnlyScreen from "./components/MultipleChoiceOnlyScreen.jsx";
 import HomeScreen from "./screens/HomeScreen.jsx";
 import WordsScreen from "./screens/WordsScreen.jsx";
 import ChatScreen from "./screens/ChatScreen.jsx";
 import VoiceScreen from "./screens/VoiceScreen.jsx";
+import SayWordScreen from "./screens/SayWordScreen.jsx";
+import SentenceTranslationScreen from "./screens/SentenceTranslationScreen.jsx";
+
+function TranslateIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12H19M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4"/>
+    </svg>
+  );
+}
+
+function MultiChoiceIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/>
+      <rect x="3" y="13" width="4" height="4" rx="1"/><line x1="10" y1="15" x2="21" y2="15"/>
+      <polyline points="4 7 5 8 7 5"/>
+    </svg>
+  );
+}
 
 export default function App() {
   // --- Navigation ---
@@ -206,6 +228,12 @@ export default function App() {
       else if (rs === "dagens-glose") startDagensGlose();
       else if (rs === "dagens-grammatikk") startDagensGrammatikk();
       else if (rs === "grammatikk-ovelse") startGramOvelse();
+      else if (rs === "ordoversettelse") setScreen("ordoversettelse");
+      else if (rs === "flervalg") setScreen("flervalg");
+      else if (rs === "si-ordet") setScreen("si-ordet");
+      else if (rs === "oversett-grammatikken") setScreen("oversett-grammatikken");
+      else if (rs === "grammatikk-flervalg") setScreen("grammatikk-flervalg");
+      else if (rs === "oversett-setningen") setScreen("oversett-setningen");
       else if (rs === "chat" && s.modeId) startMode(s.modeId);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -385,6 +413,12 @@ export default function App() {
     else if (id === "glose") startGlose();
     else if (id === "dagens-grammatikk") startDagensGrammatikk();
     else if (id === "grammatikk-ovelse") startGramOvelse();
+    else if (id === "ordoversettelse") setScreen("ordoversettelse");
+    else if (id === "flervalg") setScreen("flervalg");
+    else if (id === "si-ordet") setScreen("si-ordet");
+    else if (id === "oversett-grammatikken") setScreen("oversett-grammatikken");
+    else if (id === "grammatikk-flervalg") setScreen("grammatikk-flervalg");
+    else if (id === "oversett-setningen") setScreen("oversett-setningen");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -684,6 +718,48 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "ordoversettelse") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <TranslationExerciseScreen title="Ordoversettelse" icon={<TranslateIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "flervalg") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <MultipleChoiceOnlyScreen title="Flervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={() => setScreen("home")} onFinish={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "si-ordet") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <SayWordScreen words={words} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "oversett-grammatikken") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <TranslationExerciseScreen title="Oversett grammatikken" icon={<TranslateIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "grammatikk-flervalg") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <MultipleChoiceOnlyScreen title="Grammatikkflervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={() => setScreen("home")} onFinish={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "oversett-setningen") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <SentenceTranslationScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 

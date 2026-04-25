@@ -560,6 +560,134 @@ function UserProfileModal({ onClose, onSave }) {
   );
 }
 
+// ─── Icons ────────────────────────────────────────────────────────────────────
+function IcoFlashcard() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="3"/><line x1="2" y1="9" x2="22" y2="9"/>
+    </svg>
+  );
+}
+function IcoTranslate() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4"/>
+    </svg>
+  );
+}
+function IcoMultiChoice() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/>
+      <rect x="3" y="13" width="4" height="4" rx="1"/><line x1="10" y1="15" x2="21" y2="15"/>
+      <polyline points="4 7 5 8 7 5"/>
+    </svg>
+  );
+}
+function IcoMic() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="8" y1="22" x2="16" y2="22"/>
+    </svg>
+  );
+}
+function IcoGrammar() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+    </svg>
+  );
+}
+function IcoSentence() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="16" y2="12"/><line x1="3" y1="18" x2="19" y2="18"/>
+    </svg>
+  );
+}
+function IcoChat() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  );
+}
+function IcoVoice() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+  );
+}
+
+const GLOSE_ITEMS = [
+  { id: "glose",            label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoFlashcard },
+  { id: "ordoversettelse",  label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoTranslate },
+  { id: "flervalg",         label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoMultiChoice },
+  { id: "si-ordet",         label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMic },
+];
+
+const GRAMMATIKK_ITEMS = [
+  { id: "grammatikk-ovelse",    label: "Grammatikkøvelse",   sub: "Repeter lærte regler",             Icon: IcoGrammar },
+  { id: "oversett-grammatikken",label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate },
+  { id: "grammatikk-flervalg",  label: "Grammatikkflervalg", sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice },
+  { id: "oversett-setningen",   label: "Oversett setningen", sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence },
+  { id: "teksthjelp",           label: "Teksthjelpen",       sub: "Lim inn eller spør om tekst",      Icon: IcoChat },
+  { id: "fri",                  label: "Spørfritt",          sub: "Snakk med Pierre",                 Icon: IcoVoice },
+];
+
+function TaskSection({ title, items, onStart }) {
+  return (
+    <div style={{ padding: "0 0 28px" }}>
+      <div style={{ padding: "0 20px 12px" }}>
+        <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>{title}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: "0 20px" }}>
+        {items.map(item => (
+          <TaskCard key={item.id} item={item} onStart={onStart} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TaskCard({ item, onStart }) {
+  return (
+    <button
+      onClick={() => onStart(item.id)}
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: 18,
+        padding: "16px 14px 14px",
+        textAlign: "left",
+        cursor: "pointer",
+        fontFamily: "var(--font-body)",
+        boxShadow: "var(--shadow-sm)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        transition: "transform 0.18s ease, box-shadow 0.18s ease",
+      }}
+      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
+    >
+      <div style={{ color: "var(--accent)", display: "flex", alignItems: "center" }}>
+        <item.Icon />
+      </div>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", lineHeight: 1.3, marginBottom: 3 }}>{item.label}</div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)", lineHeight: 1.4 }}>{item.sub}</div>
+      </div>
+    </button>
+  );
+}
+
 export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -780,50 +908,11 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           <MiniGraph days={last7Days} onTap={() => setActivityOpen(true)} />
         </div>
 
-        {/* Oppgaver — horisontal scroll med bilder */}
-        <div style={{ padding: "0 0 28px" }}>
-          <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Oppgaver</span>
-          </div>
-          <div className="fade-stagger" style={{ display: "flex", gap: 12, padding: "0 20px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
-            {MODES.filter(m => m.id !== "dagens-glose" && m.id !== "dagens-grammatikk").map(m => {
-              const isLoading = false;
-              return (
-                <button key={m.id} onClick={() => !isLoading && onStart(m.id)}
-                  style={{
-                    flexShrink: 0, width: 148,
-                    background: "var(--surface)", borderRadius: 18,
-                    overflow: "hidden", boxShadow: "var(--shadow-sm)",
-                    border: "1px solid var(--border)",
-                    cursor: isLoading ? "default" : "pointer",
-                    textAlign: "left", fontFamily: "var(--font-body)",
-                    padding: 0, opacity: isLoading ? 0.7 : 1,
-                    transition: "transform 0.18s ease, box-shadow 0.18s ease",
-                  }}
-                  onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
-                  <div style={{ position: "relative", height: 104, overflow: "hidden" }}>
-                    <img
-                      src={MODE_IMAGES[m.id]}
-                      alt={MODE_SHORT[m.id]}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    />
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 45%, rgba(0,0,0,0.38) 100%)" }} />
-                  </div>
-                  <div style={{ padding: "10px 12px 13px" }}>
-                    <div style={{
-                      fontSize: 12, fontWeight: 600, color: "var(--text)",
-                      lineHeight: 1.35, overflow: "hidden",
-                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                    }}>
-                      {isLoading ? "Henter…" : MODE_SHORT[m.id]}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Gloser */}
+        <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
+
+        {/* Grammatikk */}
+        <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />
 
         {/* Læringsmål */}
         <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "0 20px 16px", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer" }}>

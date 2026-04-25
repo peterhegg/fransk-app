@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { GRAMMAR_TOPICS } from "../constants.js";
 import BottomNav from "./BottomNav.jsx";
 
@@ -9,11 +10,16 @@ export default function QuizExerciseScreen({
   speak, speaking,
   screen, showWords, onNav,
 }) {
+  const inputRef = useRef(null);
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
   const isFromBank = !!card?.id;
   const isReverse = !!card?.reverse;
   const grammarTip = card?.topicId ? GRAMMAR_TOPICS.find(t => t.id === card.topicId) : null;
+
+  const handleInputFocus = () => {
+    setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+  };
 
   if (!card) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
@@ -84,8 +90,9 @@ export default function QuizExerciseScreen({
             </>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
-              <input value={input} onChange={e => setInput(e.target.value)}
+              <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && onSubmit()}
+                onFocus={handleInputFocus}
                 placeholder={isReverse ? "Skriv på fransk..." : "Skriv norsk oversettelse..."}
                 className="input-glow"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}

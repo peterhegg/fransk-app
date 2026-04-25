@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
 
@@ -16,6 +16,9 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
   const card = allCards[idx];
   const isLast = idx === allCards.length - 1;
   const round = Math.floor(idx / words.length) + 1;
+
+  const inputRef = useRef(null);
+  const handleFocus = () => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
 
   const reset = () => { setNoInput(""); setFrInput(""); setChecked(false); setNoResult(""); setFrResult(""); };
   const next = () => { reset(); if (isLast) onDone(); else setIdx(i => i + 1); };
@@ -72,8 +75,9 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <input value={noInput} onChange={e => setNoInput(e.target.value)}
+              <input ref={inputRef} value={noInput} onChange={e => setNoInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && frInput.trim() && submit()}
+                onFocus={handleFocus}
                 placeholder="Norsk oversettelse…" className="input-glow"
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }}
                 autoFocus />
