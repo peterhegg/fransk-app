@@ -19,12 +19,12 @@ function WordCard({ w, onClick }) {
   const tier = getWordTier(pts);
   const isMastered = tier === 5;
   return (
-    <div onClick={onClick} style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(108,92,231,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: onClick ? "pointer" : "default" }}>
+    <div onClick={onClick} style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(46,107,230,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: onClick ? "pointer" : "default" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <span style={{ color: "var(--color-success)", marginRight: 6 }}>✓</span>
         <span style={{ fontSize: 14, color: "var(--text)" }}>{w.fr}</span>
         {w.no && <span style={{ color: "var(--text-subtle)", fontSize: 13 }}> = {w.no}</span>}
-        {w.phonetic && <span style={{ color: "rgba(108,92,231,0.6)", fontSize: 12 }}> ({w.phonetic})</span>}
+        {w.phonetic && <span style={{ color: "rgba(46,107,230,0.6)", fontSize: 12 }}> ({w.phonetic})</span>}
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, marginLeft: 8 }}>
         <div style={{ fontSize: 10, color: isMastered ? "var(--accent)" : MASTERY_COLORS[tier], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
@@ -41,11 +41,11 @@ function GrammarWordCard({ w, onClick }) {
   const tier = getWordTier(pts);
   const isMastered = tier === 5;
   return (
-    <div onClick={onClick} style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(108,92,231,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: onClick ? "pointer" : "default" }}>
+    <div onClick={onClick} style={{ background: "var(--surface)", border: `1px solid ${isMastered ? "rgba(46,107,230,0.35)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: onClick ? "pointer" : "default" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 14, fontStyle: "italic", color: "var(--text)" }}>{w.fr}</span>
         {w.no && <span style={{ color: "var(--text-subtle)", fontSize: 13 }}> = {w.no}</span>}
-        {w.phonetic && <span style={{ color: "rgba(108,92,231,0.6)", fontSize: 12 }}> ({w.phonetic})</span>}
+        {w.phonetic && <span style={{ color: "rgba(46,107,230,0.6)", fontSize: 12 }}> ({w.phonetic})</span>}
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, marginLeft: 8 }}>
         <div style={{ fontSize: 10, color: isMastered ? "var(--accent)" : MASTERY_COLORS[tier], letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap", fontWeight: isMastered ? "bold" : "normal" }}>
@@ -98,7 +98,7 @@ function CatManageModal({ onClose, customCats, onSave, words, setWords }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", boxShadow: "0 -8px 40px rgba(108,92,231,0.15)", maxHeight: "80dvh", display: "flex", flexDirection: "column", overflowX: "hidden", width: "100%" }}>
+      <div style={{ position: "relative", background: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", boxShadow: "0 -8px 40px rgba(46,107,230,0.15)", maxHeight: "80dvh", display: "flex", flexDirection: "column", overflowX: "hidden", width: "100%" }}>
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 20px" }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Administrer kategorier</div>
 
@@ -310,7 +310,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
     if (total > 0) { setGramImportText(""); setTimeout(() => { setGramImportOpen(false); setGramImportResult(null); }, 1800); }
   };
 
-  const panelBg = "rgba(108,92,231,0.04)";
+  const panelBg = "rgba(46,107,230,0.04)";
 
   // Grammar words grouped by topic
   const grammarByTopic = GRAMMAR_TOPICS
@@ -323,7 +323,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
   const ungroupedGrammar = grammarWords.filter(w => !GRAMMAR_TOPICS.some(t => t.id === w.topicId));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
@@ -331,11 +331,11 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={() => setCatManageOpen(true)}
-            style={{ background: "none", border: "1px solid rgba(108,92,231,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
+            style={{ background: "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
           <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
-            style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(108,92,231,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
+            style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
           <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
-            style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(108,92,231,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
+            style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
         </div>
       </div>
 
@@ -407,9 +407,9 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
                 return (
                   <div key={cat}>
                     <button onClick={() => toggleSection(cat)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(108,92,231,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
-                      <span>{cat} <span style={{ color: "rgba(108,92,231,0.4)" }}>({catWords.length})</span></span>
-                      <span style={{ fontSize: 10, color: "rgba(108,92,231,0.4)" }}>{closed ? "▸" : "▾"}</span>
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(46,107,230,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                      <span>{cat} <span style={{ color: "rgba(46,107,230,0.4)" }}>({catWords.length})</span></span>
+                      <span style={{ fontSize: 10, color: "rgba(46,107,230,0.4)" }}>{closed ? "▸" : "▾"}</span>
                     </button>
                     {!closed && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -431,14 +431,14 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, paddingBottom: 8, borderBottom: "2px solid var(--border)" }}>
               <span style={{ color: "var(--accent)" }}>◐</span>
               <span style={{ fontSize: 13, letterSpacing: 2, color: "var(--text-subtle)", textTransform: "uppercase", fontWeight: 500 }}>Grammatikkbanken</span>
-              <span style={{ fontSize: 11, color: "rgba(108,92,231,0.45)", marginLeft: "auto" }}>{grammarWords.length} strofer</span>
+              <span style={{ fontSize: 11, color: "rgba(46,107,230,0.45)", marginLeft: "auto" }}>{grammarWords.length} strofer</span>
               <button onClick={copyGrammarWords}
-                style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(108,92,231,0.35)"}`, borderRadius: 6, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", transition: "all 0.3s", whiteSpace: "nowrap" }}>
+                style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(46,107,230,0.35)"}`, borderRadius: 6, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", transition: "all 0.3s", whiteSpace: "nowrap" }}>
                 {gramCopied ? "✓" : "Kopier"}
               </button>
               {setGrammarWords && (
                 <button onClick={() => setGramImportOpen(o => !o)}
-                  style={{ background: gramImportOpen ? "rgba(108,92,231,0.12)" : "none", border: "1px solid rgba(108,92,231,0.35)", borderRadius: 6, color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", whiteSpace: "nowrap" }}>
+                  style={{ background: gramImportOpen ? "rgba(46,107,230,0.12)" : "none", border: "1px solid rgba(46,107,230,0.35)", borderRadius: 6, color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", whiteSpace: "nowrap" }}>
                   Importer
                 </button>
               )}
@@ -471,9 +471,9 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
                 return (
                   <div key={topic.id}>
                     <button onClick={() => toggleSection("__gram__" + topic.id)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(108,92,231,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
-                      <span>{topic.title} <span style={{ color: "rgba(108,92,231,0.4)" }}>({gw.length})</span></span>
-                      <span style={{ fontSize: 10, color: "rgba(108,92,231,0.4)" }}>{closed ? "▸" : "▾"}</span>
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(46,107,230,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                      <span>{topic.title} <span style={{ color: "rgba(46,107,230,0.4)" }}>({gw.length})</span></span>
+                      <span style={{ fontSize: 10, color: "rgba(46,107,230,0.4)" }}>{closed ? "▸" : "▾"}</span>
                     </button>
                     {!closed && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -496,7 +496,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
       {words.length > 0 && (
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
           <button onClick={copyWords}
-            style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(108,92,231,0.35)"}`, borderRadius: 8, color: copied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
+            style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(46,107,230,0.35)"}`, borderRadius: 8, color: copied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
             {copied ? "✓ Kopiert!" : "Kopier ordlisten min"}
           </button>
           <button onClick={clearWords}

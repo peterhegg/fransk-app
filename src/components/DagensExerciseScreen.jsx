@@ -28,7 +28,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
@@ -41,15 +41,15 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 16 }}>
-        <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>Øv på stavingen</div>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>Øv på stavingen</div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px 28px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
           <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
-          {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginBottom: 4 }}>({card.phonetic})</div>}
+          {card.phonetic && <div style={{ fontSize: 12, color: "rgba(46,107,230,0.55)", marginBottom: 4 }}>({card.phonetic})</div>}
           <div style={{ fontSize: 18, color: "var(--text-subtle)", marginBottom: 10 }}>{card.no}</div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 16 }}>
-            <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-            <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+            <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+            <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)", fontSize: 18, cursor: "pointer" }}>🐢</button>
           </div>
 
           {checked ? (
@@ -60,8 +60,8 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
               ].map(({ label, result, input, correct }) => (
                 <div key={label} style={{
                   borderRadius: 10, padding: "8px 12px", textAlign: "left",
-                  background: result === "correct" ? "rgba(0,184,148,0.10)" : result === "close" ? "rgba(108,92,231,0.07)" : "rgba(225,112,85,0.08)",
-                  border: `1px solid ${result === "correct" ? "rgba(0,184,148,0.35)" : result === "close" ? "rgba(108,92,231,0.2)" : "rgba(225,112,85,0.3)"}`,
+                  background: result === "correct" ? "rgba(0,184,148,0.10)" : result === "close" ? "rgba(46,107,230,0.07)" : "rgba(225,112,85,0.08)",
+                  border: `1px solid ${result === "correct" ? "rgba(0,184,148,0.35)" : result === "close" ? "rgba(46,107,230,0.2)" : "rgba(225,112,85,0.3)"}`,
                 }}>
                   <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</div>
                   <div style={{ fontSize: 13, color: result === "correct" ? "var(--color-success)" : result === "close" ? "var(--accent)" : "var(--color-error)", fontWeight: 500 }}>
@@ -93,14 +93,14 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
         {checked && (
           <button onClick={next} className="btn-shine"
-            style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
+            style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(46,107,230,0.35)" }}>
             {isLast ? "Start testing →" : "Neste →"}
           </button>
         )}
 
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "center" }}>
           {allCards.map((_, i) => (
-            <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i < idx ? "rgba(108,92,231,0.4)" : i === idx ? "var(--accent)" : "var(--border)" }} />
+            <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i < idx ? "rgba(46,107,230,0.4)" : i === idx ? "var(--accent)" : "var(--border)" }} />
           ))}
         </div>
       </div>
@@ -144,10 +144,10 @@ export default function DagensExerciseScreen({
   );
 
   if (phase === 0 && topic) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       {navBar}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", gap: 20, textAlign: "center" }}>
-        <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 3, textTransform: "uppercase" }}>Dagens tema</div>
+        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 3, textTransform: "uppercase" }}>Dagens tema</div>
         <div style={{ fontSize: 28, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", lineHeight: 1.3 }}>{topic.title}</div>
         <div style={{ fontSize: 14, color: "var(--text-subtle)", fontStyle: "italic" }}>{topic.subtitle}</div>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "20px 24px", maxWidth: 340, width: "100%", fontSize: 14, color: "var(--text)", lineHeight: 1.7, boxShadow: "var(--shadow-sm)" }}>
@@ -163,7 +163,7 @@ export default function DagensExerciseScreen({
           {topic.pairs.length > 3 && <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 6, textAlign: "center" }}>+ {topic.pairs.length - 3} til</div>}
         </div>
         <button onClick={onStartExercise} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", marginTop: 8, boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
+          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", marginTop: 8, boxShadow: "0 4px 16px rgba(46,107,230,0.35)" }}>
           Start øvelsen →
         </button>
       </div>
@@ -172,11 +172,11 @@ export default function DagensExerciseScreen({
   );
 
   if (phase === 3) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)" }}>
       <div style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
-        <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 1 }}>Fullført ✦</div>
+        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>Fullført ✦</div>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "28px 24px 16px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center", scrollbarWidth: "none" }}>
         <div style={{ fontSize: 48 }}>✦</div>
@@ -188,14 +188,14 @@ export default function DagensExerciseScreen({
           {(topic ? topic.pairs : dailyWords).map((w, i) => (
             <div key={i} style={{ fontSize: 14, color: "var(--text)", padding: "4px 0", borderBottom: i < (topic ? topic.pairs : dailyWords).length - 1 ? "1px solid var(--border)" : "none" }}>
               <span style={{ color: "var(--color-success)" }}>✓</span> <strong>{w.fr}</strong> = {w.no}
-              {w.phonetic && <span style={{ color: "rgba(108,92,231,0.55)", fontSize: 12 }}> ({w.phonetic})</span>}
+              {w.phonetic && <span style={{ color: "rgba(46,107,230,0.55)", fontSize: 12 }}> ({w.phonetic})</span>}
             </div>
           ))}
         </div>
       </div>
       <div style={{ flexShrink: 0, padding: "12px 24px", paddingBottom: "calc(12px + 66px)", background: "var(--bg)", borderTop: "1px solid var(--border)" }}>
         <button onClick={onBack} className="btn-shine"
-          style={{ width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
+          style={{ width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: "pointer", boxShadow: "0 4px 16px rgba(46,107,230,0.35)" }}>
           Tilbake til hjem
         </button>
       </div>
@@ -210,21 +210,21 @@ export default function DagensExerciseScreen({
   const phonetic = !isReverse && card?.phonetic;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
-        <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 1 }}>{done}/{totalCards}</div>
+        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{done}/{totalCards}</div>
       </div>
       <div style={{ height: 3, background: "var(--border)" }}>
         <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${totalCards > 0 ? (done / totalCards) * 100 : 0}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(108,92,231,0.45)", letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>{phaseLabel}</div>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>{phaseLabel}</div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 36px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
-          <div style={{ fontSize: 11, color: "rgba(108,92,231,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
             {isReverse ? "Skriv på fransk:" : "Hva betyr dette?"}
           </div>
           <div style={{ fontSize: 32, color: "var(--text)", fontStyle: isReverse ? "normal" : "italic", marginBottom: 8, fontFamily: isReverse ? "var(--font-body)" : "var(--font-display)" }}>
@@ -233,8 +233,8 @@ export default function DagensExerciseScreen({
           {phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 8 }}>({phonetic})</div>}
           {!isReverse && (
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 20, cursor: "pointer" }}>🔊</button>
-              <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(108,92,231,0.45)", fontSize: 20, cursor: "pointer" }}>🐢</button>
+              <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)", fontSize: 20, cursor: "pointer" }}>🔊</button>
+              <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)", fontSize: 20, cursor: "pointer" }}>🐢</button>
             </div>
           )}
         </div>
@@ -258,11 +258,11 @@ export default function DagensExerciseScreen({
               <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%", fontSize: 16, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
             )}
             {result === "close" && (
-              <div style={{ background: "rgba(108,92,231,0.07)", border: "1px solid rgba(108,92,231,0.2)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
+              <div style={{ background: "rgba(46,107,230,0.07)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 15, color: "var(--accent)", fontWeight: "bold", marginBottom: 4 }}>~ Nesten!</div>
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)" }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
-                {card.phonetic && <div style={{ fontSize: 12, color: "rgba(108,92,231,0.55)", marginTop: 4 }}>{card.phonetic}</div>}
+                {card.phonetic && <div style={{ fontSize: 12, color: "rgba(46,107,230,0.55)", marginTop: 4 }}>{card.phonetic}</div>}
               </div>
             )}
             {result === "wrong" && (
@@ -273,12 +273,12 @@ export default function DagensExerciseScreen({
                   <div style={{ fontSize: 18, color: "var(--text)", fontWeight: "bold" }}>{isReverse ? card.fr : card.no}</div>
                   {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", marginTop: 4 }}>({card.phonetic})</div>}
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-                    <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(108,92,231,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                    <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(108,92,231,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                    <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                    <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                   </div>
                 </div>
                 {topic && (
-                  <div style={{ background: "rgba(108,92,231,0.05)", border: "1px solid rgba(108,92,231,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
+                  <div style={{ background: "rgba(46,107,230,0.05)", border: "1px solid rgba(46,107,230,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
                     <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Huskeregel</div>
                     <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{topic.description}</div>
                   </div>
@@ -286,7 +286,7 @@ export default function DagensExerciseScreen({
               </>
             )}
             <button onClick={onNext} className="btn-shine"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(108,92,231,0.35)" }}>
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(46,107,230,0.35)" }}>
               {queue.length <= 1 && phase === 2 ? "Fullfør!" : queue.length <= 1 ? "Del 2 →" : result === "wrong" ? "Prøv igjen →" : "Neste →"}
             </button>
           </div>

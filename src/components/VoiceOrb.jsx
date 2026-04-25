@@ -52,10 +52,10 @@ const orbAnimations = {
 };
 
 const shadows = {
-  idle:      "0 8px 32px rgba(108,92,231,0.35)",
-  listening: "0 8px 40px rgba(108,92,231,0.60)",
-  thinking:  "0 8px 24px rgba(108,92,231,0.25)",
-  speaking:  "0 8px 40px rgba(108,92,231,0.50)",
+  idle:      "0 8px 32px rgba(46,107,230,0.35)",
+  listening: "0 8px 40px rgba(46,107,230,0.60)",
+  thinking:  "0 8px 24px rgba(46,107,230,0.25)",
+  speaking:  "0 8px 40px rgba(46,107,230,0.50)",
 };
 
 const labels = {

@@ -80,7 +80,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
           background: "var(--surface)",
           borderRadius: "24px 24px 0 0",
           padding: "24px 24px 40px",
-          boxShadow: "0 -8px 40px rgba(108,92,231,0.15)",
+          boxShadow: "0 -8px 40px rgba(46,107,230,0.15)",
           animation: animated ? "none" : "slideUp 0.25s ease both",
           transform: animated ? `translateY(${dragY}px)` : undefined,
           transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",

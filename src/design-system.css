@@ -49,10 +49,10 @@
   --ease-default: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ── Light mode colors ─────────────────────────────────────────── */
-  --color-primary:       #6C5CE7;
-  --color-primary-light: #8B7FF0;
-  --color-primary-dark:  #4a3db5;
-  --color-primary-mid:   #7a6df0;
+  --color-primary:       #2e6be6;
+  --color-primary-light: #5589ee;
+  --color-primary-dark:  #1a4fbf;
+  --color-primary-mid:   #3d76ea;
   --color-success:       #00b894;
   --color-error:         #e17055;
 
@@ -62,15 +62,16 @@
   --color-border:        rgba(20, 20, 42, 0.07);
 
   /* Semantic aliases (used in voice feature + new components) */
-  --accent:         #6C5CE7;
-  --accent-light:   #8B7FF0;
-  --accent-bg:      rgba(108, 92, 231, 0.09);
+  --accent:         #2e6be6;
+  --accent-light:   #5589ee;
+  --accent-bg:      rgba(46, 107, 230, 0.09);
   --surface:        #ffffff;
   --bg:             #ffffff;
   --text:           #14142a;
   --text-subtle:    rgba(20, 20, 42, 0.42);
   --border:         rgba(20, 20, 42, 0.07);
   --nav-bg:         rgba(255, 255, 255, 0.96);
+  --app-bg:         linear-gradient(90deg, #eef3ff 0%, #f8faff 30%, #ffffff 50%, #fff8f8 70%, #fff2f0 100%);
 
   /* ── Shadows ───────────────────────────────────────────────────── */
   --shadow-sm:         0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.06);
@@ -81,29 +82,30 @@
   --radius-btn:       14px;
 }
 
-/* ── Dark mode (YR navy) ─────────────────────────────────────────── */
+/* ── Dark mode (French midnight) ─────────────────────────────────── */
 [data-theme="dark"] {
-  --color-primary:       #7b72f0;
-  --color-primary-light: #9d96f5;
-  --color-primary-dark:  #5a52d5;
-  --color-primary-mid:   #8a82f3;
+  --color-primary:       #2e6be6;
+  --color-primary-light: #5589ee;
+  --color-primary-dark:  #1a4fbf;
+  --color-primary-mid:   #3d76ea;
   --color-success:       #00c896;
   --color-error:         #f08a75;
 
-  --color-bg:            #0d1b2e;
+  --color-bg:            #091526;
   --color-text:          #e8edf5;
-  --color-card:          #132035;
+  --color-card:          #0f1f34;
   --color-border:        rgba(255, 255, 255, 0.07);
 
-  --accent:         #7b72f0;
-  --accent-light:   #9d96f5;
-  --accent-bg:      rgba(123, 114, 240, 0.16);
-  --surface:        #132035;
-  --bg:             #0d1b2e;
+  --accent:         #2e6be6;
+  --accent-light:   #5589ee;
+  --accent-bg:      rgba(46, 107, 230, 0.15);
+  --surface:        #0f1f34;
+  --bg:             #091526;
   --text:           #e8edf5;
   --text-subtle:    rgba(232, 237, 245, 0.48);
   --border:         rgba(255, 255, 255, 0.07);
-  --nav-bg:         rgba(13, 27, 46, 0.97);
+  --nav-bg:         rgba(9, 21, 38, 0.97);
+  --app-bg:         linear-gradient(90deg, #0c2245 0%, #0a1e3d 28%, #0d1b2e 42%, #0d1b2e 58%, #1c0c14 72%, #190b12 100%);
 
   --shadow-sm:         0 2px 16px rgba(0, 0, 0, 0.55);
   --shadow-md:         0 6px 28px rgba(0, 0, 0, 0.65);

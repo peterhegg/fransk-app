@@ -40,7 +40,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
       display: "flex",
       flexDirection: "column",
       height: "100dvh",
-      background: "var(--bg)",
+      background: "var(--app-bg)",
       fontFamily: "var(--font-body)",
     }}>
 

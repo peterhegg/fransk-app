@@ -33,7 +33,7 @@ export default function BottomNav({ screen, showWords, onNav }) {
               fontSize: 14,
               fontWeight: 600,
               color: active ? "white" : "rgba(232,237,245,0.75)",
-              boxShadow: active ? "0 4px 16px rgba(108,92,231,0.30)" : "none",
+              boxShadow: active ? "0 4px 16px rgba(46,107,230,0.30)" : "none",
               transition: "all 0.22s ease",
               flexDirection: active ? "row" : "column",
             }}>

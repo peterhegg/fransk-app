@@ -72,7 +72,7 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
           background: "linear-gradient(to right, var(--accent), var(--accent-light))",
           borderRadius: 99,
           transition: "width 1.2s cubic-bezier(0.22,1,0.36,1)",
-          boxShadow: barWidth > 5 ? "0 0 8px rgba(108,92,231,0.35)" : "none",
+          boxShadow: barWidth > 5 ? "0 0 8px rgba(46,107,230,0.35)" : "none",
         }} />
       </div>
 
@@ -96,7 +96,7 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
               style={{
                 width: active ? 8 : 6, height: active ? 8 : 6,
                 borderRadius: "50%",
-                background: done ? "var(--accent)" : active ? "rgba(108,92,231,0.45)" : "var(--accent-bg)",
+                background: done ? "var(--accent)" : active ? "rgba(46,107,230,0.45)" : "var(--accent-bg)",
                 border: active ? "1px solid var(--accent)" : "none",
                 transition: "all 0.4s",
               }} />

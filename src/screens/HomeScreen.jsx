@@ -174,7 +174,7 @@ function SheetModal({ onClose, children, style = {} }) {
           position: "relative",
           background: "var(--surface)",
           borderRadius: "24px 24px 0 0",
-          boxShadow: "0 -8px 40px rgba(108,92,231,0.15)",
+          boxShadow: "0 -8px 40px rgba(46,107,230,0.15)",
           animation: animated ? "none" : "slideUp 0.25s ease both",
           transform: animated ? `translateY(${dragY}px)` : undefined,
           transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",
@@ -386,7 +386,7 @@ function ActivityModal({ streak, onClose }) {
                   {vH > 0 && <div style={{ width: "100%", height: vH, background: "#00b894", flexShrink: 0 }} />}
                   {gH > 0 && <div style={{ width: "100%", height: gH, background: "#0984e3", flexShrink: 0 }} />}
                   {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f0a500", flexShrink: 0 }} />}
-                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(108,92,231,0.4)" : "var(--accent-bg)", flexShrink: 0 }} />}
+                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(46,107,230,0.4)" : "var(--accent-bg)", flexShrink: 0 }} />}
                   {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "var(--accent-bg)", flexShrink: 0 }} />}
                 </div>
                 {isToday ? (
@@ -637,7 +637,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   })();
 
   return (
-    <div style={{ height: "100dvh", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ height: "100dvh", background: "var(--app-bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {offlineBanner}
 
@@ -673,8 +673,8 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
               <button onClick={() => { setSearchQuery(""); setSearchOpen(false); }} style={{ background: "none", border: "none", color: "var(--text-subtle)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
             )}
           </div>
-          <button onClick={() => setProfileOpen(true)} style={{ width: 48, height: 48, borderRadius: 14, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(108,92,231,0.35)", flexShrink: 0, border: "none", cursor: "pointer" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <button onClick={() => setProfileOpen(true)} style={{ width: 48, height: 48, borderRadius: 14, background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", flexShrink: 0, cursor: "pointer" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
             </svg>
           </button>
@@ -713,20 +713,19 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         {/* Stats row */}
         <div style={{ display: "flex", gap: 10, padding: "0 20px 28px" }}>
           {[
-            { label: "Ord lært",   value: words.length,  emoji: "📚", onClick: onShowWords,                color: "var(--accent)" },
-            { label: "Dager",      value: streak,         emoji: "🔥", onClick: () => setActivityOpen(true), color: "#e17055" },
-            { label: "Svar i dag", value: sessionMsgs,    emoji: "✓",  onClick: () => setSvarOpen(true),     color: "#00c896" },
+            { label: "Ord lært",   value: words.length,  onClick: onShowWords },
+            { label: "Dager",      value: streak,         onClick: () => setActivityOpen(true) },
+            { label: "Svar i dag", value: sessionMsgs,    onClick: () => setSvarOpen(true) },
           ].map(s => (
             <button key={s.label} onClick={s.onClick} style={{
               flex: 1, background: "var(--surface)", borderRadius: 16,
-              padding: "14px 8px 12px", textAlign: "center",
+              padding: "16px 8px 14px", textAlign: "center",
               boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
               cursor: "pointer", fontFamily: "var(--font-body)",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
-              <div style={{ fontSize: 13, lineHeight: 1 }}>{s.emoji}</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
-              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: "0.6px", fontWeight: 500 }}>{s.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: "var(--text-subtle)", fontWeight: 400 }}>{s.label}</div>
             </button>
           ))}
         </div>
