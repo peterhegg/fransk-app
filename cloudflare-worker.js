@@ -1,5 +1,5 @@
 const ALLOWED_ORIGINS = ["https://peterhegg.github.io", "http://localhost:5173"];
-const LOCKED_MODEL = "claude-sonnet-4-20250514";
+const LOCKED_MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS_LIMIT = 1000;
 const MAX_MESSAGES = 20;
 const MAX_CONTENT_LENGTH = 4000;

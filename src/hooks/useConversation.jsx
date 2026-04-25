@@ -8,7 +8,7 @@ const VOICE_URL = PROXY_URL ? `${PROXY_URL.replace(/\/$/, "")}/voice` : "/voice"
 
 export function useConversation() {
   const [history, setHistory] = useState([]);
-  const [status, setStatus] = useState("idle"); // "idle" | "listening" | "thinking" | "speaking"
+  const [status, setStatus] = useState("idle"); // "idle" | "listening" | "thinking" | "speaking" | "error"
   const [currentCorrection, setCurrentCorrection] = useState(null);
   const [estimatedLevel] = useState("A2");
 
@@ -42,9 +42,17 @@ export function useConversation() {
         }),
       });
 
-      if (!res.ok) { setStatus("idle"); return; }
+      if (!res.ok) {
+        setStatus("error");
+        setTimeout(() => setStatus("idle"), 3000);
+        return;
+      }
       const data = await res.json();
-      if (!data.reply) { setStatus("idle"); return; }
+      if (!data.reply) {
+        setStatus("error");
+        setTimeout(() => setStatus("idle"), 3000);
+        return;
+      }
 
       pushMessage({ role: "assistant", content: data.reply });
       pendingCorrectionRef.current = data.correction || null;
@@ -57,11 +65,12 @@ export function useConversation() {
             setCurrentCorrection(pendingCorrectionRef.current);
             pendingCorrectionRef.current = null;
           }
-          setTimeout(() => startListeningRef.current?.(), 800);
+          setTimeout(() => startListeningRef.current?.(), 400);
         },
       });
     } catch {
-      setStatus("idle");
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
     }
   // setHistory and pushMessage use stable refs/setters — safe to omit
   // eslint-disable-next-line react-hooks/exhaustive-deps

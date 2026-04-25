@@ -30,7 +30,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
   }, [history, currentCorrection]);
 
   const handleOrbClick = () => {
-    if (status === "idle")      startListening();
+    if (status === "idle" || status === "error") startListening();
     else if (status === "listening") stopListening();
     else if (status === "speaking")  stopListening();
   };
@@ -208,6 +208,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
           status={status}
           onClick={isSpeechSupported ? handleOrbClick : undefined}
           disabled={!isSpeechSupported || status === "thinking"}
+          key={status === "error" ? "error" : "normal"}
         />
       </div>
 

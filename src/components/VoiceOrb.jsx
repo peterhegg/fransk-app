@@ -49,6 +49,10 @@ const orbAnimations = {
     animate: { scale: [1, 1.03, 1] },
     transition: { repeat: Infinity, duration: 0.75, ease: "easeInOut" },
   },
+  error: {
+    animate: { scale: [1, 1.04, 1] },
+    transition: { repeat: Infinity, duration: 0.5, ease: "easeInOut" },
+  },
 };
 
 const shadows = {
@@ -56,6 +60,7 @@ const shadows = {
   listening: "0 8px 40px rgba(46,107,230,0.60)",
   thinking:  "0 8px 24px rgba(46,107,230,0.25)",
   speaking:  "0 8px 40px rgba(46,107,230,0.50)",
+  error:     "0 8px 32px rgba(200,58,58,0.45)",
 };
 
 const labels = {
@@ -63,6 +68,7 @@ const labels = {
   listening: "Lytter…",
   thinking:  "Tenker…",
   speaking:  "Trykk for å avbryte",
+  error:     "Noe gikk galt — prøv igjen",
 };
 
 export default function VoiceOrb({ status, onClick, disabled }) {
@@ -97,6 +103,8 @@ export default function VoiceOrb({ status, onClick, disabled }) {
             cursor: disabled ? "default" : "pointer",
             background: status === "listening"
               ? "linear-gradient(135deg, #8B7FF0, var(--accent))"
+              : status === "error"
+              ? "linear-gradient(135deg, #c83a3a, #e05555)"
               : "linear-gradient(135deg, var(--accent), var(--accent-light))",
             boxShadow: shadows[status] || shadows.idle,
             display: "flex",
