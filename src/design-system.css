@@ -56,22 +56,22 @@
   --color-success:       #00b894;
   --color-error:         #e17055;
 
-  --color-bg:            #ffffff;
-  --color-text:          #14142a;
-  --color-card:          #ffffff;
-  --color-border:        rgba(20, 20, 42, 0.07);
+  --color-bg:            #1e3060;
+  --color-text:          #e8edf5;
+  --color-card:          #243560;
+  --color-border:        rgba(255, 255, 255, 0.10);
 
   /* Semantic aliases (used in voice feature + new components) */
-  --accent:         #2e6be6;
-  --accent-light:   #5589ee;
-  --accent-bg:      rgba(46, 107, 230, 0.09);
-  --surface:        #ffffff;
-  --bg:             #ffffff;
-  --text:           #14142a;
-  --text-subtle:    rgba(20, 20, 42, 0.42);
-  --border:         rgba(20, 20, 42, 0.07);
-  --nav-bg:         rgba(255, 255, 255, 0.96);
-  --app-bg:         linear-gradient(90deg, #eef3ff 0%, #f8faff 30%, #ffffff 50%, #fff8f8 70%, #fff2f0 100%);
+  --accent:         #5a9af0;
+  --accent-light:   #7db0f5;
+  --accent-bg:      rgba(90, 154, 240, 0.15);
+  --surface:        rgba(255, 255, 255, 0.08);
+  --bg:             #1e3060;
+  --text:           #e8edf5;
+  --text-subtle:    rgba(232, 237, 245, 0.55);
+  --border:         rgba(255, 255, 255, 0.10);
+  --nav-bg:         rgba(20, 38, 80, 0.97);
+  --app-bg:         linear-gradient(90deg, #1e3d7a 0%, #182f60 28%, #1c2e50 42%, #1c2e50 58%, #3d1428 72%, #341120 100%);
 
   /* ── Shadows ───────────────────────────────────────────────────── */
   --shadow-sm:         0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.06);
