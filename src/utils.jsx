@@ -1,6 +1,6 @@
 import {
   SR_INTERVALS, WORDS_KEY, GRAMMAR_WORDS_KEY, GRAMMAR_PROGRESS_KEY,
-  STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, STATIC_VOCAB, GRAMMAR_TOPICS, VOCAB_GOALS,
+  STREAK_KEY, BEST_STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, STATIC_VOCAB, GRAMMAR_TOPICS, VOCAB_GOALS,
   MASTERY_POINTS, MASTERY_PAUSE_MIN, MASTERY_PAUSE_MAX, ANSWER_COUNT_KEY,
   GENERATED_VOCAB_KEY,
   gold, cream, grn, red, card, brd,
@@ -132,16 +132,38 @@ export function loadGrammarProgress() {
 export function saveGrammarProgress(arr) { try { localStorage.setItem(GRAMMAR_PROGRESS_KEY, JSON.stringify(arr)); } catch {} }
 
 export function loadStreak() {
-  try { const s = localStorage.getItem(STREAK_KEY); return s ? JSON.parse(s) : { current: 0, lastDate: null }; }
-  catch { return { current: 0, lastDate: null }; }
+  try { const s = localStorage.getItem(STREAK_KEY); return s ? JSON.parse(s) : { current: 0, lastDate: null, startDate: null }; }
+  catch { return { current: 0, lastDate: null, startDate: null }; }
+}
+export function loadBestStreak() {
+  try { const s = localStorage.getItem(BEST_STREAK_KEY); return s ? JSON.parse(s) : { days: 0, startDate: null, endDate: null }; }
+  catch { return { days: 0, startDate: null, endDate: null }; }
 }
 export function touchStreak() {
   const today = new Date().toISOString().split("T")[0];
   const s = loadStreak();
   if (s.lastDate === today) return s.current;
   const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-  const current = s.lastDate === yesterday ? s.current + 1 : 1;
-  try { localStorage.setItem(STREAK_KEY, JSON.stringify({ current, lastDate: today })); } catch {}
+  const continuing = s.lastDate === yesterday;
+  const current = continuing ? s.current + 1 : 1;
+  const startDate = continuing ? (s.startDate || s.lastDate || today) : today;
+
+  // When streak breaks, check if previous streak was a record
+  if (!continuing && s.current > 0) {
+    const best = loadBestStreak();
+    if (s.current > best.days) {
+      try { localStorage.setItem(BEST_STREAK_KEY, JSON.stringify({ days: s.current, startDate: s.startDate || s.lastDate, endDate: s.lastDate })); } catch {}
+    }
+  }
+
+  try { localStorage.setItem(STREAK_KEY, JSON.stringify({ current, lastDate: today, startDate })); } catch {}
+
+  // Also update best if current streak is now the best
+  const best = loadBestStreak();
+  if (current > best.days) {
+    try { localStorage.setItem(BEST_STREAK_KEY, JSON.stringify({ days: current, startDate, endDate: today })); } catch {}
+  }
+
   return current;
 }
 

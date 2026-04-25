@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal } from "../utils.jsx";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
@@ -710,6 +710,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     : [];
 
   const answerCount = loadAnswerCount();
+  const bestStreak = loadBestStreak();
   const dueCount = getDue(words, answerCount).length;
   const masteredCount = getMasteredCount(words) + (grammarWords || []).filter(w => (w.points || 0) >= MASTERY_POINTS).length;
 
@@ -840,22 +841,57 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
 
         {/* Stats row */}
         <div style={{ display: "flex", gap: 10, padding: "0 20px 28px" }}>
-          {[
-            { label: "Ord lært",   value: words.length,  onClick: onShowWords },
-            { label: "Dager",      value: streak,         onClick: () => setActivityOpen(true) },
-            { label: "Svar i dag", value: sessionMsgs,    onClick: () => setSvarOpen(true) },
-          ].map(s => (
-            <button key={s.label} onClick={s.onClick} style={{
-              flex: 1, background: "var(--surface)", borderRadius: 16,
-              padding: "16px 8px 14px", textAlign: "center",
-              boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
-              cursor: "pointer", fontFamily: "var(--font-body)",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-            }}>
-              <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: "var(--text-subtle)", fontWeight: 400 }}>{s.label}</div>
-            </button>
-          ))}
+          {/* Ord lært */}
+          <button onClick={onShowWords} style={{
+            flex: 1, background: "var(--surface)", borderRadius: 16,
+            padding: "14px 8px 12px", textAlign: "center",
+            boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
+            cursor: "pointer", fontFamily: "var(--font-body)",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+          }}>
+            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{words.length}</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Ord lært</div>
+          </button>
+
+          {/* Streak */}
+          <button onClick={() => setActivityOpen(true)} style={{
+            flex: 1, background: "var(--surface)", borderRadius: 16,
+            padding: "14px 8px 12px", textAlign: "center",
+            boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
+            cursor: "pointer", fontFamily: "var(--font-body)",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+          }}>
+            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{streak}</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Streak</div>
+            {bestStreak.days > 0 && (
+              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, lineHeight: 1.3, marginTop: 1 }}>
+                Rekord: {bestStreak.days}d
+                {bestStreak.startDate && (() => {
+                  const fmt = d => { const dt = new Date(d); return `${dt.getDate()}. ${["jan","feb","mar","apr","mai","jun","jul","aug","sep","okt","nov","des"][dt.getMonth()]}`; };
+                  const end = bestStreak.endDate && bestStreak.endDate !== bestStreak.startDate ? ` – ${fmt(bestStreak.endDate)}` : "";
+                  return ` (${fmt(bestStreak.startDate)}${end})`;
+                })()}
+              </div>
+            )}
+          </button>
+
+          {/* Svar i dag */}
+          <button onClick={() => setSvarOpen(true)} style={{
+            flex: 1, background: "var(--surface)", borderRadius: 16,
+            padding: "14px 8px 12px", textAlign: "center",
+            boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
+            cursor: "pointer", fontFamily: "var(--font-body)",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+          }}>
+            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{sessionMsgs}</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Svar i dag</div>
+            <div style={{ width: "100%", padding: "0 4px", marginTop: 2 }}>
+              <div style={{ height: 4, borderRadius: 2, background: "var(--border)", overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 2, background: sessionMsgs >= 150 ? "var(--accent)" : "var(--accent)", width: `${Math.min(100, (sessionMsgs / 150) * 100)}%`, transition: "width 0.3s ease" }} />
+              </div>
+              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, marginTop: 2 }}>{sessionMsgs}/150</div>
+            </div>
+          </button>
         </div>
 
         {/* Dagens øvelse — horisontal scroll */}

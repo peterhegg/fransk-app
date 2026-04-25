@@ -610,6 +610,7 @@ export const WORDS_KEY = "fransk-laering-ord-v2";
 export const GRAMMAR_WORDS_KEY = "fransk-grammar-words";
 export const GRAMMAR_PROGRESS_KEY = "fransk-grammar-progress";
 export const STREAK_KEY = "fransk-streak";
+export const BEST_STREAK_KEY = "fransk-best-streak";
 export const DAGENS_GLOSE_KEY = "fransk-dagens-glose";
 export const SESSION_KEY = "fransk-session-msgs";
 export const SESSION_SCREEN_KEY = "fransk-session-screen";
