@@ -1,52 +1,66 @@
 import { useState, useRef, useCallback } from "react";
 
 export function useVoiceRecognition() {
-  const [status, setStatus] = useState("idle"); // "idle" | "listening" | "unsupported"
+  const [status, setStatus] = useState("idle");
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
 
-  const startListening = useCallback((onResult, timeoutMs = 6000) => {
+  const startListening = useCallback((onResult, { timeoutMs = 7000, hintWord = null } = {}) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { setStatus("unsupported"); return; }
 
     const r = new SR();
     r.lang = "fr-FR";
-    r.continuous = true;       // keep mic open — catches short words
-    r.interimResults = true;   // capture partial results too
+    r.continuous = true;
+    r.interimResults = true;
     r.maxAlternatives = 5;
 
-    let bestResult = "";
+    // Grammar hint — massively improves short-word recognition
+    if (hintWord) {
+      const GL = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+      if (GL) {
+        const grammar = `#JSGF V1.0; grammar word; public <word> = ${hintWord};`;
+        const list = new GL();
+        list.addFromString(grammar, 1);
+        r.grammars = list;
+      }
+    }
+
+    let finalTranscript = "";
+    let bestInterim = "";
 
     r.onresult = (e) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
+        const alts = Array.from(e.results[i]).map(a => a.transcript);
         if (e.results[i].isFinal) {
-          const alts = Array.from(e.results[i]).map(a => a.transcript);
-          bestResult = alts.join("|");
-          // Got a final result — stop immediately
+          finalTranscript = alts.join("|");
           clearTimeout(timerRef.current);
           r.stop();
           return;
+        } else {
+          // Keep best interim as fallback for short words
+          if (alts[0] && alts[0].trim().length > 0) {
+            bestInterim = alts.join("|");
+          }
         }
       }
     };
 
     r.onstart = () => {
       setStatus("listening");
-      // Auto-stop after timeout if no final result
       timerRef.current = setTimeout(() => r.stop(), timeoutMs);
     };
 
     r.onerror = (e) => {
       clearTimeout(timerRef.current);
-      // "no-speech" is normal for short words — still fire onResult with whatever we got
       if (e.error !== "aborted") setStatus("idle");
     };
 
     r.onend = () => {
       clearTimeout(timerRef.current);
       setStatus("idle");
-      if (bestResult) onResult(bestResult);
-      else onResult(""); // empty = nothing heard
+      const result = finalTranscript || bestInterim;
+      onResult(result);
     };
 
     recognitionRef.current = r;

@@ -77,7 +77,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
       } else {
         setResult("incorrect");
       }
-    });
+    }, { hintWord: card.fr });
   };
 
   const next = () => {
