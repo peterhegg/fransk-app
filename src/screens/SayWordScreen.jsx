@@ -3,7 +3,7 @@ import { shuffle } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
-const FRENCH_ARTICLES = /^(le|la|les|l|un|une|des)\s+/;
+const FRENCH_ARTICLES = /^(l'|le |la |les |un |une |des )/;
 
 function normalize(s) {
   return s
@@ -11,26 +11,33 @@ function normalize(s) {
     .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[''`\-.,!?]/g, "")
-    .replace(FRENCH_ARTICLES, "") // strip leading articles
+    .replace(/[''`\-.,!?]/g, " ")
+    .replace(FRENCH_ARTICLES, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function isGoodMatch(recognized, expected) {
-  if (!recognized) return false;
-  const e = normalize(expected);
-  // Generous distance: short words get 2, longer get 3
-  const maxDist = e.length <= 4 ? 2 : 3;
+function matchesTarget(recognized, target) {
+  if (!recognized || !target) return false;
+  const e = normalize(target);
+  if (!e) return false;
+  const maxDist = e.length <= 3 ? 1 : e.length <= 6 ? 2 : 3;
   return recognized.split("|").some((alt) => {
     const r = normalize(alt);
     if (r === e) return true;
     if (r.includes(e) || e.includes(r)) return true;
-    // Check if expected word appears as a whole word in the recognized phrase
-    const wordMatch = r.split(" ").some(w => levenshtein(w, e) <= maxDist);
-    if (wordMatch) return true;
+    if (r.split(" ").some(w => levenshtein(w, e) <= maxDist)) return true;
     return levenshtein(r, e) <= maxDist;
   });
+}
+
+function isGoodMatch(recognized, card) {
+  if (!recognized) return false;
+  // Check against written French word
+  if (matchesTarget(recognized, card.fr)) return true;
+  // Also check against phonetic — e.g. user says "o" for "l'eau" (phonetic: "lo")
+  if (card.phonetic && matchesTarget(recognized, card.phonetic)) return true;
+  return false;
 }
 
 function levenshtein(a, b) {
@@ -72,7 +79,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
     setHeard("");
     startListening((transcript) => {
       setHeard(transcript.split("|")[0]);
-      if (isGoodMatch(transcript, card.fr)) {
+      if (isGoodMatch(transcript, card)) {
         setResult("correct");
       } else {
         setResult("incorrect");
