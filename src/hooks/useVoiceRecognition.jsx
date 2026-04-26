@@ -12,10 +12,14 @@ export function useVoiceRecognition() {
     r.lang = "fr-FR";
     r.continuous = false;
     r.interimResults = false;
-    r.maxAlternatives = 1;
+    r.maxAlternatives = 3;
 
     let heard = "";
-    r.onresult = (e) => { heard = e.results[0][0].transcript; };
+    r.onresult = (e) => {
+      // Pass all alternatives joined by | so the caller can check them
+      const alts = Array.from(e.results[0]).map(a => a.transcript);
+      heard = alts.join("|");
+    };
     r.onstart = () => setStatus("listening");
     r.onerror = () => setStatus("idle");
     r.onend = () => {

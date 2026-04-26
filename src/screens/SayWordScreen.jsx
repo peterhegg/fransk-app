@@ -1,9 +1,43 @@
 import { useState, useEffect, useRef } from "react";
 import { shuffle } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
-// Show a French word + phonetic. User listens and confirms by pressing "Neste".
-// No scoring. Randomly cycles through learned words.
+function normalize(s) {
+  return s
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // strip diacritics
+    .replace(/[''`\-.,!?]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+function isGoodMatch(recognized, expected) {
+  const e = normalize(expected);
+  const maxDist = e.length <= 4 ? 1 : 2;
+  // Check all alternatives (separated by |)
+  return recognized.split("|").some((alt) => {
+    const r = normalize(alt);
+    if (r === e) return true;
+    if (r.includes(e) || e.includes(r)) return true;
+    return levenshtein(r, e) <= maxDist;
+  });
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+  return dp[m][n];
+}
+
 export default function SayWordScreen({ words, onBack, speak, speaking, screen, showWords, onNav }) {
   const [queue] = useState(() => {
     if (!words.length) return [];
@@ -11,7 +45,10 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
   });
   const [idx, setIdx] = useState(0);
   const [done, setDone] = useState(false);
+  const [result, setResult] = useState(null); // null | "correct" | "incorrect"
+  const [heard, setHeard] = useState("");
   const hasSpoken = useRef(false);
+  const { status, startListening } = useVoiceRecognition();
 
   const card = queue[idx] || null;
 
@@ -22,21 +59,38 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
     }
   }, [idx]);
 
+  const handleListen = () => {
+    setResult(null);
+    setHeard("");
+    startListening((transcript) => {
+      setHeard(transcript.split("|")[0]);
+      if (isGoodMatch(transcript, card.fr)) {
+        setResult("correct");
+      } else {
+        setResult("incorrect");
+      }
+    });
+  };
+
   const next = () => {
     hasSpoken.current = false;
+    setResult(null);
+    setHeard("");
     if (idx + 1 >= queue.length) { setDone(true); return; }
     setIdx(i => i + 1);
   };
 
+  const header = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si ordet</div>
+      <div style={{ width: 60 }} />
+    </div>
+  );
+
   if (!words.length || !card) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
-          <MicIcon /> Si ordet
-        </div>
-        <div style={{ width: 60 }} />
-      </div>
+      {header}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 16 }}>
         <div style={{ fontSize: 36, opacity: 0.3 }}>🎙</div>
         <p style={{ color: "var(--text-subtle)", lineHeight: 1.9 }}>Ingen ord i ordbanken ennå.<br />Gjør Dagens øvelse – glose for å lære dine første ord.</p>
@@ -47,11 +101,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
 
   if (done) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si ordet</div>
-        <div style={{ width: 60 }} />
-      </div>
+      {header}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 20 }}>
         <div style={{ fontSize: 48 }}>🗣️</div>
         <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text)" }}>Bra jobba!</div>
@@ -65,6 +115,8 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
     </div>
   );
 
+  const isListening = status === "listening";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
@@ -77,9 +129,9 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
         <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / queue.length) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 28 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 24 }}>
         <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>
-          Si dette ordet høyt
+          Si dette ordet høyt på fransk
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "40px 48px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
@@ -100,17 +152,74 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
           </div>
         </div>
 
-        <button onClick={next} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(46,107,230,0.35)" }}>
-          {idx >= queue.length - 1 ? "Ferdig 🎉" : "Neste ord →"}
-        </button>
+        {/* Feedback */}
+        {result === "correct" && (
+          <div style={{ background: "rgba(34,197,94,0.12)", border: "1.5px solid rgba(34,197,94,0.4)", borderRadius: 14, padding: "14px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
+            <div style={{ fontSize: 22, marginBottom: 4 }}>✅</div>
+            <div style={{ fontSize: 15, color: "var(--text)", fontWeight: 600 }}>Riktig uttale!</div>
+            {heard && <div style={{ fontSize: 13, color: "var(--text-subtle)", marginTop: 4 }}>Hørte: «{heard}»</div>}
+          </div>
+        )}
+        {result === "incorrect" && (
+          <div style={{ background: "rgba(239,68,68,0.1)", border: "1.5px solid rgba(239,68,68,0.35)", borderRadius: 14, padding: "14px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
+            <div style={{ fontSize: 22, marginBottom: 4 }}>❌</div>
+            <div style={{ fontSize: 15, color: "var(--text)", fontWeight: 600 }}>Prøv igjen</div>
+            {heard && <div style={{ fontSize: 13, color: "var(--text-subtle)", marginTop: 4 }}>Hørte: «{heard}»</div>}
+          </div>
+        )}
 
-        <div style={{ fontSize: 12, color: "var(--text-subtle)", textAlign: "center", maxWidth: 280, lineHeight: 1.7 }}>
-          Ingen poeng her — bare øv på uttalen.<br />Trykk «Hør» for å høre riktig uttale.
-        </div>
+        {/* Action buttons */}
+        {result === "correct" ? (
+          <button onClick={next} className="btn-shine"
+            style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(34,197,94,0.35)" }}>
+            {idx >= queue.length - 1 ? "Ferdig 🎉" : "Neste ord →"}
+          </button>
+        ) : (
+          <button
+            onClick={handleListen}
+            disabled={isListening}
+            style={{
+              background: isListening
+                ? "rgba(46,107,230,0.15)"
+                : "linear-gradient(135deg, var(--accent), var(--accent-light))",
+              border: isListening ? "2px solid var(--accent)" : "none",
+              borderRadius: 14,
+              color: isListening ? "var(--accent)" : "white",
+              fontFamily: "var(--font-body)",
+              fontWeight: "500",
+              fontSize: 16,
+              padding: "16px 48px",
+              cursor: isListening ? "default" : "pointer",
+              boxShadow: isListening ? "none" : "0 4px 16px rgba(46,107,230,0.35)",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}>
+            {isListening ? (
+              <>
+                <PulsingDot /> Hører på deg...
+              </>
+            ) : (
+              <>{result === "incorrect" ? "🎙 Prøv igjen" : "🎙 Si ordet"}</>
+            )}
+          </button>
+        )}
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
+  );
+}
+
+function PulsingDot() {
+  return (
+    <span style={{
+      display: "inline-block",
+      width: 10,
+      height: 10,
+      borderRadius: "50%",
+      background: "var(--accent)",
+      animation: "pulse 1s ease-in-out infinite",
+    }} />
   );
 }
 
