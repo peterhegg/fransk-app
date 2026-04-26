@@ -626,19 +626,19 @@ function IcoVoice() {
 }
 
 const GLOSE_ITEMS = [
-  { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoFlashcard,  img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
-  { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoTranslate,  img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
-  { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoMultiChoice,img: "https://images.unsplash.com/photo-1566230724840-9b6fc11e3e5c?w=400&q=70&auto=format&fit=crop" },
-  { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMic,        img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
+  { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoFlashcard,  bg: "linear-gradient(150deg, #0c1d3e 0%, #163260 100%)",  accent: "rgba(46,107,230,0.85)" },
+  { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoTranslate,  bg: "linear-gradient(150deg, #091428 0%, #0c2240 100%)",  accent: "rgba(46,107,230,0.7)"  },
+  { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoMultiChoice,bg: "linear-gradient(150deg, #0e1640 0%, #18245a 100%)",  accent: "rgba(80,90,220,0.8)"  },
+  { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMic,        bg: "linear-gradient(150deg, #071928 0%, #083050 100%)",  accent: "rgba(20,140,190,0.75)" },
 ];
 
 const GRAMMATIKK_ITEMS = [
-  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoGrammar,     img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
-  { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate,   img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
-  { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice, img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
-  { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence,    img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
-  { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChat,        img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
-  { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoVoice,       img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
+  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoGrammar,     bg: "linear-gradient(150deg, #101c2e 0%, #1a2e50 100%)",  accent: "rgba(46,107,230,0.8)"   },
+  { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate,   bg: "linear-gradient(150deg, #0c1826 0%, #142640 100%)",  accent: "rgba(46,107,230,0.65)"  },
+  { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice, bg: "linear-gradient(150deg, #100e3c 0%, #1a185a 100%)",  accent: "rgba(80,60,210,0.8)"   },
+  { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence,    bg: "linear-gradient(150deg, #140c28 0%, #201238 100%)",  accent: "rgba(130,60,190,0.7)"  },
+  { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChat,        bg: "linear-gradient(150deg, #160a1e 0%, #26082a 100%)",  accent: "rgba(160,45,140,0.65)" },
+  { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoVoice,       bg: "linear-gradient(150deg, #1c0a12 0%, #3a1020 100%)",  accent: "rgba(185,45,70,0.75)"  },
 ];
 
 function TaskSection({ title, items, onStart }) {
@@ -667,23 +667,28 @@ function TaskCard({ item, onStart }) {
         borderRadius: 18,
         overflow: "hidden",
         position: "relative",
-        border: "none",
+        border: "1px solid rgba(255,255,255,0.07)",
         padding: 0,
         cursor: "pointer",
-        boxShadow: "var(--shadow-md)",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+        background: item.bg,
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
       }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
+      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.55)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
     >
-      <img src={item.img} alt={item.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.04) 100%)" }} />
-      <div style={{ position: "absolute", top: 11, left: 12, color: "rgba(255,255,255,0.85)" }}>
+      {/* Glow blob */}
+      <div style={{ position: "absolute", top: 22, left: "50%", width: 72, height: 72, borderRadius: "50%", background: item.accent, transform: "translateX(-50%)", filter: "blur(20px)", opacity: 0.5, pointerEvents: "none" }} />
+      {/* Ring */}
+      <div style={{ position: "absolute", top: 26, left: "50%", width: 56, height: 56, borderRadius: "50%", border: `1px solid ${item.accent}`, transform: "translateX(-50%)", opacity: 0.3, pointerEvents: "none" }} />
+      {/* Large icon */}
+      <div style={{ position: "absolute", top: 37, left: "50%", transform: "translateX(-50%) scale(2)", transformOrigin: "top center", color: "rgba(255,255,255,0.9)", lineHeight: 0, pointerEvents: "none" }}>
         <item.Icon />
       </div>
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px 13px", textAlign: "left" }}>
+      {/* Text */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 14px 13px", background: "linear-gradient(to top, rgba(0,0,0,0.52) 0%, transparent 100%)" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "white", letterSpacing: "-0.1px", lineHeight: 1.25, marginBottom: 2 }}>{item.label}</div>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.62)", lineHeight: 1.3 }}>{item.sub}</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", lineHeight: 1.3 }}>{item.sub}</div>
       </div>
     </button>
   );
