@@ -3,24 +3,32 @@ import { shuffle } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
+const FRENCH_ARTICLES = /^(le|la|les|l|un|une|des)\s+/;
+
 function normalize(s) {
   return s
     .toLowerCase()
     .trim()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // strip diacritics
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[''`\-.,!?]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(FRENCH_ARTICLES, "") // strip leading articles
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function isGoodMatch(recognized, expected) {
+  if (!recognized) return false;
   const e = normalize(expected);
-  const maxDist = e.length <= 4 ? 1 : 2;
-  // Check all alternatives (separated by |)
+  // Generous distance: short words get 2, longer get 3
+  const maxDist = e.length <= 4 ? 2 : 3;
   return recognized.split("|").some((alt) => {
     const r = normalize(alt);
     if (r === e) return true;
     if (r.includes(e) || e.includes(r)) return true;
+    // Check if expected word appears as a whole word in the recognized phrase
+    const wordMatch = r.split(" ").some(w => levenshtein(w, e) <= maxDist);
+    if (wordMatch) return true;
     return levenshtein(r, e) <= maxDist;
   });
 }
@@ -161,10 +169,21 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
           </div>
         )}
         {result === "incorrect" && (
-          <div style={{ background: "rgba(239,68,68,0.1)", border: "1.5px solid rgba(239,68,68,0.35)", borderRadius: 14, padding: "14px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
-            <div style={{ fontSize: 22, marginBottom: 4 }}>❌</div>
-            <div style={{ fontSize: 15, color: "var(--text)", fontWeight: 600 }}>Prøv igjen</div>
-            {heard && <div style={{ fontSize: 13, color: "var(--text-subtle)", marginTop: 4 }}>Hørte: «{heard}»</div>}
+          <div style={{ background: "rgba(239,68,68,0.1)", border: "1.5px solid rgba(239,68,68,0.35)", borderRadius: 14, padding: "16px 24px", textAlign: "center", width: "100%", maxWidth: 340 }}>
+            <div style={{ fontSize: 20, marginBottom: 6 }}>❌</div>
+            {heard
+              ? <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 8 }}>Hørte: «{heard}»</div>
+              : <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 8 }}>Ingenting ble fanget opp — si det litt høyere</div>
+            }
+            {card.phonetic && (
+              <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4 }}>
+                Uttale: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{card.phonetic}</span>
+              </div>
+            )}
+            <button onClick={() => speak(card.fr, 0.6)}
+              style={{ marginTop: 8, background: "none", border: "1px solid var(--accent)", borderRadius: 10, padding: "7px 16px", color: "var(--accent)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+              🔊 Hør igjen (sakte)
+            </button>
           </div>
         )}
 
