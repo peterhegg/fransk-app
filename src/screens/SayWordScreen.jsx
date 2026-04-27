@@ -77,6 +77,8 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
   const handleListen = () => {
     setResult(null);
     setHeard("");
+    const bare = card.fr.replace(/^(l'|le |la |les |un |une |des )/i, "").trim();
+    const timeoutMs = bare.length <= 4 ? 4000 : 7000;
     startListening((transcript) => {
       setHeard(transcript.split("|")[0]);
       if (isGoodMatch(transcript, card)) {
@@ -84,7 +86,11 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
       } else {
         setResult("incorrect");
       }
-    }, { hintWord: card.fr });
+    }, {
+      hintWord: card.fr,
+      timeoutMs,
+      shouldStopEarly: (t) => isGoodMatch(t, card),
+    });
   };
 
   const next = () => {

@@ -5,7 +5,7 @@ export function useVoiceRecognition() {
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
 
-  const startListening = useCallback((onResult, { timeoutMs = 7000, hintWord = null } = {}) => {
+  const startListening = useCallback((onResult, { timeoutMs = 7000, hintWord = null, shouldStopEarly = null } = {}) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { setStatus("unsupported"); return; }
 
@@ -41,6 +41,13 @@ export function useVoiceRecognition() {
           // Keep best interim as fallback for short words
           if (alts[0] && alts[0].trim().length > 0) {
             bestInterim = alts.join("|");
+            // Stop early if interim already matches target — critical for short words
+            if (shouldStopEarly && shouldStopEarly(bestInterim)) {
+              finalTranscript = bestInterim;
+              clearTimeout(timerRef.current);
+              r.stop();
+              return;
+            }
           }
         }
       }
