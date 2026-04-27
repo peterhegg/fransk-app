@@ -4,12 +4,19 @@ export default function BottomNav({ screen, showWords, onNav }) {
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const initialHeight = vv.height;
-    const handler = () => setKeyboardOpen(vv.height < initialHeight * 0.75);
-    vv.addEventListener("resize", handler);
-    return () => vv.removeEventListener("resize", handler);
+    // interactive-widget=resizes-content means both innerHeight and
+    // visualViewport.height shrink together — screen.height is the only
+    // stable baseline (physical pixels, never changes).
+    const check = () => {
+      const h = window.visualViewport?.height ?? window.innerHeight;
+      setKeyboardOpen(h < window.screen.height * 0.75);
+    };
+    window.addEventListener("resize", check);
+    window.visualViewport?.addEventListener("resize", check);
+    return () => {
+      window.removeEventListener("resize", check);
+      window.visualViewport?.removeEventListener("resize", check);
+    };
   }, []);
 
   if (keyboardOpen) return null;

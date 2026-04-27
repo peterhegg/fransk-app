@@ -5,13 +5,13 @@ export function useVoiceRecognition() {
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
 
-  const startListening = useCallback((onResult, { timeoutMs = 7000, hintWord = null, shouldStopEarly = null } = {}) => {
+  const startListening = useCallback((onResult, { timeoutMs = 7000, hintWord = null, shouldStopEarly = null, continuous = true } = {}) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { setStatus("unsupported"); return; }
 
     const r = new SR();
     r.lang = "fr-FR";
-    r.continuous = true;
+    r.continuous = continuous;
     r.interimResults = true;
     r.maxAlternatives = 5;
 

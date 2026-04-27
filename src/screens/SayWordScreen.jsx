@@ -78,7 +78,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
     setResult(null);
     setHeard("");
     const bare = card.fr.replace(/^(l'|le |la |les |un |une |des )/i, "").trim();
-    const timeoutMs = bare.length <= 4 ? 4000 : 7000;
+    const isShort = bare.length <= 4;
     startListening((transcript) => {
       setHeard(transcript.split("|")[0]);
       if (isGoodMatch(transcript, card)) {
@@ -87,8 +87,11 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
         setResult("incorrect");
       }
     }, {
-      hintWord: card.fr,
-      timeoutMs,
+      // Grammar hint biases engine toward spelling, not sound — hurts for short words
+      hintWord: isShort ? null : card.fr,
+      // Non-continuous auto-finalizes after speech ends — critical for short/single-syllable words
+      continuous: !isShort,
+      timeoutMs: isShort ? 5000 : 7000,
       shouldStopEarly: (t) => isGoodMatch(t, card),
     });
   };
@@ -193,10 +196,16 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
                 Uttale: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{card.phonetic}</span>
               </div>
             )}
-            <button onClick={() => speak(card.fr, 0.6)}
-              style={{ marginTop: 8, background: "none", border: "1px solid var(--accent)", borderRadius: 10, padding: "7px 16px", color: "var(--accent)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              🔊 Hør igjen (sakte)
-            </button>
+            <div style={{ display: "flex", gap: 8, marginTop: 10, justifyContent: "center" }}>
+              <button onClick={() => speak(card.fr, 0.6)}
+                style={{ background: "none", border: "1px solid var(--accent)", borderRadius: 10, padding: "7px 14px", color: "var(--accent)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                🔊 Hør igjen
+              </button>
+              <button onClick={next}
+                style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 14px", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                {idx >= queue.length - 1 ? "Avslutt →" : "Gå videre →"}
+              </button>
+            </div>
           </div>
         )}
 
