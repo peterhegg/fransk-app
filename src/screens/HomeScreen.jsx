@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak } from "../utils.jsx";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
@@ -712,6 +712,8 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
 
   const answerCount = loadAnswerCount();
   const bestStreak = loadBestStreak();
+  const streakData = loadStreak();
+  const fmtDate = d => { if (!d) return ""; const dt = new Date(d + "T12:00:00"); return `${dt.getDate()}. ${["jan","feb","mar","apr","mai","jun","jul","aug","sep","okt","nov","des"][dt.getMonth()]}`; };
   const dueCount = getDue(words, answerCount).length;
   const masteredCount = getMasteredCount(words) + (grammarWords || []).filter(w => (w.points || 0) >= MASTERY_POINTS).length;
 
@@ -864,13 +866,17 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           }}>
             <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{streak}</div>
             <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Streak</div>
-            {bestStreak.days > 0 && (
+            {streakData.startDate && streak > 0 && (
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", lineHeight: 1.3, marginTop: 1 }}>
+                fra {fmtDate(streakData.startDate)}
+              </div>
+            )}
+            {bestStreak.days > 0 && streak !== bestStreak.days && (
               <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, lineHeight: 1.3, marginTop: 1 }}>
                 Rekord: {bestStreak.days}d
                 {bestStreak.startDate && (() => {
-                  const fmt = d => { const dt = new Date(d); return `${dt.getDate()}. ${["jan","feb","mar","apr","mai","jun","jul","aug","sep","okt","nov","des"][dt.getMonth()]}`; };
-                  const end = bestStreak.endDate && bestStreak.endDate !== bestStreak.startDate ? ` – ${fmt(bestStreak.endDate)}` : "";
-                  return ` (${fmt(bestStreak.startDate)}${end})`;
+                  const end = bestStreak.endDate && bestStreak.endDate !== bestStreak.startDate ? ` – ${fmtDate(bestStreak.endDate)}` : "";
+                  return ` (${fmtDate(bestStreak.startDate)}${end})`;
                 })()}
               </div>
             )}

@@ -1,4 +1,17 @@
+import { useState, useEffect } from "react";
+
 export default function BottomNav({ screen, showWords, onNav }) {
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const handler = () => setKeyboardOpen(vv.height < window.innerHeight - 100);
+    vv.addEventListener("resize", handler);
+    return () => vv.removeEventListener("resize", handler);
+  }, []);
+
+  if (keyboardOpen) return null;
   const tabs = [
     { id: "home",  label: "Hjem",    emoji: "⌂" },
     { id: "glose", label: "Øv",      emoji: "◈" },
