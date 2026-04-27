@@ -6,7 +6,8 @@ export default function BottomNav({ screen, showWords, onNav }) {
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const handler = () => setKeyboardOpen(vv.height < window.innerHeight - 100);
+    const initialHeight = vv.height;
+    const handler = () => setKeyboardOpen(vv.height < initialHeight * 0.75);
     vv.addEventListener("resize", handler);
     return () => vv.removeEventListener("resize", handler);
   }, []);

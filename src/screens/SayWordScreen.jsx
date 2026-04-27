@@ -11,7 +11,7 @@ function normalize(s) {
     .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[''`\-.,!?]/g, " ")
+    .replace(/[''`\-.,!?()\[\]]/g, " ")
     .replace(FRENCH_ARTICLES, "")
     .replace(/\s+/g, " ")
     .trim();
