@@ -4,8 +4,16 @@ export function useVoiceRecognition() {
   const [status, setStatus] = useState("idle");
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
+  const silenceTimerRef = useRef(null);
 
-  const startListening = useCallback((onResult, { timeoutMs = 7000, hintWord = null, shouldStopEarly = null, continuous = true } = {}) => {
+  const startListening = useCallback((onResult, {
+    timeoutMs = 7000,
+    hintWord = null,
+    shouldStopEarly = null,
+    continuous = true,
+    accumulateFinals = false,
+    silenceMs = 2000,
+  } = {}) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { setStatus("unsupported"); return; }
 
@@ -28,20 +36,26 @@ export function useVoiceRecognition() {
 
     let finalTranscript = "";
     let bestInterim = "";
+    const accumulatedFinals = [];
 
     r.onresult = (e) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const alts = Array.from(e.results[i]).map(a => a.transcript);
         if (e.results[i].isFinal) {
-          finalTranscript = alts.join("|");
-          clearTimeout(timerRef.current);
-          r.stop();
+          if (accumulateFinals) {
+            // Accumulate finals; reset silence timer after each recognized chunk
+            accumulatedFinals.push(alts[0].trim());
+            clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = setTimeout(() => r.stop(), silenceMs);
+          } else {
+            finalTranscript = alts.join("|");
+            clearTimeout(timerRef.current);
+            r.stop();
+          }
           return;
         } else {
-          // Keep best interim as fallback for short words
           if (alts[0] && alts[0].trim().length > 0) {
             bestInterim = alts.join("|");
-            // Stop early if interim already matches target — critical for short words
             if (shouldStopEarly && shouldStopEarly(bestInterim)) {
               finalTranscript = bestInterim;
               clearTimeout(timerRef.current);
@@ -60,13 +74,17 @@ export function useVoiceRecognition() {
 
     r.onerror = (e) => {
       clearTimeout(timerRef.current);
+      clearTimeout(silenceTimerRef.current);
       if (e.error !== "aborted") setStatus("idle");
     };
 
     r.onend = () => {
       clearTimeout(timerRef.current);
+      clearTimeout(silenceTimerRef.current);
       setStatus("idle");
-      const result = finalTranscript || bestInterim;
+      const result = accumulateFinals
+        ? (accumulatedFinals.join(" ") || bestInterim)
+        : (finalTranscript || bestInterim);
       onResult(result);
     };
 
@@ -76,6 +94,7 @@ export function useVoiceRecognition() {
 
   const stopListening = useCallback(() => {
     clearTimeout(timerRef.current);
+    clearTimeout(silenceTimerRef.current);
     recognitionRef.current?.stop();
   }, []);
 

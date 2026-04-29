@@ -137,23 +137,26 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
   const handleListen = () => {
     setResult(null);
     setHeard("");
+    const wordCount = current.fr.trim().split(/\s+/).length;
+    const timeoutMs = Math.max(12000, wordCount * 2000 + 6000);
     startListening((transcript) => {
       const firstAlt = transcript.split("|")[0];
       setHeard(firstAlt);
       const { matched } = matchSentence(transcript, current.fr);
-      setResult(matched ? "correct" : "incorrect");
-      if (result === null) {
-        if (matched) {
-          setStats(st => ({ correct: st.correct + 1, wrong: st.wrong }));
-          setHistory(h => [...h, "correct"]);
-        } else {
-          setStats(st => ({ correct: st.correct, wrong: st.wrong + 1 }));
-          setHistory(h => [...h, "wrong"]);
-        }
+      const res = matched ? "correct" : "incorrect";
+      setResult(res);
+      if (matched) {
+        setStats(st => ({ correct: st.correct + 1, wrong: st.wrong }));
+        setHistory(h => [...h, "correct"]);
+      } else {
+        setStats(st => ({ correct: st.correct, wrong: st.wrong + 1 }));
+        setHistory(h => [...h, "wrong"]);
       }
     }, {
       continuous: true,
-      timeoutMs: 10000,
+      accumulateFinals: true,
+      silenceMs: 2000,
+      timeoutMs,
     });
   };
 
@@ -256,8 +259,9 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
           Si denne setningen på fransk
         </div>
 
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "32px 36px", textAlign: "center", width: "100%", maxWidth: 360, boxShadow: "var(--shadow-md)" }}>
-          <div style={{ fontSize: 22, color: "var(--text)", fontFamily: "var(--font-display)", lineHeight: 1.4, marginBottom: 16 }}>{current?.no}</div>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "28px 32px", textAlign: "center", width: "100%", maxWidth: 360, boxShadow: "var(--shadow-md)" }}>
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 6 }}>{current?.no}</div>
+          <div style={{ fontSize: 24, color: "var(--text)", fontFamily: "var(--font-display)", fontStyle: "italic", lineHeight: 1.4, marginBottom: 18 }}>{current?.fr}</div>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <button onClick={() => speak(current.fr, 0.8)} title="Hør setningen"
               style={{ background: speaking ? "var(--accent-bg)" : "var(--bg)", border: `1.5px solid ${speaking ? "var(--accent)" : "var(--border)"}`, borderRadius: 12, padding: "10px 16px", cursor: "pointer", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
