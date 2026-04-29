@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
-import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak } from "../utils.jsx";
+import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 
 // Input-only translation exercise (no multiple choice).
@@ -13,11 +13,7 @@ export default function TranslationExerciseScreen({
 }) {
   const [queue, setQueue] = useState(() => {
     if (!words.length) return [];
-    const due = getDue(words, loadAnswerCount());
-    const notDue = words.filter(w => !due.some(d => d.id === w.id));
-    return shuffle([...due, ...notDue])
-      .slice(0, 20)
-      .map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
+    return selectExerciseWords(words).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
   });
   const [card, setCard] = useState(() => queue[0] || null);
   const [input, setInput] = useState("");

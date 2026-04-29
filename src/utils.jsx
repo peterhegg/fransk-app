@@ -251,6 +251,40 @@ export function getDue(words, globalCount) {
   });
 }
 
+// Selects words for exercises with a biased distribution toward less-learned words.
+// Tier A (not learned / low familiarity): points 0–7  → 60%
+// Tier B (learned / well-learned):        points 8–17 → 35%
+// Tier C (well-learned / mastered):       points ≥18  → 5%
+// Falls back to random shuffle if tier A is too small to fill the 60% quota.
+export function selectExerciseWords(words, count = 20) {
+  const tierA = words.filter(w => (w.points || 0) < 8);
+  const tierB = words.filter(w => (w.points || 0) >= 8 && (w.points || 0) < 18);
+  const tierC = words.filter(w => (w.points || 0) >= 18);
+
+  const nA = Math.round(count * 0.60);
+  const nC = Math.max(1, Math.round(count * 0.05));
+  const nB = count - nA - nC;
+
+  if (tierA.length < nA) {
+    return shuffle([...words]).slice(0, count);
+  }
+
+  const picked = [
+    ...shuffle([...tierA]).slice(0, nA),
+    ...shuffle([...tierB]).slice(0, nB),
+    ...shuffle([...tierC]).slice(0, nC),
+  ];
+
+  const extra = count - picked.length;
+  if (extra > 0) {
+    const pickedIds = new Set(picked.map(w => w.id));
+    const remaining = tierA.filter(w => !pickedIds.has(w.id));
+    picked.push(...shuffle(remaining).slice(0, extra));
+  }
+
+  return shuffle(picked).slice(0, count);
+}
+
 export function scheduleNext(level, correct) {
   const newLevel = correct ? Math.min(level + 1, SR_INTERVALS.length - 1) : 0;
   return { level: newLevel, nextReview: Date.now() + SR_INTERVALS[newLevel] * 86400000 };

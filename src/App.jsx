@@ -14,7 +14,7 @@ import {
   incrementAnswerCount, loadAnswerCount, updateWordPoints,
   logDailyAnswer, logVocabSession, logGrammarSession, logWordAnswer,
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab,
-  getActiveGoal, loadGoalOrder,
+  getActiveGoal, loadGoalOrder, selectExerciseWords,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -380,9 +380,7 @@ export default function App() {
 
   const startGlose = () => {
     if (!words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
-    const due = getDue(words, loadAnswerCount());
-    const notDue = words.filter(w => !due.some(d => d.id === w.id));
-    const q = shuffle([...due, ...notDue]).slice(0, 20).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
+    const q = selectExerciseWords(words).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGloseQueue(q); setGloseCard(q[0]);
     setGloseOptions(getQuizOptions(q[0], words, !!q[0].reverse)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
     setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
@@ -401,9 +399,7 @@ export default function App() {
 
   const startGramOvelse = () => {
     if (!grammarWords.length) { setGramOvCard(null); setScreen("grammatikk-ovelse"); return; }
-    const due = getDue(grammarWords, loadAnswerCount());
-    const notDue = grammarWords.filter(w => !due.some(d => d.id === w.id));
-    const q = shuffle([...due, ...notDue]).slice(0, 20).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
+    const q = selectExerciseWords(grammarWords).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGramOvQueue(q); setGramOvCard(q[0]);
     setGramOvOptions(getQuizOptions(q[0], grammarWords, !!q[0].reverse)); setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult(""); setGramOvStats({ correct: 0, wrong: 0 }); setGramOvHistory([]);

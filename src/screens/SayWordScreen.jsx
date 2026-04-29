@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { shuffle } from "../utils.jsx";
+import { shuffle, selectExerciseWords } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
@@ -56,7 +56,7 @@ function levenshtein(a, b) {
 export default function SayWordScreen({ words, onBack, speak, speaking, screen, showWords, onNav }) {
   const [queue] = useState(() => {
     if (!words.length) return [];
-    return shuffle([...words]).slice(0, 20);
+    return selectExerciseWords(words);
   });
   const [idx, setIdx] = useState(0);
   const [done, setDone] = useState(false);
