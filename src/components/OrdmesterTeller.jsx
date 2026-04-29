@@ -34,57 +34,134 @@ function MasteryGraph({ masteredCount, midpoint }) {
     if (count !== null) lastKnown = count;
     const dl = new Date(date + "T12:00:00");
     const label = date === today ? "i dag" : dl.toLocaleDateString("nb", { weekday: "short" }).slice(0, 2);
-    const heightPct = count !== null
-      ? Math.min(100, Math.max(0, ((count - yMin) / range) * 100))
+    // y: 0 = top, 1 = bottom in SVG coords
+    const yFrac = count !== null
+      ? 1 - Math.min(1, Math.max(0, (count - yMin) / range))
       : null;
-    return { date, count, label, isToday: date === today, heightPct };
+    return { date, count, label, isToday: date === today, yFrac };
   });
+
+  // SVG dimensions
+  const W = 280, H = 56, PAD = 8;
+  const plotW = W - PAD * 2;
+  const plotH = H - 6; // leave 6px at top for labels
+  const xOf = (i) => PAD + (i / 6) * plotW;
+  const yOf = (frac) => 2 + frac * plotH;
+
+  const points = days.map((d, i) => d.yFrac !== null ? { x: xOf(i), y: yOf(d.yFrac) } : null);
+  const validPoints = points.filter(Boolean);
+
+  // Smooth line using cubic bezier through points
+  const pathD = (() => {
+    const pts = points.map((p, i) => p ?? null);
+    const segs = [];
+    let i = 0;
+    while (i < pts.length) {
+      if (pts[i] === null) { i++; continue; }
+      // Find contiguous run
+      let j = i;
+      while (j < pts.length && pts[j] !== null) j++;
+      const run = pts.slice(i, j);
+      if (run.length === 1) {
+        segs.push(`M ${run[0].x} ${run[0].y}`);
+      } else {
+        let d = `M ${run[0].x} ${run[0].y}`;
+        for (let k = 1; k < run.length; k++) {
+          const prev = run[k - 1], curr = run[k];
+          const cpx = (prev.x + curr.x) / 2;
+          d += ` C ${cpx} ${prev.y} ${cpx} ${curr.y} ${curr.x} ${curr.y}`;
+        }
+        segs.push(d);
+      }
+      i = j;
+    }
+    return segs.join(" ");
+  })();
+
+  // Area fill — only for contiguous segments
+  const areaD = (() => {
+    const pts = points.map((p, i) => p ?? null);
+    const segs = [];
+    let i = 0;
+    while (i < pts.length) {
+      if (pts[i] === null) { i++; continue; }
+      let j = i;
+      while (j < pts.length && pts[j] !== null) j++;
+      const run = pts.slice(i, j);
+      if (run.length < 2) { i = j; continue; }
+      let d = `M ${run[0].x} ${H}`;
+      d += ` L ${run[0].x} ${run[0].y}`;
+      for (let k = 1; k < run.length; k++) {
+        const prev = run[k - 1], curr = run[k];
+        const cpx = (prev.x + curr.x) / 2;
+        d += ` C ${cpx} ${prev.y} ${cpx} ${curr.y} ${curr.x} ${curr.y}`;
+      }
+      d += ` L ${run[run.length - 1].x} ${H} Z`;
+      segs.push(d);
+      i = j;
+    }
+    return segs.join(" ");
+  })();
+
+  const midY = yOf(0.5);
 
   return (
     <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-      <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+      <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>
         Fremgang siste 7 dager
       </div>
-      <div style={{ display: "flex", gap: 4, alignItems: "flex-end" }}>
-        {/* Y-axis */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: 48, paddingBottom: 16, flexShrink: 0, width: 24 }}>
+      <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
+        {/* Y-axis labels */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: H + 14, paddingBottom: 14, flexShrink: 0, width: 22 }}>
           <div style={{ fontSize: 8, color: "var(--text-subtle)", textAlign: "right", lineHeight: 1 }}>{yMax}</div>
-          <div style={{ fontSize: 8, color: "rgba(46,107,230,0.6)", textAlign: "right", lineHeight: 1, fontWeight: 600 }}>{midpoint}</div>
+          <div style={{ fontSize: 8, color: "rgba(46,107,230,0.65)", textAlign: "right", lineHeight: 1, fontWeight: 600 }}>{midpoint}</div>
           <div style={{ fontSize: 8, color: "var(--text-subtle)", textAlign: "right", lineHeight: 1 }}>{yMin}</div>
         </div>
-        {/* Bars */}
-        <div style={{ flex: 1, display: "flex", gap: 3 }}>
-          {days.map(day => (
-            <div key={day.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-              <div style={{ fontSize: 8, color: day.isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: day.isToday ? 700 : 400, lineHeight: 1, height: 10, display: "flex", alignItems: "center" }}>
-                {day.count !== null ? day.count : ""}
-              </div>
-              <div style={{ width: "100%", height: 36, position: "relative", background: "var(--accent-bg)", borderRadius: 3, overflow: "hidden" }}>
-                {day.heightPct !== null && (
-                  <div style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0,
-                    height: `${day.heightPct}%`,
-                    background: day.isToday
-                      ? "linear-gradient(to top, var(--accent), var(--accent-light))"
-                      : "rgba(46,107,230,0.38)",
-                    borderRadius: "3px 3px 0 0",
-                    transition: "height 0.5s ease",
-                    minHeight: 2,
-                  }} />
-                )}
-                {/* Midpoint line at 50% */}
-                <div style={{
-                  position: "absolute", left: 0, right: 0,
-                  top: "50%", height: 1,
-                  background: "rgba(46,107,230,0.35)",
-                  transform: "translateY(-50%)",
-                }} />
-              </div>
-              <div style={{ fontSize: 8, color: day.isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: day.isToday ? 700 : 400, whiteSpace: "nowrap" }}>
+        {/* SVG graph */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <svg width="100%" viewBox={`0 0 ${W} ${H + 14}`} style={{ display: "block", overflow: "visible" }}>
+            {/* Midpoint dashed line */}
+            <line x1={PAD} y1={midY} x2={W - PAD} y2={midY}
+              stroke="rgba(46,107,230,0.25)" strokeWidth="1" strokeDasharray="3 3" />
+            {/* Area fill */}
+            {areaD && (
+              <path d={areaD} fill="url(#masteryGrad)" opacity="0.18" />
+            )}
+            {/* Line */}
+            {pathD && (
+              <path d={pathD} fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            )}
+            {/* Dots */}
+            {days.map((day, i) => day.yFrac !== null && (
+              <g key={day.date}>
+                <circle cx={xOf(i)} cy={yOf(day.yFrac)} r={day.isToday ? 4 : 2.5}
+                  fill={day.isToday ? "var(--accent)" : "var(--surface)"}
+                  stroke="var(--accent)" strokeWidth={day.isToday ? 0 : 1.5} />
+                {/* Count label above dot */}
+                <text x={xOf(i)} y={yOf(day.yFrac) - 6}
+                  textAnchor="middle" fontSize="7"
+                  fill={day.isToday ? "var(--accent)" : "rgba(46,107,230,0.55)"}
+                  fontWeight={day.isToday ? "700" : "400"}>
+                  {day.count}
+                </text>
+              </g>
+            ))}
+            {/* Day labels */}
+            {days.map((day, i) => (
+              <text key={day.date + "l"} x={xOf(i)} y={H + 12}
+                textAnchor="middle" fontSize="7.5"
+                fill={day.isToday ? "var(--accent)" : "var(--text-subtle)"}
+                fontWeight={day.isToday ? "700" : "400"}>
                 {day.label}
-              </div>
-            </div>
-          ))}
+              </text>
+            ))}
+            <defs>
+              <linearGradient id="masteryGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--accent)" />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
       </div>
     </div>
