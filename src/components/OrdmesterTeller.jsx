@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ORDMESTER_GOALS } from "../constants.js";
-import { loadOrdmesterGoals } from "../utils.jsx";
+import { loadOrdmesterGoals, loadMasteryLog, touchMasteryCount, getMasteryMidpoint, todayStr } from "../utils.jsx";
 
 function getGoals() {
   return loadOrdmesterGoals() || ORDMESTER_GOALS;
@@ -12,15 +12,99 @@ function getSegment(masteredCount, goals) {
   return { goal: goals[idx], start: idx === 0 ? 0 : goals[idx - 1].target, goalIdx: idx };
 }
 
+function MasteryGraph({ masteredCount, midpoint }) {
+  const log = loadMasteryLog();
+  const today = todayStr();
+  const yMin = midpoint - 10;
+  const yMax = midpoint + 10;
+  const range = 20;
+
+  let lastKnown = null;
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(Date.now() - (6 - i) * 86400000);
+    const date = d.toISOString().split("T")[0];
+    let count = null;
+    if (date === today) {
+      count = masteredCount;
+    } else {
+      const entry = log.find(e => e.date === date);
+      if (entry) count = entry.count;
+      else if (lastKnown !== null) count = lastKnown;
+    }
+    if (count !== null) lastKnown = count;
+    const dl = new Date(date + "T12:00:00");
+    const label = date === today ? "i dag" : dl.toLocaleDateString("nb", { weekday: "short" }).slice(0, 2);
+    const heightPct = count !== null
+      ? Math.min(100, Math.max(0, ((count - yMin) / range) * 100))
+      : null;
+    return { date, count, label, isToday: date === today, heightPct };
+  });
+
+  return (
+    <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+      <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+        Fremgang siste 7 dager
+      </div>
+      <div style={{ display: "flex", gap: 4, alignItems: "flex-end" }}>
+        {/* Y-axis */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: 48, paddingBottom: 16, flexShrink: 0, width: 24 }}>
+          <div style={{ fontSize: 8, color: "var(--text-subtle)", textAlign: "right", lineHeight: 1 }}>{yMax}</div>
+          <div style={{ fontSize: 8, color: "rgba(46,107,230,0.6)", textAlign: "right", lineHeight: 1, fontWeight: 600 }}>{midpoint}</div>
+          <div style={{ fontSize: 8, color: "var(--text-subtle)", textAlign: "right", lineHeight: 1 }}>{yMin}</div>
+        </div>
+        {/* Bars */}
+        <div style={{ flex: 1, display: "flex", gap: 3 }}>
+          {days.map(day => (
+            <div key={day.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <div style={{ fontSize: 8, color: day.isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: day.isToday ? 700 : 400, lineHeight: 1, height: 10, display: "flex", alignItems: "center" }}>
+                {day.count !== null ? day.count : ""}
+              </div>
+              <div style={{ width: "100%", height: 36, position: "relative", background: "var(--accent-bg)", borderRadius: 3, overflow: "hidden" }}>
+                {day.heightPct !== null && (
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    height: `${day.heightPct}%`,
+                    background: day.isToday
+                      ? "linear-gradient(to top, var(--accent), var(--accent-light))"
+                      : "rgba(46,107,230,0.38)",
+                    borderRadius: "3px 3px 0 0",
+                    transition: "height 0.5s ease",
+                    minHeight: 2,
+                  }} />
+                )}
+                {/* Midpoint line at 50% */}
+                <div style={{
+                  position: "absolute", left: 0, right: 0,
+                  top: "50%", height: 1,
+                  background: "rgba(46,107,230,0.35)",
+                  transform: "translateY(-50%)",
+                }} />
+              </div>
+              <div style={{ fontSize: 8, color: day.isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: day.isToday ? 700 : 400, whiteSpace: "nowrap" }}>
+                {day.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OrdmesterTeller({ masteredCount, onEdit }) {
   const [displayed, setDisplayed] = useState(0);
   const [barWidth, setBarWidth] = useState(0);
+  const [midpoint] = useState(() => getMasteryMidpoint(masteredCount));
 
   const goals = getGoals();
   const { goal, start } = getSegment(masteredCount, goals);
   const segmentSize = goal.target - start;
   const progressInSegment = Math.min(masteredCount - start, segmentSize);
   const pct = segmentSize > 0 ? (progressInSegment / segmentSize) * 100 : 0;
+
+  useEffect(() => {
+    touchMasteryCount(masteredCount);
+  }, [masteredCount]);
 
   useEffect(() => {
     let frame;
@@ -103,6 +187,8 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
           );
         })}
       </div>
+
+      <MasteryGraph masteredCount={masteredCount} midpoint={midpoint} />
     </div>
   );
 }

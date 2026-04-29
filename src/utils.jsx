@@ -256,6 +256,53 @@ export function scheduleNext(level, correct) {
   return { level: newLevel, nextReview: Date.now() + SR_INTERVALS[newLevel] * 86400000 };
 }
 
+// ─── Mastery count log ───────────────────────────────────────────────────────
+const MASTERY_LOG_KEY = "fransk-mastery-log";
+const MASTERY_MIDPOINT_KEY = "fransk-mastery-midpoint";
+
+export function loadMasteryLog() {
+  try { return JSON.parse(localStorage.getItem(MASTERY_LOG_KEY) || "[]"); } catch { return []; }
+}
+
+export function touchMasteryCount(count) {
+  try {
+    const today = todayStr();
+    const log = loadMasteryLog();
+    const idx = log.findIndex(e => e.date === today);
+    if (idx >= 0) { log[idx] = { date: today, count }; } else { log.push({ date: today, count }); }
+    log.sort((a, b) => a.date.localeCompare(b.date));
+    localStorage.setItem(MASTERY_LOG_KEY, JSON.stringify(log.slice(-30)));
+  } catch {}
+}
+
+export function getMasteryMidpoint(masteredCount) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(MASTERY_MIDPOINT_KEY) || "null");
+    if (stored && stored.date === todayStr()) return stored.midpoint;
+  } catch {}
+  const log = loadMasteryLog();
+  const today = todayStr();
+  let lastKnown = null;
+  const counts = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const date = d.toISOString().split("T")[0];
+    let count = null;
+    if (date === today) { count = masteredCount; }
+    else {
+      const entry = log.find(e => e.date === date);
+      if (entry) { count = entry.count; lastKnown = entry.count; }
+      else if (lastKnown !== null) count = lastKnown;
+    }
+    if (count !== null) counts.push(count);
+  }
+  const midpoint = counts.length
+    ? Math.round(counts.reduce((s, v) => s + v, 0) / counts.length)
+    : masteredCount;
+  try { localStorage.setItem(MASTERY_MIDPOINT_KEY, JSON.stringify({ date: todayStr(), midpoint })); } catch {}
+  return midpoint;
+}
+
 // ─── Activity log ────────────────────────────────────────────────────────────
 const ACTIVITY_LOG_KEY = "fransk-activity-log";
 
