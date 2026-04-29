@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
-import { shuffle, checkQuizAnswer, logDailyAnswer, loadUserProfile } from "../utils.jsx";
+import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
 function buildSentencePrompt(words, grammarWords) {
@@ -12,17 +12,66 @@ function buildSentencePrompt(words, grammarWords) {
   const profile = loadUserProfile();
   return `Du er en fransktutor som lager oversettelsesoppgaver for en norsk A1/A2-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
-Elevens ordbank (bruk ord herfra): ${wordList}
+ORDBANK (bruk KUN disse franske ordene): ${wordList}
 
-Lag nøyaktig ${count} setninger på norsk som eleven skal oversette til fransk. Krav:
-- Bruk kun ord fra ordbanken over + grunnleggende grammatikk eleven kan
-- Maks 12 ord per setning
+Lag nøyaktig ${count} norske setninger som eleven skal oversette til fransk.
+
+KRAV:
+- KRITISK: Den franske oversettelsen MÅ KUN bruke ord fra ordbanken + konjugerte former av disse + grunnleggende funksjonsord: je, tu, il, elle, nous, vous, ils, elles, le, la, les, l', un, une, des, du, de, et, ou, ne, pas, que, qui, à, en, dans, sur, avec, très, bien, aussi, est, sont, suis, es
+- Ikke bruk franske ord som ikke finnes i listen
+- Maks 10 ord per setning, A1/A2-nivå
 - Naturlige, korrekte norske og franske setninger
-- Nivå: A1/A2 — enkle, tydelige setninger
 - Varier setningstyper (påstand, spørsmål, negasjon)
 
 Svar KUN med en gyldig JSON-array, ingen markdown:
 [{"no":"norsk setning","fr":"korrekt fransk oversettelse"}]`;
+}
+
+function normalizeSentence(s) {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.,!?;:«»"""]/g, " ")
+    .replace(/[''`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function wordLevenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+  return dp[m][n];
+}
+
+function checkSentenceAnswer(input, correctFr) {
+  const inp = normalizeSentence(input);
+  const cor = normalizeSentence(correctFr);
+
+  if (inp === cor) return { result: "correct", explanation: "" };
+
+  const inpWords = inp.split(" ").filter(Boolean);
+  const corWords = cor.split(" ").filter(Boolean);
+  const tol = (w) => Math.max(1, Math.floor(w.length / 5));
+
+  const missing = corWords.filter(cw => !inpWords.some(iw => iw === cw || wordLevenshtein(iw, cw) <= tol(cw)));
+  const extra = inpWords.filter(iw => !corWords.some(cw => iw === cw || wordLevenshtein(iw, cw) <= tol(cw)));
+  const matchRatio = (corWords.length - missing.length) / Math.max(corWords.length, 1);
+
+  const parts = [];
+  if (missing.length) parts.push(`Mangler: «${missing.join(" ")}»`);
+  if (extra.length) parts.push(`Ekstra ord: «${extra.join(" ")}»`);
+  if (!parts.length) parts.push("Feil rekkefølge på ordene");
+  const explanation = parts.join(" · ");
+
+  if (matchRatio >= 0.85) return { result: "close", explanation };
+  return { result: "wrong", explanation };
 }
 
 export default function SentenceTranslationScreen({
@@ -36,6 +85,7 @@ export default function SentenceTranslationScreen({
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState("");
   const [correctFr, setCorrectFr] = useState("");
+  const [explanation, setExplanation] = useState("");
   const [stats, setStats] = useState({ correct: 0, wrong: 0 });
   const [history, setHistory] = useState([]);
   const [done, setDone] = useState(false);
@@ -92,10 +142,9 @@ export default function SentenceTranslationScreen({
 
   const submit = () => {
     if (!input.trim() || !current) return;
-    const mockCard = { fr: current.fr, no: current.no };
-    const res = checkQuizAnswer(input, mockCard, true);
+    const { result: res, explanation: exp } = checkSentenceAnswer(input, current.fr);
     const passed = res !== "wrong";
-    setChecked(true); setResult(res); setCorrectFr(current.fr);
+    setChecked(true); setResult(res); setCorrectFr(current.fr); setExplanation(exp);
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     logDailyAnswer();
@@ -104,7 +153,7 @@ export default function SentenceTranslationScreen({
   const next = () => {
     if (idx + 1 >= sentences.length) { setDone(true); return; }
     setIdx(i => i + 1);
-    setInput(""); setChecked(false); setResult(""); setCorrectFr("");
+    setInput(""); setChecked(false); setResult(""); setCorrectFr(""); setExplanation("");
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -218,6 +267,9 @@ export default function SentenceTranslationScreen({
             {result === "close" && (
               <div style={{ background: "rgba(46,107,230,0.07)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 15, color: "var(--accent)", fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
+                {explanation ? (
+                  <div style={{ fontSize: 13, color: "var(--accent)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div>
+                ) : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)" }}>Fasit: <strong>{correctFr}</strong></div>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
@@ -227,7 +279,10 @@ export default function SentenceTranslationScreen({
             )}
             {result === "wrong" && (
               <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 15, color: "var(--color-error)", fontWeight: "bold", marginBottom: 6 }}>Prøv igjen neste gang</div>
+                <div style={{ fontSize: 15, color: "var(--color-error)", fontWeight: "bold", marginBottom: 6 }}>Feil svar</div>
+                {explanation ? (
+                  <div style={{ fontSize: 13, color: "var(--color-error)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div>
+                ) : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4 }}>Fasit: <strong>{correctFr}</strong></div>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>

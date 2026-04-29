@@ -28,6 +28,7 @@ import ChatScreen from "./screens/ChatScreen.jsx";
 import VoiceScreen from "./screens/VoiceScreen.jsx";
 import SayWordScreen from "./screens/SayWordScreen.jsx";
 import SentenceTranslationScreen from "./screens/SentenceTranslationScreen.jsx";
+import SaySentenceScreen from "./screens/SaySentenceScreen.jsx";
 
 function TranslateIcon() {
   return (
@@ -234,6 +235,7 @@ export default function App() {
       else if (rs === "oversett-grammatikken") setScreen("oversett-grammatikken");
       else if (rs === "grammatikk-flervalg") setScreen("grammatikk-flervalg");
       else if (rs === "oversett-setningen") setScreen("oversett-setningen");
+      else if (rs === "si-setningen") setScreen("si-setningen");
       else if (rs === "chat" && s.modeId) startMode(s.modeId);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -419,6 +421,7 @@ export default function App() {
     else if (id === "oversett-grammatikken") setScreen("oversett-grammatikken");
     else if (id === "grammatikk-flervalg") setScreen("grammatikk-flervalg");
     else if (id === "oversett-setningen") setScreen("oversett-setningen");
+    else if (id === "si-setningen") setScreen("si-setningen");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -760,6 +763,13 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <SentenceTranslationScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "si-setningen") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <SaySentenceScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 

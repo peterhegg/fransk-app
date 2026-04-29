@@ -637,6 +637,7 @@ const GRAMMATIKK_ITEMS = [
   { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate,   img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
   { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice, img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
   { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence,    img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
+  { id: "si-setningen",          label: "Si setningen!",         sub: "Hør og si hele setningen høyt",    Icon: IcoMic,         img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
   { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChat,        img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
   { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoVoice,       img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
 ];
