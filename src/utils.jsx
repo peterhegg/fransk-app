@@ -53,7 +53,8 @@ function levenshtein(a, b) {
 export function checkQuizAnswer(input, card, reverse = false) {
   const inp = normalizeAnswer(input);
   const field = reverse ? card.fr : card.no;
-  const variants = field.split(/\s*\/\s*/).map(normalizeAnswer);
+  const extraAccepted = reverse ? (card.frAccepted || []) : (card.noAccepted || []);
+  const variants = [...field.split(/\s*\/\s*/), ...extraAccepted].map(normalizeAnswer);
   if (variants.some(v => v === inp)) return "correct";
   const inpStripped = stripParticles(inp);
   if (inpStripped.length > 1 && variants.some(v => stripParticles(v) === inpStripped)) return "correct";
@@ -392,6 +393,7 @@ export const DEFAULT_PROFILE = {
   teacherName: "Pierre",
   teacherGender: "han",
   dysleksi: true,
+  exerciseRounds: 5,
 };
 
 export function loadUserProfile() {

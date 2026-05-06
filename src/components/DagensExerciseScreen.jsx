@@ -2,9 +2,9 @@ import { useState, useRef } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
 
-function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav }) {
+function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5 }) {
   const [allCards] = useState(() =>
-    Array.from({ length: 5 }, () => shuffle([...words])).flat()
+    Array.from({ length: exerciseRounds }, () => shuffle([...words])).flat()
   );
   const [idx, setIdx] = useState(0);
   const [noInput, setNoInput] = useState("");
@@ -93,7 +93,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
           )}
         </div>
 
-        <div style={{ fontSize: 11, color: "var(--text-subtle)" }}>Runde {round} av 5</div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)" }}>Runde {round} av {exerciseRounds}</div>
 
         {checked && (
           <button onClick={next} className="btn-shine"
@@ -128,6 +128,7 @@ export default function DagensExerciseScreen({
   onBack,
   speak, speaking,
   screen, showWords, onNav,
+  exerciseRounds = 5,
 }) {
   const isReverse = card?.reverse;
   const totalCards = queue.length + stats.correct + stats.wrong;
@@ -144,7 +145,7 @@ export default function DagensExerciseScreen({
   );
 
   if (phase === 0 && !topic) return (
-    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} />
+    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} />
   );
 
   if (phase === 0 && topic) return (

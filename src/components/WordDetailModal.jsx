@@ -22,6 +22,14 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
   const currentCat = isGrammar ? grammarTopic : getCatForWord(word);
   const [editingCat, setEditingCat] = useState(false);
   const [selectedCat, setSelectedCat] = useState(currentCat);
+  const [editingWord, setEditingWord] = useState(false);
+  const [editFr, setEditFr] = useState(word.fr);
+  const [editNo, setEditNo] = useState(word.no);
+  const [editPhonetic, setEditPhonetic] = useState(word.phonetic || "");
+  const [frAccepted, setFrAccepted] = useState(word.frAccepted || []);
+  const [noAccepted, setNoAccepted] = useState(word.noAccepted || []);
+  const [newFrAccepted, setNewFrAccepted] = useState("");
+  const [newNoAccepted, setNewNoAccepted] = useState("");
   const [dragY, setDragY] = useState(0);
   const [animated, setAnimated] = useState(false);
   const dragStartY = useRef(null);
@@ -68,6 +76,10 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
     setEditingCat(false);
   };
 
+  const saveWord = () => {
+    onSave({ ...word, fr: editFr.trim(), no: editNo.trim(), phonetic: editPhonetic.trim(), cat: selectedCat, frAccepted, noAccepted });
+  };
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
@@ -92,15 +104,91 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
         }}>
         <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 20px" }} />
 
-        <div style={{ textAlign: "center", marginBottom: 20, position: "relative" }}>
-          <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{word.fr}</div>
-          {word.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({word.phonetic})</div>}
-          <div style={{ fontSize: 18, color: "var(--text-subtle)" }}>{word.no}</div>
-          <button
-            onClick={() => speakFr(word.fr)}
-            style={{ position: "absolute", top: 0, right: 0, background: "var(--accent-bg)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 17 }}>
-            🔊
-          </button>
+        <div style={{ marginBottom: 20, position: "relative" }}>
+          {editingWord ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>Fransk</div>
+              <input value={editFr} onChange={e => setEditFr(e.target.value)}
+                style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-display)", fontSize: 18, padding: "10px 14px", outline: "none", fontStyle: "italic" }} />
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>Norsk</div>
+              <input value={editNo} onChange={e => setEditNo(e.target.value)}
+                style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "10px 14px", outline: "none" }} />
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>Fonetikk (valgfritt)</div>
+              <input value={editPhonetic} onChange={e => setEditPhonetic(e.target.value)} placeholder="f.eks. luh moo"
+                style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "10px 14px", outline: "none" }} />
+
+              <div style={{ marginTop: 8, background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aksepterte fr-stavemåter</div>
+                {frAccepted.map((v, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <span style={{ flex: 1, fontSize: 13, color: "var(--text)", fontStyle: "italic" }}>{v}</span>
+                    <button onClick={() => setFrAccepted(a => a.filter((_, j) => j !== i))}
+                      style={{ background: "none", border: "none", color: "var(--color-error)", fontSize: 16, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>×</button>
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                  <input value={newFrAccepted} onChange={e => setNewFrAccepted(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && newFrAccepted.trim()) { setFrAccepted(a => [...a, newFrAccepted.trim()]); setNewFrAccepted(""); } }}
+                    placeholder="Legg til fr-stavemåte…"
+                    style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 13, padding: "7px 10px", outline: "none" }} />
+                  <button onClick={() => { if (newFrAccepted.trim()) { setFrAccepted(a => [...a, newFrAccepted.trim()]); setNewFrAccepted(""); } }}
+                    style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 13, fontWeight: 600, padding: "7px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+</button>
+                </div>
+              </div>
+
+              <div style={{ background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aksepterte no-stavemåter</div>
+                {noAccepted.map((v, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <span style={{ flex: 1, fontSize: 13, color: "var(--text)" }}>{v}</span>
+                    <button onClick={() => setNoAccepted(a => a.filter((_, j) => j !== i))}
+                      style={{ background: "none", border: "none", color: "var(--color-error)", fontSize: 16, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>×</button>
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                  <input value={newNoAccepted} onChange={e => setNewNoAccepted(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && newNoAccepted.trim()) { setNoAccepted(a => [...a, newNoAccepted.trim()]); setNewNoAccepted(""); } }}
+                    placeholder="Legg til no-stavemåte…"
+                    style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 13, padding: "7px 10px", outline: "none" }} />
+                  <button onClick={() => { if (newNoAccepted.trim()) { setNoAccepted(a => [...a, newNoAccepted.trim()]); setNewNoAccepted(""); } }}
+                    style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 13, fontWeight: 600, padding: "7px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+</button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                <button onClick={() => setEditingWord(false)}
+                  style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)", fontSize: 14, padding: "11px", cursor: "pointer" }}>
+                  Avbryt
+                </button>
+                <button onClick={saveWord}
+                  style={{ flex: 2, background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontFamily: "var(--font-body)", fontWeight: 500, fontSize: 14, padding: "11px", cursor: "pointer" }}>
+                  Lagre
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", position: "relative" }}>
+              <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{word.fr}</div>
+              {word.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({word.phonetic})</div>}
+              <div style={{ fontSize: 18, color: "var(--text-subtle)" }}>{word.no}</div>
+              {(word.frAccepted?.length > 0 || word.noAccepted?.length > 0) && (
+                <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-subtle)" }}>
+                  {word.frAccepted?.length > 0 && <span>fr: {word.frAccepted.join(", ")} </span>}
+                  {word.noAccepted?.length > 0 && <span>no: {word.noAccepted.join(", ")}</span>}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10 }}>
+                <button onClick={() => speakFr(word.fr)}
+                  style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 17 }}>
+                  🔊
+                </button>
+                <button onClick={() => setEditingWord(true)}
+                  style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, height: 36, padding: "0 14px", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                  Rediger
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>

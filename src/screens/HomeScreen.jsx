@@ -538,6 +538,18 @@ function UserProfileModal({ onClose, onSave }) {
           </div>
         ))}
 
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Runder i glose-øvelsen</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[1, 2, 3, 4, 5].map(n => (
+              <button key={n} onClick={() => set("exerciseRounds", n)}
+                style={{ flex: 1, background: (profile.exerciseRounds || 5) === n ? "var(--accent)" : "var(--bg)", border: `1px solid ${(profile.exerciseRounds || 5) === n ? "var(--accent)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: (profile.exerciseRounds || 5) === n ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
           <div>
             <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Dysleksi-tilpasning</div>
@@ -690,7 +702,7 @@ function TaskCard({ item, onStart }) {
   );
 }
 
-export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords }) {
+export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -1050,7 +1062,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       {profileOpen && (
         <UserProfileModal
           onClose={() => setProfileOpen(false)}
-          onSave={(p) => { setProfile(p); setProfileOpen(false); }}
+          onSave={(p) => { setProfile(p); setProfileOpen(false); onProfileSave?.(p); }}
         />
       )}
 
