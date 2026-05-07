@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
-import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak } from "../utils.jsx";
+import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
+import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
 // Multiple-choice-only exercise with 0.25 pts correct / -2 pts wrong.
 // 20 questions: first 10 fr→no, then 10 no→fr (or fewer if bank is small).
@@ -33,6 +34,8 @@ export default function MultipleChoiceOnlyScreen({
   });
   const [done, setDone] = useState(false);
   const [finalStats, setFinalStats] = useState({ correct: 0, wrong: 0 });
+  const [pointsInfo, setPointsInfo] = useState(null);
+  const [fireworksDone, setFireworksDone] = useState(false);
 
   const card = queue[idx] || null;
   const isReverse = !!card?.reverse;
@@ -56,6 +59,13 @@ export default function MultipleChoiceOnlyScreen({
     logDailyAnswer();
     const gc = incrementAnswerCount();
     if (card.id) {
+      const word = words.find(w => w.id === card.id);
+      if (word) {
+        const ptsBefore = word.points || 0;
+        const updated = updateWordPoints({ ...word }, res, gc, 0.25);
+        const ptsAfter = updated.points || 0;
+        setPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      }
       setWords(prev => prev.map(w => {
         if (w.id !== card.id) return w;
         const ptsBefore = w.points || 0;
@@ -83,7 +93,7 @@ export default function MultipleChoiceOnlyScreen({
     const nextCard = queue[nextIdx];
     setIdx(nextIdx);
     setOptions(getQuizOptions(nextCard, words, !!nextCard.reverse));
-    setSelected(""); setChecked(false); setResult("");
+    setSelected(""); setChecked(false); setResult(""); setPointsInfo(null);
   };
 
   if (!card && !done) return (
@@ -139,6 +149,7 @@ export default function MultipleChoiceOnlyScreen({
   );
 
   return (
+  <>
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
@@ -190,7 +201,7 @@ export default function MultipleChoiceOnlyScreen({
           <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
             {result === "correct" ? (
               <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 15, color: "var(--color-success)", fontWeight: "bold", marginBottom: isReverse ? 8 : 0 }}>✓ Riktig! +0,25 poeng</div>
+                <div style={{ fontSize: 15, color: "var(--color-success)", fontWeight: "bold", marginBottom: isReverse ? 8 : 0 }}>✓ Riktig!</div>
                 {isReverse && (
                   <>
                     <div style={{ fontSize: 22, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
@@ -201,13 +212,15 @@ export default function MultipleChoiceOnlyScreen({
                     </div>
                   </>
                 )}
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             ) : (
               <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 15, color: "var(--color-error)", fontWeight: "bold", marginBottom: 4 }}>✗ Feil − 2 poeng</div>
+                <div style={{ fontSize: 15, color: "var(--color-error)", fontWeight: "bold", marginBottom: 4 }}>✗ Feil</div>
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{selected}</em></div>
                 <div style={{ fontSize: 15, color: "var(--text)" }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
                 {card.phonetic && <div style={{ fontSize: 12, color: "var(--accent)", opacity: 0.8, marginTop: 4 }}>({card.phonetic})</div>}
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             <button onClick={next} className="btn-shine"
@@ -225,5 +238,9 @@ export default function MultipleChoiceOnlyScreen({
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
+    {pointsInfo?.justMastered && !fireworksDone && (
+      <Fireworks onDone={() => setFireworksDone(true)} />
+    )}
+  </>
   );
 }

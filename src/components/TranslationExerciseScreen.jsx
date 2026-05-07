@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
-import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords } from "../utils.jsx";
+import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
+import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
 // Input-only translation exercise (no multiple choice).
 // Used for "Ordoversettelse" (glose bank) and "Oversett grammatikken" (grammar bank).
@@ -21,6 +22,8 @@ export default function TranslationExerciseScreen({
   const [result, setResult] = useState("");
   const [stats, setStats] = useState({ correct: 0, wrong: 0 });
   const [history, setHistory] = useState([]);
+  const [pointsInfo, setPointsInfo] = useState(null);
+  const [fireworksDone, setFireworksDone] = useState(false);
   const inputRef = useRef(null);
 
   const total = stats.correct + stats.wrong + queue.length;
@@ -54,6 +57,13 @@ export default function TranslationExerciseScreen({
     logDailyAnswer();
     const gc = incrementAnswerCount();
     if (card.id) {
+      const word = words.find(w => w.id === card.id);
+      if (word) {
+        const ptsBefore = word.points || 0;
+        const updated = updateWordPoints({ ...word }, res, gc);
+        const ptsAfter = updated.points || 0;
+        setPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      }
       setWords(prev => prev.map(w => {
         if (w.id !== card.id) return w;
         const ptsBefore = w.points || 0;
@@ -78,7 +88,7 @@ export default function TranslationExerciseScreen({
       const at = Math.min(3, remaining.length);
       const recycled = [...remaining.slice(0, at), { ...card }, ...remaining.slice(at)];
       setQueue(recycled); setCard(recycled[0]);
-      setInput(""); setChecked(false); setResult("");
+      setInput(""); setChecked(false); setResult(""); setPointsInfo(null);
       return;
     }
     if (!remaining.length) {
@@ -88,7 +98,7 @@ export default function TranslationExerciseScreen({
       return;
     }
     setQueue(remaining); setCard(remaining[0]);
-    setInput(""); setChecked(false); setResult("");
+    setInput(""); setChecked(false); setResult(""); setPointsInfo(null);
   };
 
   if (!card) return (
@@ -107,6 +117,7 @@ export default function TranslationExerciseScreen({
   );
 
   return (
+  <>
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
@@ -174,6 +185,7 @@ export default function TranslationExerciseScreen({
                     </div>
                   </>
                 )}
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             {result === "close" && (
@@ -186,6 +198,7 @@ export default function TranslationExerciseScreen({
                   <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                   <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             {result === "wrong" && (
@@ -198,6 +211,7 @@ export default function TranslationExerciseScreen({
                   <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                   <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             <button onClick={next} className="btn-shine"
@@ -215,5 +229,9 @@ export default function TranslationExerciseScreen({
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
+    {pointsInfo?.justMastered && !fireworksDone && (
+      <Fireworks onDone={() => setFireworksDone(true)} />
+    )}
+  </>
   );
 }
