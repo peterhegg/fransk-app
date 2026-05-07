@@ -165,6 +165,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
   const [selectedWord, setSelectedWord] = useState(null);
   const [customCats, setCustomCats] = useState(loadCustomCats);
   const [catManageOpen, setCatManageOpen] = useState(false);
+  const [grammarView, setGrammarView] = useState(false);
 
   const allCats = [...VOCAB_CAT_ORDER, ...customCats.filter(c => !VOCAB_CAT_ORDER.includes(c))];
 
@@ -325,18 +326,41 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        {grammarView ? (
+          <button onClick={() => { setGrammarView(false); setGramImportOpen(false); }} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Ordbanken</button>
+        ) : (
+          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
-          <span style={{ color: "var(--accent)" }}>◈</span> Ordsamlingen din
+          {grammarView ? (
+            <><span style={{ color: "var(--accent)" }}>◐</span> Grammatikkbanken</>
+          ) : (
+            <><span style={{ color: "var(--accent)" }}>◈</span> Ordsamlingen din</>
+          )}
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button onClick={() => setCatManageOpen(true)}
-            style={{ background: "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
-          <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
-            style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
-          <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
-            style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
-        </div>
+        {grammarView ? (
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={copyGrammarWords}
+              style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(46,107,230,0.4)"}`, borderRadius: 8, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "4px 10px", cursor: "pointer", transition: "all 0.3s" }}>
+              {gramCopied ? "✓" : "Kopier"}
+            </button>
+            {setGrammarWords && (
+              <button onClick={() => setGramImportOpen(o => !o)}
+                style={{ background: gramImportOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: gramImportOpen ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "4px 10px", cursor: "pointer" }}>
+                Importer
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => setCatManageOpen(true)}
+              style={{ background: "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
+            <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
+              style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
+            <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
+              style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
+          </div>
+        )}
       </div>
 
       {importOpen && (
@@ -375,74 +399,9 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
       )}
 
       <div style={{ padding: "24px 16px", flex: 1, overflowY: "auto" }}>
-        {/* Ordbank section */}
-        {words.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "30vh" }}>
-            <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 16 }}>◎</div>
-            <p style={{ color: "var(--text-subtle)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Gloseøvelse, så lagres ordene automatisk her.</p>
-          </div>
-        ) : (
-          <>
-            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-              {MASTERY_LABELS.map((label, i) => {
-                const count = words.filter(w => getWordTier(w.points || 0) === i).length;
-                const active = filterTier === i;
-                return (
-                  <button key={i} onClick={() => setFilterTier(active ? null : i)}
-                    style={{ background: active ? MASTERY_COLORS[i] + "22" : "none", border: `1px solid ${active ? MASTERY_COLORS[i] : "transparent"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: active ? MASTERY_COLORS[i] : "var(--text-subtle)" }}>
-                    <span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({count})
-                  </button>
-                );
-              })}
-              {filterTier !== null && (
-                <button onClick={() => setFilterTier(null)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, color: "var(--text-subtle)" }}>✕ Vis alle</button>
-              )}
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-              {allCats.map(cat => {
-                const catWords = words.filter(w => getCatForWord(w) === cat && (filterTier === null || getWordTier(w.points || 0) === filterTier));
-                if (!catWords.length) return null;
-                const closed = closedSections.has(cat);
-                return (
-                  <div key={cat}>
-                    <button onClick={() => toggleSection(cat)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(46,107,230,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
-                      <span>{cat} <span style={{ color: "rgba(46,107,230,0.4)" }}>({catWords.length})</span></span>
-                      <span style={{ fontSize: 10, color: "rgba(46,107,230,0.4)" }}>{closed ? "▸" : "▾"}</span>
-                    </button>
-                    {!closed && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {catWords.map((w, i) => (
-                          <WordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* Grammatikkbanken section */}
-        {(grammarByTopic.length > 0 || ungroupedGrammar.length > 0) && (
+        {grammarView ? (
+          /* --- Grammatikkbanken view --- */
           <div style={{ marginBottom: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, paddingBottom: 8, borderBottom: "2px solid var(--border)" }}>
-              <span style={{ color: "var(--accent)" }}>◐</span>
-              <span style={{ fontSize: 13, letterSpacing: 2, color: "var(--text-subtle)", textTransform: "uppercase", fontWeight: 500 }}>Grammatikkbanken</span>
-              <span style={{ fontSize: 11, color: "rgba(46,107,230,0.45)", marginLeft: "auto" }}>{grammarWords.length} strofer</span>
-              <button onClick={copyGrammarWords}
-                style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(46,107,230,0.35)"}`, borderRadius: 6, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", transition: "all 0.3s", whiteSpace: "nowrap" }}>
-                {gramCopied ? "✓" : "Kopier"}
-              </button>
-              {setGrammarWords && (
-                <button onClick={() => setGramImportOpen(o => !o)}
-                  style={{ background: gramImportOpen ? "rgba(46,107,230,0.12)" : "none", border: "1px solid rgba(46,107,230,0.35)", borderRadius: 6, color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 11, padding: "4px 10px", cursor: "pointer", whiteSpace: "nowrap" }}>
-                  Importer
-                </button>
-              )}
-            </div>
             {gramImportOpen && (
               <div style={{ background: panelBg, borderRadius: 10, padding: 12, marginBottom: 12 }}>
                 <textarea
@@ -465,31 +424,110 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
               </div>
             )}
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {grammarByTopic.map(({ topic, words: gw }) => {
-                const closed = closedSections.has("__gram__" + topic.id);
-                return (
-                  <div key={topic.id}>
-                    <button onClick={() => toggleSection("__gram__" + topic.id)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(46,107,230,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
-                      <span>{topic.title} <span style={{ color: "rgba(46,107,230,0.4)" }}>({gw.length})</span></span>
-                      <span style={{ fontSize: 10, color: "rgba(46,107,230,0.4)" }}>{closed ? "▸" : "▾"}</span>
-                    </button>
-                    {!closed && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {gw.map((w, i) => <GrammarWordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />)}
-                      </div>
-                    )}
+            {grammarByTopic.length === 0 && ungroupedGrammar.length === 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "30vh" }}>
+                <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 16 }}>◐</div>
+                <p style={{ color: "var(--text-subtle)", textAlign: "center", lineHeight: 1.9 }}>Ingen grammatikkord lagret ennå.<br />Øv på Grammatikkøvelse for å fylle banken.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {grammarByTopic.map(({ topic, words: gw }) => {
+                  const sortedGw = [...gw].sort((a, b) => (a.points || 0) - (b.points || 0));
+                  const closed = closedSections.has("__gram__" + topic.id);
+                  return (
+                    <div key={topic.id}>
+                      <button onClick={() => toggleSection("__gram__" + topic.id)}
+                        style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(46,107,230,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                        <span>{topic.title} <span style={{ color: "rgba(46,107,230,0.4)" }}>({sortedGw.length})</span></span>
+                        <span style={{ fontSize: 10, color: "rgba(46,107,230,0.4)" }}>{closed ? "▸" : "▾"}</span>
+                      </button>
+                      {!closed && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {sortedGw.map((w, i) => <GrammarWordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {ungroupedGrammar.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[...ungroupedGrammar].sort((a, b) => (a.points || 0) - (b.points || 0)).map((w, i) => (
+                      <GrammarWordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />
+                    ))}
                   </div>
-                );
-              })}
-              {ungroupedGrammar.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {ungroupedGrammar.map((w, i) => <GrammarWordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />)}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
+        ) : (
+          /* --- Ordbank view --- */
+          <>
+            {words.length === 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "30vh" }}>
+                <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 16 }}>◎</div>
+                <p style={{ color: "var(--text-subtle)", textAlign: "center", lineHeight: 1.9 }}>Ingen ord lagret ennå.<br />Øv på Gloseøvelse, så lagres ordene automatisk her.</p>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                  {MASTERY_LABELS.map((label, i) => {
+                    const count = words.filter(w => getWordTier(w.points || 0) === i).length;
+                    const active = filterTier === i;
+                    return (
+                      <button key={i} onClick={() => setFilterTier(active ? null : i)}
+                        style={{ background: active ? MASTERY_COLORS[i] + "22" : "none", border: `1px solid ${active ? MASTERY_COLORS[i] : "transparent"}`, borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: active ? MASTERY_COLORS[i] : "var(--text-subtle)" }}>
+                        <span style={{ color: MASTERY_COLORS[i] }}>●</span> {label} ({count})
+                      </button>
+                    );
+                  })}
+                  {filterTier !== null && (
+                    <button onClick={() => setFilterTier(null)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 20, padding: "3px 10px", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, color: "var(--text-subtle)" }}>✕ Vis alle</button>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+                  {allCats.map(cat => {
+                    const catWords = words
+                      .filter(w => getCatForWord(w) === cat && (filterTier === null || getWordTier(w.points || 0) === filterTier))
+                      .sort((a, b) => (a.points || 0) - (b.points || 0));
+                    if (!catWords.length) return null;
+                    const closed = closedSections.has(cat);
+                    return (
+                      <div key={cat}>
+                        <button onClick={() => toggleSection(cat)}
+                          style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "rgba(46,107,230,0.8)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                          <span>{cat} <span style={{ color: "rgba(46,107,230,0.4)" }}>({catWords.length})</span></span>
+                          <span style={{ fontSize: 10, color: "rgba(46,107,230,0.4)" }}>{closed ? "▸" : "▾"}</span>
+                        </button>
+                        {!closed && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            {catWords.map((w, i) => (
+                              <WordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Grammatikkbanken entry */}
+            {(grammarByTopic.length > 0 || ungroupedGrammar.length > 0) && (
+              <button onClick={() => setGrammarView(true)}
+                style={{ width: "100%", background: "var(--surface)", border: "1px solid rgba(46,107,230,0.3)", borderRadius: 12, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "var(--text)", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ color: "var(--accent)", fontSize: 18 }}>◐</span>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Grammatikkbanken</div>
+                    <div style={{ fontSize: 12, color: "var(--text-subtle)" }}>{grammarWords.length} strofer lagret</div>
+                  </div>
+                </div>
+                <span style={{ color: "var(--accent)", fontSize: 16 }}>▸</span>
+              </button>
+            )}
+          </>
         )}
       </div>
 
