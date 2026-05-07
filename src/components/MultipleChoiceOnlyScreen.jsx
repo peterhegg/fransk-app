@@ -75,7 +75,7 @@ export default function MultipleChoiceOnlyScreen({
     setChecked(true); setResult(res);
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     setFinalStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
-    logDailyAnswer();
+    logDailyAnswer("vocab");
     const gc = incrementAnswerCount();
     if (card.id) {
       const word = words.find(w => w.id === card.id);

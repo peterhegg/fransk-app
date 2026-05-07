@@ -574,7 +574,7 @@ export default function App() {
     const passed = result !== "wrong";
     setGrammarStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setGrammarHistory(h => [...h, passed ? "correct" : "wrong"]);
-    bumpSession();
+    bumpSession("grammar");
   };
 
   const nextGrammar = () => {
@@ -622,7 +622,7 @@ export default function App() {
     setGramOvChecked(true); setGramOvResult(result);
     setGramOvStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setGramOvHistory(h => [...h, passed ? "correct" : "wrong"]);
-    bumpSession();
+    bumpSession("grammar");
     const gc = incrementAnswerCount();
     if (gramOvCard?.id) {
       const gw = grammarWords.find(w => w.id === gramOvCard.id);
@@ -662,8 +662,8 @@ export default function App() {
   };
 
   // --- Session bump (called by all quiz submit handlers) ---
-  const bumpSession = () => {
-    logDailyAnswer();
+  const bumpSession = (type = "vocab") => {
+    logDailyAnswer(type);
     setSessionMsgs(s => {
       const n = s + 1;
       try { localStorage.setItem("fransk-session-msgs", JSON.stringify({ date: todayStr(), count: n })); } catch {}

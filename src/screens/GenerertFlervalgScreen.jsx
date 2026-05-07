@@ -132,7 +132,7 @@ export default function GenerertFlervalgScreen({
     setChecked(true);
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
-    logDailyAnswer();
+    logDailyAnswer("grammar");
   };
 
   const next = () => {

@@ -364,9 +364,11 @@ function touchDay(update) {
   saveActivityLog(log);
 }
 
-export function logDailyAnswer() { touchDay(e => ({ ...e, answers: (e.answers || 0) + 1 })); }
-export function logVocabSession() { touchDay(e => ({ ...e, vocab: (e.vocab || 0) + 1 })); }
-export function logGrammarSession() { touchDay(e => ({ ...e, grammar: (e.grammar || 0) + 1 })); }
+export function logDailyAnswer(type = "vocab") {
+  touchDay(e => ({ ...e, answers: (e.answers || 0) + 1, [type]: (e[type] || 0) + 1 }));
+}
+export function logVocabSession() {}
+export function logGrammarSession() {}
 export function logVoiceSession() { touchDay(e => ({ ...e, voice: (e.voice || 0) + 1 })); }
 
 // ─── Today's word answers ────────────────────────────────────────────────────

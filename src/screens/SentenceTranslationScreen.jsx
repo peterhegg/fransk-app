@@ -191,7 +191,7 @@ export default function SentenceTranslationScreen({
     setChecked(true); setResult(res); setCorrectFr(current.fr); setExplanation(exp);
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
-    logDailyAnswer();
+    logDailyAnswer("grammar");
     if (res !== "correct") fetchAiHint(current.no, current.fr, input, exp);
   };
 

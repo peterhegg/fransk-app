@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
-import { shuffle, loadUserProfile, logGrammarSession } from "../utils.jsx";
+import { shuffle, loadUserProfile, logDailyAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
@@ -154,6 +154,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
       const { matched } = matchSentence(transcript, current.fr);
       const res = matched ? "correct" : "incorrect";
       setResult(res);
+      logDailyAnswer("grammar");
       if (matched) {
         setStats(st => ({ correct: st.correct + 1, wrong: st.wrong }));
         setHistory(h => [...h, "correct"]);
@@ -174,7 +175,6 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
     setResult(null);
     setHeard("");
     if (idx + 1 >= sentences.length) {
-      logGrammarSession();
       setDone(true);
       return;
     }
