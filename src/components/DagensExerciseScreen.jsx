@@ -3,7 +3,18 @@ import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
 import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
-function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay }) {
+function AutoPlayToggle({ autoPlay, onToggle }) {
+  if (!onToggle) return <div style={{ width: 60 }} />;
+  return (
+    <button onClick={onToggle} title={autoPlay ? "Skru av automatisk uttale" : "Skru på automatisk uttale"}
+      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: autoPlay ? "var(--accent)" : "var(--text-subtle)", fontSize: 12, fontFamily: "var(--font-body)", padding: "4px 6px", borderRadius: 8, minWidth: 60, justifyContent: "flex-end" }}>
+      <span style={{ fontSize: 18 }}>{autoPlay ? "🔊" : "🔇"}</span>
+      <span style={{ fontSize: 10, letterSpacing: 0.5 }}>{autoPlay ? "På" : "Av"}</span>
+    </button>
+  );
+}
+
+function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay, onToggleAutoPlay }) {
   const [allCards] = useState(() =>
     Array.from({ length: exerciseRounds }, () => shuffle([...words])).flat()
   );
@@ -45,7 +56,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
           <span style={{ color: "var(--accent)" }}>{icon}</span>{title}
         </div>
-        <div style={{ width: 60 }} />
+        <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
       <div style={{ height: 3, background: "var(--border)" }}>
         <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / allCards.length) * 100}%`, transition: "width 0.3s" }} />
@@ -139,6 +150,7 @@ export default function DagensExerciseScreen({
   exerciseRounds = 5,
   pointsInfo,
   autoPlay,
+  onToggleAutoPlay,
 }) {
   const [fireworksDone, setFireworksDone] = useState(false);
 
@@ -158,12 +170,12 @@ export default function DagensExerciseScreen({
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
         <span style={{ color: "var(--accent)" }}>{icon}</span>{title}
       </div>
-      <div style={{ width: 60 }} />
+      <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
     </div>
   );
 
   if (phase === 0 && !topic) return (
-    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} autoPlay={autoPlay} />
+    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} autoPlay={autoPlay} onToggleAutoPlay={onToggleAutoPlay} />
   );
 
   if (phase === 0 && topic) return (

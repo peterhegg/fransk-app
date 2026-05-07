@@ -4,13 +4,24 @@ import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, inc
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
+function AutoPlayToggle({ autoPlay, onToggle }) {
+  if (!onToggle) return <div style={{ width: 60 }} />;
+  return (
+    <button onClick={onToggle} title={autoPlay ? "Skru av automatisk uttale" : "Skru på automatisk uttale"}
+      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: autoPlay ? "var(--accent)" : "var(--text-subtle)", fontSize: 12, fontFamily: "var(--font-body)", padding: "4px 6px", borderRadius: 8, minWidth: 60, justifyContent: "flex-end" }}>
+      <span style={{ fontSize: 18 }}>{autoPlay ? "🔊" : "🔇"}</span>
+      <span style={{ fontSize: 10, letterSpacing: 0.5 }}>{autoPlay ? "På" : "Av"}</span>
+    </button>
+  );
+}
+
 // Input-only translation exercise (no multiple choice).
 // Used for "Ordoversettelse" (glose bank) and "Oversett grammatikken" (grammar bank).
 export default function TranslationExerciseScreen({
   words, setWords, title, icon, emptyMsg,
   onBack, speak, speaking,
   screen, showWords, onNav,
-  onFinish, autoPlay,
+  onFinish, autoPlay, onToggleAutoPlay,
 }) {
   const [queue, setQueue] = useState(() => {
     if (!words.length) return [];
@@ -106,7 +117,7 @@ export default function TranslationExerciseScreen({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
-        <div style={{ width: 60 }} />
+        <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 16 }}>
         <div style={{ fontSize: 36, opacity: 0.3 }}>{icon}</div>
@@ -122,7 +133,7 @@ export default function TranslationExerciseScreen({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
-        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{done}/{total}</div>
+        <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
 
       <div style={{ height: 3, background: "var(--border)" }}>
