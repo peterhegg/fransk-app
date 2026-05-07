@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
+import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
 function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5 }) {
   const [allCards] = useState(() =>
@@ -129,7 +130,9 @@ export default function DagensExerciseScreen({
   speak, speaking,
   screen, showWords, onNav,
   exerciseRounds = 5,
+  pointsInfo,
 }) {
+  const [fireworksDone, setFireworksDone] = useState(false);
   const isReverse = card?.reverse;
   const totalCards = queue.length + stats.correct + stats.wrong;
   const done = stats.correct + stats.wrong;
@@ -260,7 +263,10 @@ export default function DagensExerciseScreen({
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
             {result === "correct" && (
-              <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%", fontSize: 16, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
+              <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
+                <div style={{ fontSize: 16, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
+                <PointsBadge pointsInfo={pointsInfo} />
+              </div>
             )}
             {result === "close" && (
               <div style={{ background: "rgba(46,107,230,0.07)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
@@ -268,6 +274,7 @@ export default function DagensExerciseScreen({
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)" }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
                 {card.phonetic && <div style={{ fontSize: 12, color: "rgba(46,107,230,0.55)", marginTop: 4 }}>{card.phonetic}</div>}
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             {result === "wrong" && (
@@ -281,6 +288,7 @@ export default function DagensExerciseScreen({
                     <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                     <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                   </div>
+                  <PointsBadge pointsInfo={pointsInfo} />
                 </div>
                 {topic && (
                   <div style={{ background: "rgba(46,107,230,0.05)", border: "1px solid rgba(46,107,230,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
@@ -304,6 +312,9 @@ export default function DagensExerciseScreen({
         </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {pointsInfo?.justMastered && !fireworksDone && (
+        <Fireworks onDone={() => setFireworksDone(true)} />
+      )}
     </div>
   );
 }

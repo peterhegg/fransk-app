@@ -1,6 +1,7 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { GRAMMAR_TOPICS } from "../constants.js";
 import BottomNav from "./BottomNav.jsx";
+import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
 // Shared screen for Gloseøvelse AND Grammatikkøvelse
 export default function QuizExerciseScreen({
@@ -9,8 +10,10 @@ export default function QuizExerciseScreen({
   onSubmit, onNext, onBack,
   speak, speaking,
   screen, showWords, onNav,
+  pointsInfo,
 }) {
   const inputRef = useRef(null);
+  const [fireworksDone, setFireworksDone] = useState(false);
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
   const isFromBank = !!card?.id;
@@ -37,6 +40,7 @@ export default function QuizExerciseScreen({
   );
 
   return (
+    <>
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
@@ -108,6 +112,7 @@ export default function QuizExerciseScreen({
             {result === "correct" && (
               <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 16, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             {result === "close" && (
@@ -120,6 +125,7 @@ export default function QuizExerciseScreen({
                   <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                   <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                <PointsBadge pointsInfo={pointsInfo} />
               </div>
             )}
             {result === "wrong" && (
@@ -133,6 +139,7 @@ export default function QuizExerciseScreen({
                     <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                     <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                   </div>
+                  <PointsBadge pointsInfo={pointsInfo} />
                 </div>
                 {grammarTip && (
                   <div style={{ background: "rgba(46,107,230,0.05)", border: "1px solid rgba(46,107,230,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
@@ -157,5 +164,9 @@ export default function QuizExerciseScreen({
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
+    {pointsInfo?.justMastered && !fireworksDone && (
+      <Fireworks onDone={() => setFireworksDone(true)} />
+    )}
+    </>
   );
 }

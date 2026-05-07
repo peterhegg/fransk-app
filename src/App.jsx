@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   MODES, EXIT_PHRASES,
-  DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS,
+  DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS, MASTERY_LABELS,
   PROXY_URL, APP_TOKEN,
   gold, cream, card, brd,
 } from "./constants.js";
@@ -15,7 +15,7 @@ import {
   logDailyAnswer, logVocabSession, logGrammarSession, logWordAnswer,
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
-  loadUserProfile,
+  loadUserProfile, getWordTier,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -64,8 +64,9 @@ export default function App() {
   const [noWordsMsg, setNoWordsMsg] = useState(false);
   const [dagensLoading, setDagensLoading] = useState(false);
   const [exerciseRounds, setExerciseRounds] = useState(() => loadUserProfile().exerciseRounds || 5);
-  const [pointsToast, setPointsToast] = useState(null);
-  const pointsToastTimer = useRef(null);
+  const [dagensPointsInfo, setDagensPointsInfo] = useState(null);
+  const [glosePointsInfo, setGlosePointsInfo] = useState(null);
+  const [gramOvPointsInfo, setGramOvPointsInfo] = useState(null);
 
   // --- Speech ---
   const [speaking, setSpeaking] = useState(false);
@@ -442,40 +443,36 @@ export default function App() {
     const gc = incrementAnswerCount();
     const inBank = words.find(w => w.fr === dagensCard.fr);
     if (inBank) {
-      let ptsDelta = 0;
       setWords(prev => {
         const next = prev.map(w => {
           if (w.id !== inBank.id) return w;
           const ptsBefore = w.points || 0;
           const updated = updateWordPoints(w, result, gc);
-          ptsDelta = (updated.points || 0) - ptsBefore;
-          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, updated.points, result);
+          const ptsAfter = updated.points || 0;
+          setDagensPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, ptsAfter, result);
           const srOverride = updated._srOverride;
           const { _srOverride: _, ...cleanUpdated } = updated;
           if (srOverride) return { ...cleanUpdated, ...srOverride };
-          if ((cleanUpdated.points || 0) < MASTERY_POINTS) {
+          if (ptsAfter < MASTERY_POINTS) {
             const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
             return { ...cleanUpdated, level: nl, nextReview: nr };
           }
           return cleanUpdated;
         });
-        showPointsToast(ptsDelta, next, null);
         return next;
       });
     } else if (result === "correct") {
       logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, 1, result);
+      setDagensPointsInfo({ pts: 1, ptsBefore: 0, tierBefore: 0, tierAfter: getWordTier(1), justMastered: false });
       const currentGoalId = getActiveGoal(words, loadGoalOrder()).id;
       const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1, goal: currentGoalId };
-      setWords(prev => {
-        const next = prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw];
-        showPointsToast(1, next, null);
-        return next;
-      });
+      setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
 
   const nextDagens = () => {
-    setDagensInput(""); setDagensChecked(false); setDagensResult("");
+    setDagensInput(""); setDagensChecked(false); setDagensResult(""); setDagensPointsInfo(null);
     const remaining = dagensQueue.slice(1);
     const passed = dagensResult !== "wrong";
     if (!passed) {
@@ -522,30 +519,30 @@ export default function App() {
     bumpSession();
     const gc = incrementAnswerCount();
     if (gloseCard.id) {
-      let ptsDelta = 0;
       setWords(prev => {
         const next = prev.map(w => {
           if (w.id !== gloseCard.id) return w;
           const ptsBefore = w.points || 0;
           const updated = updateWordPoints(w, result, gc);
-          ptsDelta = (updated.points || 0) - ptsBefore;
-          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, updated.points, result);
+          const ptsAfter = updated.points || 0;
+          setGlosePointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, ptsAfter, result);
           const srOverride = updated._srOverride;
           const { _srOverride: _, ...cleanUpdated } = updated;
           if (srOverride) return { ...cleanUpdated, ...srOverride };
-          if ((cleanUpdated.points || 0) < MASTERY_POINTS) {
+          if (ptsAfter < MASTERY_POINTS) {
             const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
             return { ...cleanUpdated, level: nl, nextReview: nr };
           }
           return cleanUpdated;
         });
-        showPointsToast(ptsDelta, next, null);
         return next;
       });
     }
   };
 
   const nextGlose = () => {
+    setGlosePointsInfo(null);
     const remaining = gloseQueue.slice(1);
     const passed = gloseResult !== "wrong";
     if (!passed) {
@@ -630,30 +627,30 @@ export default function App() {
     bumpSession();
     const gc = incrementAnswerCount();
     if (gramOvCard?.id) {
-      let ptsDelta = 0;
       setGrammarWords(prev => {
         const next = prev.map(w => {
           if (w.id !== gramOvCard.id) return w;
           const ptsBefore = w.points || 0;
           const updated = updateWordPoints(w, result, gc);
-          ptsDelta = (updated.points || 0) - ptsBefore;
-          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, updated.points, result);
+          const ptsAfter = updated.points || 0;
+          setGramOvPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, ptsAfter, result);
           const srOverride = updated._srOverride;
           const { _srOverride: _, ...cleanUpdated } = updated;
           if (srOverride) return { ...cleanUpdated, ...srOverride };
-          if ((cleanUpdated.points || 0) < MASTERY_POINTS) {
+          if (ptsAfter < MASTERY_POINTS) {
             const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
             return { ...cleanUpdated, level: nl, nextReview: nr };
           }
           return cleanUpdated;
         });
-        showPointsToast(ptsDelta, null, next);
         return next;
       });
     }
   };
 
   const nextGramOvelse = () => {
+    setGramOvPointsInfo(null);
     const remaining = gramOvQueue.slice(1);
     if (!remaining.length) { logGrammarSession(); setStreak(touchStreak()); setScreen("home"); return; }
     setGramOvQueue(remaining); setGramOvCard(remaining[0]);
@@ -663,16 +660,7 @@ export default function App() {
   };
 
   // --- Points toast ---
-  const showPointsToast = (delta, newWords, newGrammarWords) => {
-    if (delta === 0) return;
-    const allWords = [...(newWords || words), ...(newGrammarWords || grammarWords)];
-    const total = allWords.reduce((s, w) => s + (w.points || 0), 0);
-    if (pointsToastTimer.current) clearTimeout(pointsToastTimer.current);
-    setPointsToast({ delta, total, key: Date.now() });
-    pointsToastTimer.current = setTimeout(() => setPointsToast(null), 1800);
-  };
-
-  // --- Session bump (called by all quiz submit handlers) ---
+    // --- Session bump (called by all quiz submit handlers) ---
   const bumpSession = () => {
     logDailyAnswer();
     setSessionMsgs(s => {
@@ -712,30 +700,17 @@ export default function App() {
     </>
   );
 
-  const pointsToastEl = pointsToast && (
-    <div key={pointsToast.key} style={{ position: "fixed", top: 72, left: "50%", transform: "translateX(-50%)", zIndex: 9999, pointerEvents: "none", animation: "ptToastIn 0.22s ease both" }}>
-      <div style={{ background: pointsToast.delta > 0 ? "rgba(0,184,148,0.95)" : "rgba(225,112,85,0.95)", color: "white", borderRadius: 20, padding: "8px 18px", fontSize: 14, fontWeight: 600, fontFamily: "var(--font-body)", boxShadow: "0 4px 16px rgba(0,0,0,0.18)", display: "flex", gap: 10, alignItems: "center" }}>
-        <span>{pointsToast.delta > 0 ? `+${pointsToast.delta}` : pointsToast.delta}</span>
-        <span style={{ opacity: 0.7, fontSize: 11 }}>•</span>
-        <span style={{ opacity: 0.85, fontSize: 13 }}>Totalt: {pointsToast.total} pts</span>
-      </div>
-      <style>{`@keyframes ptToastIn { from { opacity:0; transform: translateX(-50%) translateY(-8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }`}</style>
-    </div>
-  );
-
   if (screen === "dagens-glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} exerciseRounds={exerciseRounds} {...navProps} />
-      {pointsToastEl}
+      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} exerciseRounds={exerciseRounds} pointsInfo={dagensPointsInfo} {...navProps} />
     </>
   );
 
   if (screen === "glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
-      {pointsToastEl}
+      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={glosePointsInfo} {...navProps} />
     </>
   );
 
@@ -765,8 +740,7 @@ export default function App() {
   if (screen === "grammatikk-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
-      {pointsToastEl}
+      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={gramOvPointsInfo} {...navProps} />
     </>
   );
 
