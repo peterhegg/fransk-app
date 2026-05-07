@@ -24,26 +24,21 @@ function buildPrompt(words, grammarWords) {
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
   const lvlInstr = levelInstructions(lvl);
-  return `Du er en fransktutor. Lag ${count} flervalgsoppgaver for norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi (korte, enkle setninger)" : ""}.
+  const n = Math.min(6, count);
+  return `Lag ${n} franske flervalgsoppgaver for norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
-ORDBANK (bruk KUN disse franske ordene + grunnleggende funksjonsord: je, tu, il, elle, nous, vous, ils, elles, le, la, les, l', un, une, des, du, de, et, ou, ne, pas, que, qui, à, en, dans, sur, avec, très, bien, aussi, est, sont, suis, es, a, ont, va, ai):
+ORD (bruk KUN disse + funksjonsord: je/tu/il/elle/nous/vous/ils/elles/le/la/les/l'/un/une/des/du/de/et/à/en/dans/est/sont/suis/a/ont/ne/pas):
 ${wordList}
 
-Veksle mellom disse to typene oppgaver (ca. halvparten av hver):
-Type A: Vis en NORSK setning → eleven velger riktig FRANSK oversettelse blant 4 alternativer (felt "direction":"no-fr")
-Type B: Vis en FRANSK setning → eleven velger riktig NORSK oversettelse blant 4 alternativer (felt "direction":"fr-no")
+Nivå (${lvl}): ${lvlInstr}
 
-NIVÅKRAV (${lvl}): ${lvlInstr}
+Ca. halvparten type A (norsk→fransk) og halvparten type B (fransk→norsk).
+Alternativene MÅ være nesten identiske — kun ett ord forskjell (pronomen, artikkel, verbform eller preposisjon).
 
-KRITISK – alternativene skal være VANSKELIGE og NÆRE hverandre:
-- Alternativene skal se svært like ut — kun ett eller to ord skiller dem
-- Ikke bruk åpenbart gale alternativer
-- Distraktorene skal teste vanlige feil på akkurat dette nivået
+Svar KUN som JSON-array:
+[{"prompt":"setningen","correct":"riktig svar","distractors":["nesten-riktig1","nesten-riktig2","nesten-riktig3"],"direction":"no-fr","tip":"spesifikk forklaring"}]
 
-En SPESIFIKK norsk forklaring av akkurat den grammatiske forskjellen i denne oppgaven (ikke generelle regler).
-
-Svar KUN som JSON-array uten markdown:
-[{"prompt":"setningen som vises","correct":"riktig svar","distractors":["nesten-riktig1","nesten-riktig2","nesten-riktig3"],"direction":"no-fr eller fr-no","tip":"spesifikk forklaring for akkurat denne setningen"}]`;
+direction er "no-fr" eller "fr-no". tip forklarer akkurat denne forskjellen, ikke generelle regler.`;
 }
 
 function FlervalgIcon({ size = 18, opacity = 1 }) {
@@ -70,9 +65,12 @@ export default function GenerertFlervalgScreen({
   const [done, setDone] = useState(false);
   const abortRef = useRef(null);
 
+  const MIN_WORDS = 6;
+
   useEffect(() => {
     const allWords = [...(words || []), ...(grammarWords || [])];
     if (!allWords.length) { setLoading(false); setError("no-words"); return; }
+    if (allWords.length < MIN_WORDS) { setLoading(false); setError("too-few"); return; }
     if (!isOnline) { setLoading(false); setError("offline"); return; }
     fetchQuestions();
     return () => abortRef.current?.abort();
@@ -90,7 +88,7 @@ export default function GenerertFlervalgScreen({
         signal: controller.signal,
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 1400,
+          max_tokens: 2500,
           system: "You are a French exercise generator. Respond only with a valid JSON array, no markdown.",
           messages: [{ role: "user", content: prompt }],
         }),
@@ -102,10 +100,19 @@ export default function GenerertFlervalgScreen({
         const parsed = JSON.parse(match[0]);
         if (Array.isArray(parsed) && parsed.length) {
           const prepared = parsed
-            .filter(q => q.prompt && q.correct && Array.isArray(q.distractors) && q.distractors.length >= 3)
+            .filter(q => {
+              const p = q.prompt || q.no;
+              const c = q.correct || q.fr;
+              const d = Array.isArray(q.distractors) ? q.distractors : [];
+              return p && c && d.length >= 2;
+            })
             .map(q => {
-              const opts = shuffle([q.correct, ...q.distractors.slice(0, 3)]);
-              return { ...q, options: opts };
+              const p = q.prompt || q.no;
+              const c = q.correct || q.fr;
+              const d = q.distractors || [];
+              const dir = q.direction || "no-fr";
+              const opts = shuffle([c, ...d.slice(0, 3)]);
+              return { prompt: p, correct: c, distractors: d, direction: dir, tip: q.tip || "", options: opts };
             });
           if (prepared.length) { setQuestions(prepared); setLoading(false); return; }
         }
@@ -161,10 +168,18 @@ export default function GenerertFlervalgScreen({
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
         <div style={{ fontSize: 14, color: "var(--text-subtle)", lineHeight: 1.8 }}>
           {error === "no-words" ? "Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord."
+            : error === "too-few" ? `Du trenger minst ${MIN_WORDS} ord i ordbanken for denne øvelsen. Gjør noen Dagens øvelser først.`
             : error === "offline" ? "Ingen internettforbindelse — Claude er ikke tilgjengelig."
-            : "Kunne ikke hente oppgaver. Prøv igjen."}
+            : error === "parse" ? "Claude klarte ikke å generere oppgaver denne gangen. Prøv igjen — det hjelper av og til å prøve på nytt."
+            : "Nettverksfeil. Sjekk forbindelsen og prøv igjen."}
         </div>
-        <button onClick={onBack} style={{ background: "var(--accent-bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", gap: 10 }}>
+          {(error === "parse" || error === "network") && (
+            <button onClick={() => { setError(""); setLoading(true); fetchQuestions(); }}
+              style={{ background: "var(--accent)", border: "none", borderRadius: 12, color: "white", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+          )}
+          <button onClick={onBack} style={{ background: "var(--accent-bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
