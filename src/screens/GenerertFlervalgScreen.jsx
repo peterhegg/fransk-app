@@ -3,6 +3,18 @@ import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
+function levelInstructions(level) {
+  const l = level || "A1/A2";
+  if (l === "A1") return "Maks 5 ord. Kun presens, enkle pronomen. Alternativene: bytt kun pronomen eller artikkel.";
+  if (l === "A1/A2") return "Maks 7 ord. Presens, negasjon. Alternativene: bytt pronomen, verbform eller artikkel.";
+  if (l === "A2") return "8-9 ord. Presens og passé composé. Alternativene: bytt aux (avoir/être), verbform, artikkel.";
+  if (l === "A2/B1") return "9-11 ord. Passé composé, imparfait. Alternativene: bytt tidsform, preposisjon, pronomen.";
+  if (l === "B1") return "10-13 ord. Imparfait/futur/objektpronomen. Alternativene: bytt tidsform, pronomen (le/lui/y/en).";
+  if (l === "B1/B2") return "12-15 ord. Futur antérieur, kondisjonalis, relativsetninger. Alternativene er nesten identiske men med ulik modus/tidsform.";
+  if (l === "B2") return "Komplekse setninger med subjonctif, kondisjonalis, passiv. Alternativene er subtile.";
+  return "Avansert grammatikk. Alternativene er svært like — kun stil og register skiller dem.";
+}
+
 function buildPrompt(words, grammarWords) {
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
@@ -10,7 +22,9 @@ function buildPrompt(words, grammarWords) {
   const wordList = sample.map(w => `${w.fr} = ${w.no}`).join(", ");
   const count = Math.min(10, Math.max(4, Math.floor(allWords.length / 5)));
   const profile = loadUserProfile();
-  return `Du er en fransktutor. Lag ${count} flervalgsoppgaver for norsk A1/A2-elev${profile.dysleksi ? " med dysleksi (korte, enkle setninger)" : ""}.
+  const lvl = profile.level || "A1/A2";
+  const lvlInstr = levelInstructions(lvl);
+  return `Du er en fransktutor. Lag ${count} flervalgsoppgaver for norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi (korte, enkle setninger)" : ""}.
 
 ORDBANK (bruk KUN disse franske ordene + grunnleggende funksjonsord: je, tu, il, elle, nous, vous, ils, elles, le, la, les, l', un, une, des, du, de, et, ou, ne, pas, que, qui, à, en, dans, sur, avec, très, bien, aussi, est, sont, suis, es, a, ont, va, ai):
 ${wordList}
@@ -19,10 +33,12 @@ Veksle mellom disse to typene oppgaver (ca. halvparten av hver):
 Type A: Vis en NORSK setning → eleven velger riktig FRANSK oversettelse blant 4 alternativer (felt "direction":"no-fr")
 Type B: Vis en FRANSK setning → eleven velger riktig NORSK oversettelse blant 4 alternativer (felt "direction":"fr-no")
 
+NIVÅKRAV (${lvl}): ${lvlInstr}
+
 KRITISK – alternativene skal være VANSKELIGE og NÆRE hverandre:
-- Bruk nesten-identiske setninger som tester pronomen (ils/nous/je), verbbøying (parlent/parlons/parle), artikkel (le/la/les/un/une), preposisjon (dans/en/à), ordstilling
 - Alternativene skal se svært like ut — kun ett eller to ord skiller dem
 - Ikke bruk åpenbart gale alternativer
+- Distraktorene skal teste vanlige feil på akkurat dette nivået
 
 En SPESIFIKK norsk forklaring av akkurat den grammatiske forskjellen i denne oppgaven (ikke generelle regler).
 

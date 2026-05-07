@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { GRAMMAR_TOPICS, PROXY_URL, APP_TOKEN } from "../constants.js";
+import { loadUserProfile } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
@@ -39,9 +40,10 @@ export default function QuizExerciseScreen({
     hintAbortRef.current = controller;
     setAiHintLoading(true);
     setAiHint(null);
+    const lvl = (loadUserProfile().level) || "A1/A2";
     const question = card.reverse ? `"${card.no}" (norsk → fransk)` : `"${card.fr}" (oversett til norsk)`;
     const correct = card.reverse ? card.fr : card.no;
-    const prompt = `Norsk A1/A2-elev svarte galt på et franskkort.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — for akkurat disse ordene. Ikke generelle regler. Gi én huskeregel knyttet direkte til akkurat dette ordet/disse ordene.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+    const prompt = `Norsk ${lvl}-elev svarte galt på et franskkort.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — for akkurat disse ordene. Ikke generelle regler. Gi én huskeregel knyttet direkte til akkurat dette ordet/disse ordene.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
     fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },

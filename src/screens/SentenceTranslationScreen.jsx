@@ -3,6 +3,18 @@ import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
+function levelInstructions(level) {
+  const l = level || "A1/A2";
+  if (l === "A1") return "Maks 6 ord per setning. Kun presens, enkle pronomen, ingen negasjon.";
+  if (l === "A1/A2") return "Maks 8 ord per setning. Presens, enkel negasjon, vanlige pronomen.";
+  if (l === "A2") return "Maks 9 ord. Presens og passé composé, negasjon, spørsmål.";
+  if (l === "A2/B1") return "10-12 ord. Bruk passé composé, imparfait og enkle konjunksjoner som parce que/mais.";
+  if (l === "B1") return "10-14 ord. Bruk imparfait, futur simple, pronominale verb og objektpronomen (le/la/les/lui/leur).";
+  if (l === "B1/B2") return "12-15 ord. Bruk futur antérieur, kondisjonalis, relativsetninger med qui/que/dont.";
+  if (l === "B2") return "Komplekse setninger. Subjonctif, kondisjonalis, passiv, indirekte tale.";
+  return "14+ ord. Avansert grammatikk: subjonctif, passiv, inversjon, litterær stil.";
+}
+
 function buildSentencePrompt(words, grammarWords) {
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
@@ -10,16 +22,15 @@ function buildSentencePrompt(words, grammarWords) {
   const wordList = sample.map(w => `${w.fr} = ${w.no}`).join(", ");
   const count = Math.min(10, Math.max(2, Math.floor(allWords.length / 5)));
   const profile = loadUserProfile();
-  return `Du er en fransktutor som lager oversettelsesoppgaver for en norsk A1/A2-elev${profile.dysleksi ? " med dysleksi" : ""}.
+  const lvl = profile.level || "A1/A2";
+  const lvlInstr = levelInstructions(lvl);
+  return `Du er en fransktutor som lager oversettelsesoppgaver for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
-ORDBANK (bruk KUN disse franske ordene): ${wordList}
+ORDBANK (bruk KUN disse franske ordene + konjugerte former + funksjonsord): ${wordList}
 
 Lag nøyaktig ${count} norske setninger som eleven skal oversette til fransk.
 
-KRAV:
-- KRITISK: Den franske oversettelsen MÅ KUN bruke ord fra ordbanken + konjugerte former av disse + grunnleggende funksjonsord: je, tu, il, elle, nous, vous, ils, elles, le, la, les, l', un, une, des, du, de, et, ou, ne, pas, que, qui, à, en, dans, sur, avec, très, bien, aussi, est, sont, suis, es
-- Ikke bruk franske ord som ikke finnes i listen
-- Maks 10 ord per setning, A1/A2-nivå
+NIVÅKRAV (${lvl}): ${lvlInstr}
 - Naturlige, korrekte norske og franske setninger
 - Varier setningstyper (påstand, spørsmål, negasjon)
 
@@ -159,9 +170,10 @@ export default function SentenceTranslationScreen({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 250,
           system: "You are a French tutor. Respond only with a valid JSON object, no markdown.",
-          messages: [{ role: "user", content:
-            `Norsk A1/A2-elev oversatte en setning feil.\nNorsk: "${noSentence}"\nKorrekt fransk: "${frSentence}"\nEleven svarte: "${userInput}"${wordDiff ? `\nFeil: ${wordDiff}` : ""}\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt for akkurat disse ordene — ikke generelle regler. Gi én huskeregel knyttet til akkurat disse ordene/strukturen i denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
-          }],
+          messages: [{ role: "user", content: (() => {
+            const profile = loadUserProfile();
+            return `Norsk ${profile.level || "A1/A2"}-elev oversatte en setning feil.\nNorsk: "${noSentence}"\nKorrekt fransk: "${frSentence}"\nEleven svarte: "${userInput}"${wordDiff ? `\nFeil: ${wordDiff}` : ""}\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt for akkurat disse ordene — ikke generelle regler. Gi én huskeregel knyttet til akkurat disse ordene/strukturen i denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+          })() }],
         }),
       });
       const data = await res.json();

@@ -4,6 +4,16 @@ import { shuffle, loadUserProfile, logGrammarSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
+function levelInstructions(level) {
+  const l = level || "A1/A2";
+  if (l === "A1") return "Maks 5 ord. Kun presens, enkle pronomen.";
+  if (l === "A1/A2") return "Maks 8 ord. Presens, enkel negasjon.";
+  if (l === "A2") return "8-9 ord. Presens og passé composé, spørsmål.";
+  if (l === "A2/B1") return "9-11 ord. Passé composé, imparfait, konjunksjoner.";
+  if (l === "B1") return "10-13 ord. Imparfait, futur, objektpronomen.";
+  return "12+ ord. Komplekse strukturer med variert grammatikk.";
+}
+
 function buildPrompt(words, grammarWords) {
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
@@ -11,15 +21,14 @@ function buildPrompt(words, grammarWords) {
   const wordList = sample.map(w => `${w.fr} = ${w.no}`).join(", ");
   const count = Math.min(8, Math.max(2, Math.floor(allWords.length / 5)));
   const profile = loadUserProfile();
-  return `Du er en fransktutor som lager uttalelsesoppgaver for en norsk A1/A2-elev${profile.dysleksi ? " med dysleksi" : ""}.
+  const lvl = profile.level || "A1/A2";
+  return `Du er en fransktutor som lager uttalelsesoppgaver for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
-ORDBANK (bruk KUN disse franske ordene): ${wordList}
+ORDBANK (bruk KUN disse franske ordene + konjugerte former + funksjonsord): ${wordList}
 
 Lag nøyaktig ${count} norske setninger som eleven skal si høyt på fransk.
 
-KRAV:
-- KRITISK: Den franske oversettelsen MÅ KUN bruke ord fra ordbanken + konjugerte former av disse + grunnleggende funksjonsord: je, tu, il, elle, nous, vous, ils, elles, le, la, les, l', un, une, des, du, de, et, ou, ne, pas, que, qui, à, en, dans, sur, avec, très, bien, aussi, est, sont, suis, es
-- Maks 8 ord per setning, A1/A2-nivå
+NIVÅKRAV (${lvl}): ${levelInstructions(lvl)}
 - Enkle setninger som er lette å uttale
 
 Svar KUN med en gyldig JSON-array, ingen markdown:
