@@ -258,32 +258,38 @@ export function getDue(words, globalCount) {
 // Tier C (well-learned / mastered):       points ≥18  → 5%
 // Falls back to random shuffle if tier A is too small to fill the 60% quota.
 export function selectExerciseWords(words, count = 20) {
-  const tierA = words.filter(w => (w.points || 0) < 8);
-  const tierB = words.filter(w => (w.points || 0) >= 8 && (w.points || 0) < 18);
-  const tierC = words.filter(w => (w.points || 0) >= 18);
+  if (words.length <= count) return shuffle([...words]);
 
-  const nA = Math.round(count * 0.60);
-  const nC = Math.max(1, Math.round(count * 0.05));
-  const nB = count - nA - nC;
+  const tierA = shuffle(words.filter(w => (w.points || 0) < 8));
+  const tierB = shuffle(words.filter(w => (w.points || 0) >= 8 && (w.points || 0) < 18));
+  const tierC = shuffle(words.filter(w => (w.points || 0) >= 18));
 
-  if (tierA.length < nA) {
-    return shuffle([...words]).slice(0, count);
-  }
+  const target = Math.min(count, words.length);
+  const picked = [];
+  const used = new Set();
 
-  const picked = [
-    ...shuffle([...tierA]).slice(0, nA),
-    ...shuffle([...tierB]).slice(0, nB),
-    ...shuffle([...tierC]).slice(0, nC),
-  ];
+  const take = (pool, n) => {
+    for (const w of pool) {
+      if (picked.length >= target) break;
+      if (n <= 0) break;
+      if (!used.has(w.id ?? w.fr)) { picked.push(w); used.add(w.id ?? w.fr); n--; }
+    }
+  };
 
-  const extra = count - picked.length;
-  if (extra > 0) {
-    const pickedIds = new Set(picked.map(w => w.id));
-    const remaining = tierA.filter(w => !pickedIds.has(w.id));
-    picked.push(...shuffle(remaining).slice(0, extra));
-  }
+  const nA = Math.round(target * 0.60);
+  const nC = Math.max(0, Math.round(target * 0.05));
+  const nB = target - nA - nC;
 
-  return shuffle(picked).slice(0, count);
+  take(tierA, nA);
+  take(tierB, nB);
+  take(tierC, nC);
+
+  // Fill remaining slots from any tier in priority order
+  if (picked.length < target) take(tierA, target);
+  if (picked.length < target) take(tierB, target);
+  if (picked.length < target) take(tierC, target);
+
+  return shuffle(picked);
 }
 
 export function scheduleNext(level, correct) {
