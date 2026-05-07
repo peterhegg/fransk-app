@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
-import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
 function AutoPlayToggle({ autoPlay, onToggle }) {
   if (!onToggle) return <div style={{ width: 60 }} />;
@@ -153,6 +153,8 @@ export default function DagensExerciseScreen({
   onToggleAutoPlay,
 }) {
   const [fireworksDone, setFireworksDone] = useState(false);
+  const [tierPopDone, setTierPopDone] = useState(false);
+  useEffect(() => { setFireworksDone(false); setTierPopDone(false); }, [card?.fr, card?.reverse]);
 
   useEffect(() => {
     if (autoPlay && card?.fr && !card.reverse) {
@@ -160,6 +162,14 @@ export default function DagensExerciseScreen({
       return () => clearTimeout(t);
     }
   }, [card?.fr, card?.reverse, autoPlay]);
+
+  useEffect(() => {
+    if (checked && autoPlay && card?.reverse && card?.fr && (result === "correct" || result === "close")) {
+      const t = setTimeout(() => speak(card.fr), 300);
+      return () => clearTimeout(t);
+    }
+  }, [checked]);
+
   const isReverse = card?.reverse;
   const totalCards = queue.length + stats.correct + stats.wrong;
   const done = stats.correct + stats.wrong;
@@ -249,7 +259,7 @@ export default function DagensExerciseScreen({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
-        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{done}/{totalCards}</div>
+        <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
       <div style={{ height: 3, background: "var(--border)" }}>
         <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${totalCards > 0 ? (done / totalCards) * 100 : 0}%`, transition: "width 0.3s" }} />
@@ -351,6 +361,9 @@ export default function DagensExerciseScreen({
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
       {pointsInfo?.justMastered && !fireworksDone && (
         <Fireworks onDone={() => setFireworksDone(true)} />
+      )}
+      {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+        <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
       )}
     </div>
   );

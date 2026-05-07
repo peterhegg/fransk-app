@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { GRAMMAR_TOPICS } from "../constants.js";
 import BottomNav from "./BottomNav.jsx";
-import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
 function AutoPlayToggle({ autoPlay, onToggle }) {
   if (!onToggle) return <div style={{ width: 60 }} />;
@@ -25,6 +25,9 @@ export default function QuizExerciseScreen({
 }) {
   const inputRef = useRef(null);
   const [fireworksDone, setFireworksDone] = useState(false);
+  const [tierPopDone, setTierPopDone] = useState(false);
+
+  useEffect(() => { setFireworksDone(false); setTierPopDone(false); }, [card?.fr, card?.reverse]);
 
   useEffect(() => {
     if (autoPlay && card && !card.reverse) {
@@ -32,6 +35,13 @@ export default function QuizExerciseScreen({
       return () => clearTimeout(t);
     }
   }, [card?.fr, card?.reverse, autoPlay]);
+
+  useEffect(() => {
+    if (checked && autoPlay && isReverse && card?.fr && (result === "correct" || result === "close")) {
+      const t = setTimeout(() => speak(card.fr), 300);
+      return () => clearTimeout(t);
+    }
+  }, [checked]);
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
   const isFromBank = !!card?.id;
@@ -194,6 +204,9 @@ export default function QuizExerciseScreen({
     </div>
     {pointsInfo?.justMastered && !fireworksDone && (
       <Fireworks onDone={() => setFireworksDone(true)} />
+    )}
+    {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
     )}
     </>
   );

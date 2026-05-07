@@ -15,7 +15,7 @@ import {
   logDailyAnswer, logVocabSession, logGrammarSession, logWordAnswer,
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
-  loadUserProfile, saveUserProfile, getWordTier,
+  loadUserProfile, saveUserProfile, getWordTier, loadActivityLog,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -445,25 +445,20 @@ export default function App() {
     const gc = incrementAnswerCount();
     const inBank = words.find(w => w.fr === dagensCard.fr);
     if (inBank) {
-      setWords(prev => {
-        const next = prev.map(w => {
-          if (w.id !== inBank.id) return w;
-          const ptsBefore = w.points || 0;
-          const updated = updateWordPoints(w, result, gc);
-          const ptsAfter = updated.points || 0;
-          setDagensPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
-          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, ptsAfter, result);
-          const srOverride = updated._srOverride;
-          const { _srOverride: _, ...cleanUpdated } = updated;
-          if (srOverride) return { ...cleanUpdated, ...srOverride };
-          if (ptsAfter < MASTERY_POINTS) {
-            const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
-            return { ...cleanUpdated, level: nl, nextReview: nr };
-          }
-          return cleanUpdated;
-        });
-        return next;
-      });
+      const ptsBefore = inBank.points || 0;
+      const preUpdated = updateWordPoints({ ...inBank }, result, gc);
+      const ptsAfter = preUpdated.points || 0;
+      setDagensPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      setWords(prev => prev.map(w => {
+        if (w.id !== inBank.id) return w;
+        const updated = updateWordPoints(w, result, gc);
+        logWordAnswer(w.fr, w.no, w.phonetic, w.points || 0, updated.points || 0, result);
+        const srOverride = updated._srOverride;
+        const { _srOverride: _, ...clean } = updated;
+        if (srOverride) return { ...clean, ...srOverride };
+        if ((clean.points || 0) < MASTERY_POINTS) { const { level: nl, nextReview: nr } = scheduleNext(w.level, passed); return { ...clean, level: nl, nextReview: nr }; }
+        return clean;
+      }));
     } else if (result === "correct") {
       logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, 1, result);
       setDagensPointsInfo({ pts: 1, ptsBefore: 0, tierBefore: 0, tierAfter: getWordTier(1), justMastered: false });
@@ -502,7 +497,7 @@ export default function App() {
       } else {
         localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, phase2done: true }));
         logVocabSession();
-        setDagensPhase(3); setStreak(touchStreak());
+        setDagensPhase(3); maybeTouchStreak();
       }
       return;
     }
@@ -521,25 +516,23 @@ export default function App() {
     bumpSession();
     const gc = incrementAnswerCount();
     if (gloseCard.id) {
-      setWords(prev => {
-        const next = prev.map(w => {
-          if (w.id !== gloseCard.id) return w;
-          const ptsBefore = w.points || 0;
-          const updated = updateWordPoints(w, result, gc);
-          const ptsAfter = updated.points || 0;
-          setGlosePointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
-          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, ptsAfter, result);
-          const srOverride = updated._srOverride;
-          const { _srOverride: _, ...cleanUpdated } = updated;
-          if (srOverride) return { ...cleanUpdated, ...srOverride };
-          if (ptsAfter < MASTERY_POINTS) {
-            const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
-            return { ...cleanUpdated, level: nl, nextReview: nr };
-          }
-          return cleanUpdated;
-        });
-        return next;
-      });
+      const gw = words.find(w => w.id === gloseCard.id);
+      if (gw) {
+        const ptsBefore = gw.points || 0;
+        const preUpdated = updateWordPoints({ ...gw }, result, gc);
+        const ptsAfter = preUpdated.points || 0;
+        setGlosePointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      }
+      setWords(prev => prev.map(w => {
+        if (w.id !== gloseCard.id) return w;
+        const updated = updateWordPoints(w, result, gc);
+        logWordAnswer(w.fr, w.no, w.phonetic, w.points || 0, updated.points || 0, result);
+        const srOverride = updated._srOverride;
+        const { _srOverride: _, ...clean } = updated;
+        if (srOverride) return { ...clean, ...srOverride };
+        if ((clean.points || 0) < MASTERY_POINTS) { const { level: nl, nextReview: nr } = scheduleNext(w.level, passed); return { ...clean, level: nl, nextReview: nr }; }
+        return clean;
+      }));
     }
   };
 
@@ -556,7 +549,7 @@ export default function App() {
       setGloseInput(""); setGloseChecked(false); setGloseResult("");
       return;
     }
-    if (!remaining.length) { logVocabSession(); setStreak(touchStreak()); setScreen("home"); return; }
+    if (!remaining.length) { logVocabSession(); maybeTouchStreak(); setScreen("home"); return; }
     setGloseQueue(remaining); setGloseCard(remaining[0]);
     setGloseOptions(getQuizOptions(remaining[0], words, !!remaining[0].reverse));
     setGloseMode(Math.random() < 0.5 ? "input" : "choice");
@@ -610,7 +603,7 @@ export default function App() {
       const progress = [...loadGrammarProgress(), grammarTopic.id];
       saveGrammarProgress(progress);
       logGrammarSession();
-      setStreak(touchStreak());
+      maybeTouchStreak();
       setGrammarPhase(3);
       return;
     }
@@ -629,32 +622,30 @@ export default function App() {
     bumpSession();
     const gc = incrementAnswerCount();
     if (gramOvCard?.id) {
-      setGrammarWords(prev => {
-        const next = prev.map(w => {
-          if (w.id !== gramOvCard.id) return w;
-          const ptsBefore = w.points || 0;
-          const updated = updateWordPoints(w, result, gc);
-          const ptsAfter = updated.points || 0;
-          setGramOvPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
-          logWordAnswer(w.fr, w.no, w.phonetic, ptsBefore, ptsAfter, result);
-          const srOverride = updated._srOverride;
-          const { _srOverride: _, ...cleanUpdated } = updated;
-          if (srOverride) return { ...cleanUpdated, ...srOverride };
-          if (ptsAfter < MASTERY_POINTS) {
-            const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
-            return { ...cleanUpdated, level: nl, nextReview: nr };
-          }
-          return cleanUpdated;
-        });
-        return next;
-      });
+      const gw = grammarWords.find(w => w.id === gramOvCard.id);
+      if (gw) {
+        const ptsBefore = gw.points || 0;
+        const preUpdated = updateWordPoints({ ...gw }, result, gc);
+        const ptsAfter = preUpdated.points || 0;
+        setGramOvPointsInfo({ pts: ptsAfter, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter), justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      }
+      setGrammarWords(prev => prev.map(w => {
+        if (w.id !== gramOvCard.id) return w;
+        const updated = updateWordPoints(w, result, gc);
+        logWordAnswer(w.fr, w.no, w.phonetic, w.points || 0, updated.points || 0, result);
+        const srOverride = updated._srOverride;
+        const { _srOverride: _, ...clean } = updated;
+        if (srOverride) return { ...clean, ...srOverride };
+        if ((clean.points || 0) < MASTERY_POINTS) { const { level: nl, nextReview: nr } = scheduleNext(w.level, passed); return { ...clean, level: nl, nextReview: nr }; }
+        return clean;
+      }));
     }
   };
 
   const nextGramOvelse = () => {
     setGramOvPointsInfo(null);
     const remaining = gramOvQueue.slice(1);
-    if (!remaining.length) { logGrammarSession(); setStreak(touchStreak()); setScreen("home"); return; }
+    if (!remaining.length) { logGrammarSession(); maybeTouchStreak(); setScreen("home"); return; }
     setGramOvQueue(remaining); setGramOvCard(remaining[0]);
     setGramOvOptions(getQuizOptions(remaining[0], grammarWords, !!remaining[0].reverse));
     setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
@@ -662,7 +653,12 @@ export default function App() {
   };
 
   // --- Points toast ---
-    // --- Session bump (called by all quiz submit handlers) ---
+    const maybeTouchStreak = () => {
+    const entry = loadActivityLog().find(e => e.date === todayStr());
+    if (entry && entry.answers >= 150) setStreak(touchStreak());
+  };
+
+  // --- Session bump (called by all quiz submit handlers) ---
   const bumpSession = () => {
     logDailyAnswer();
     setSessionMsgs(s => {

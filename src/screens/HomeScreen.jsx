@@ -735,6 +735,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     : [];
 
   const answerCount = loadAnswerCount();
+  const todayAnswers = loadActivityLog().find(e => e.date === todayStr())?.answers || 0;
   const bestStreak = loadBestStreak();
   const streakData = loadStreak();
   const fmtDate = d => { if (!d) return ""; const dt = new Date(d + "T12:00:00"); return `${dt.getDate()}. ${["jan","feb","mar","apr","mai","jun","jul","aug","sep","okt","nov","des"][dt.getMonth()]}`; };
@@ -914,13 +915,13 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             cursor: "pointer", fontFamily: "var(--font-body)",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
           }}>
-            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{sessionMsgs}</div>
+            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{todayAnswers}</div>
             <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Svar i dag</div>
             <div style={{ width: "100%", padding: "0 4px", marginTop: 2 }}>
               <div style={{ height: 4, borderRadius: 2, background: "var(--border)", overflow: "hidden" }}>
-                <div style={{ height: "100%", borderRadius: 2, background: sessionMsgs >= 150 ? "var(--accent)" : "var(--accent)", width: `${Math.min(100, (sessionMsgs / 150) * 100)}%`, transition: "width 0.3s ease" }} />
+                <div style={{ height: "100%", borderRadius: 2, background: "var(--accent)", width: `${Math.min(100, (todayAnswers / 150) * 100)}%`, transition: "width 0.3s ease" }} />
               </div>
-              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, marginTop: 2 }}>{sessionMsgs}/150</div>
+              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, marginTop: 2 }}>{todayAnswers}/150</div>
             </div>
           </button>
         </div>

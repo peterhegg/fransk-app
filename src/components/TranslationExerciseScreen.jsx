@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
-import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
 function AutoPlayToggle({ autoPlay, onToggle }) {
   if (!onToggle) return <div style={{ width: 60 }} />;
@@ -35,6 +35,7 @@ export default function TranslationExerciseScreen({
   const [history, setHistory] = useState([]);
   const [pointsInfo, setPointsInfo] = useState(null);
   const [fireworksDone, setFireworksDone] = useState(false);
+  const [tierPopDone, setTierPopDone] = useState(false);
   const inputRef = useRef(null);
 
   const total = stats.correct + stats.wrong + queue.length;
@@ -51,6 +52,13 @@ export default function TranslationExerciseScreen({
       return () => clearTimeout(t);
     }
   }, [card?.fr, card?.reverse, autoPlay]);
+
+  useEffect(() => {
+    if (checked && autoPlay && isReverse && card?.fr && (result === "correct" || result === "close")) {
+      const t = setTimeout(() => speak(card.fr), 300);
+      return () => clearTimeout(t);
+    }
+  }, [checked]);
 
   const handleFocus = () => {
     setTimeout(() => {
@@ -99,7 +107,7 @@ export default function TranslationExerciseScreen({
       const at = Math.min(3, remaining.length);
       const recycled = [...remaining.slice(0, at), { ...card }, ...remaining.slice(at)];
       setQueue(recycled); setCard(recycled[0]);
-      setInput(""); setChecked(false); setResult(""); setPointsInfo(null);
+      setInput(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
       return;
     }
     if (!remaining.length) {
@@ -109,7 +117,7 @@ export default function TranslationExerciseScreen({
       return;
     }
     setQueue(remaining); setCard(remaining[0]);
-    setInput(""); setChecked(false); setResult(""); setPointsInfo(null);
+    setInput(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
   };
 
   if (!card) return (
@@ -242,6 +250,9 @@ export default function TranslationExerciseScreen({
     </div>
     {pointsInfo?.justMastered && !fireworksDone && (
       <Fireworks onDone={() => setFireworksDone(true)} />
+    )}
+    {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
     )}
   </>
   );

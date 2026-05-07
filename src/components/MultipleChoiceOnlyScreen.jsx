@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
-import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
 function AutoPlayToggle({ autoPlay, onToggle }) {
   if (!onToggle) return <div style={{ width: 60 }} />;
@@ -47,6 +47,7 @@ export default function MultipleChoiceOnlyScreen({
   const [finalStats, setFinalStats] = useState({ correct: 0, wrong: 0 });
   const [pointsInfo, setPointsInfo] = useState(null);
   const [fireworksDone, setFireworksDone] = useState(false);
+  const [tierPopDone, setTierPopDone] = useState(false);
 
   const card = queue[idx] || null;
   const isReverse = !!card?.reverse;
@@ -59,6 +60,13 @@ export default function MultipleChoiceOnlyScreen({
       return () => clearTimeout(t);
     }
   }, [card?.fr, card?.reverse, autoPlay]);
+
+  useEffect(() => {
+    if (checked && autoPlay && isReverse && card?.fr && (result === "correct" || result === "close")) {
+      const t = setTimeout(() => speak(card.fr), 300);
+      return () => clearTimeout(t);
+    }
+  }, [checked]);
 
   const submit = () => {
     if (!selected || !card) return;
@@ -104,7 +112,7 @@ export default function MultipleChoiceOnlyScreen({
     const nextCard = queue[nextIdx];
     setIdx(nextIdx);
     setOptions(getQuizOptions(nextCard, words, !!nextCard.reverse));
-    setSelected(""); setChecked(false); setResult(""); setPointsInfo(null);
+    setSelected(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
   };
 
   if (!card && !done) return (
@@ -251,6 +259,9 @@ export default function MultipleChoiceOnlyScreen({
     </div>
     {pointsInfo?.justMastered && !fireworksDone && (
       <Fireworks onDone={() => setFireworksDone(true)} />
+    )}
+    {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
     )}
   </>
   );
