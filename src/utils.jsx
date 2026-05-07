@@ -394,6 +394,7 @@ export const DEFAULT_PROFILE = {
   teacherGender: "han",
   dysleksi: true,
   exerciseRounds: 5,
+  autoPlay: false,
 };
 
 export function loadUserProfile() {

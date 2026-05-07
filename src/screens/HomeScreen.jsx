@@ -552,6 +552,17 @@ function UserProfileModal({ onClose, onSave }) {
 
         <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
           <div>
+            <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Automatisk uttale</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 2 }}>Spiller av fransk automatisk i øvelser</div>
+          </div>
+          <button onClick={() => set("autoPlay", !profile.autoPlay)}
+            style={{ width: 44, height: 26, borderRadius: 13, background: profile.autoPlay ? "var(--accent)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+            <div style={{ position: "absolute", top: 3, left: profile.autoPlay ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+          </button>
+        </div>
+
+        <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
+          <div>
             <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Dysleksi-tilpasning</div>
             <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 2 }}>Kortere tekster, alltid fonetikk</div>
           </div>

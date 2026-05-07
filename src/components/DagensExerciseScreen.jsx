@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
 import PointsBadge, { Fireworks } from "./PointsBadge.jsx";
 
-function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5 }) {
+function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay }) {
   const [allCards] = useState(() =>
     Array.from({ length: exerciseRounds }, () => shuffle([...words])).flat()
   );
@@ -23,6 +23,13 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
   const reset = () => { setNoInput(""); setFrInput(""); setChecked(false); setNoResult(""); setFrResult(""); };
   const next = () => { reset(); if (isLast) onDone(); else setIdx(i => i + 1); };
+
+  useEffect(() => {
+    if (autoPlay && card?.fr) {
+      const t = setTimeout(() => speak(card.fr), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.fr, autoPlay]);
 
   const submit = () => {
     if (!noInput.trim() || !frInput.trim()) return;
@@ -131,8 +138,16 @@ export default function DagensExerciseScreen({
   screen, showWords, onNav,
   exerciseRounds = 5,
   pointsInfo,
+  autoPlay,
 }) {
   const [fireworksDone, setFireworksDone] = useState(false);
+
+  useEffect(() => {
+    if (autoPlay && card?.fr && !card.reverse) {
+      const t = setTimeout(() => speak(card.fr), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.fr, card?.reverse, autoPlay]);
   const isReverse = card?.reverse;
   const totalCards = queue.length + stats.correct + stats.wrong;
   const done = stats.correct + stats.wrong;
@@ -148,7 +163,7 @@ export default function DagensExerciseScreen({
   );
 
   if (phase === 0 && !topic) return (
-    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} />
+    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} autoPlay={autoPlay} />
   );
 
   if (phase === 0 && topic) return (

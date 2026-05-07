@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
@@ -9,7 +9,7 @@ export default function MultipleChoiceOnlyScreen({
   words, setWords, title, icon, emptyMsg,
   onBack, speak, speaking,
   screen, showWords, onNav,
-  onFinish,
+  onFinish, autoPlay,
 }) {
   const [queue] = useState(() => {
     if (!words.length) return [];
@@ -38,6 +38,13 @@ export default function MultipleChoiceOnlyScreen({
   const isReverse = !!card?.reverse;
   const total = queue.length;
   const progress = idx;
+
+  useEffect(() => {
+    if (autoPlay && card?.fr && !card.reverse) {
+      const t = setTimeout(() => speak(card.fr), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.fr, card?.reverse, autoPlay]);
 
   const submit = () => {
     if (!selected || !card) return;

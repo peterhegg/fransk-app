@@ -9,7 +9,7 @@ export default function TranslationExerciseScreen({
   words, setWords, title, icon, emptyMsg,
   onBack, speak, speaking,
   screen, showWords, onNav,
-  onFinish,
+  onFinish, autoPlay,
 }) {
   const [queue, setQueue] = useState(() => {
     if (!words.length) return [];
@@ -28,10 +28,15 @@ export default function TranslationExerciseScreen({
   const isReverse = !!card?.reverse;
 
   useEffect(() => {
-    if (!checked && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (!checked && inputRef.current) inputRef.current.focus();
   }, [card, checked]);
+
+  useEffect(() => {
+    if (autoPlay && card?.fr && !card.reverse) {
+      const t = setTimeout(() => speak(card.fr), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.fr, card?.reverse, autoPlay]);
 
   const handleFocus = () => {
     setTimeout(() => {
@@ -158,7 +163,17 @@ export default function TranslationExerciseScreen({
           <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
             {result === "correct" && (
               <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 16, color: "var(--color-success)", fontWeight: "bold" }}>✓ Riktig!</div>
+                <div style={{ fontSize: 16, color: "var(--color-success)", fontWeight: "bold", marginBottom: isReverse ? 8 : 0 }}>✓ Riktig!</div>
+                {isReverse && (
+                  <>
+                    <div style={{ fontSize: 22, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
+                    {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({card.phonetic})</div>}
+                    <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                      <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                      <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
             {result === "close" && (

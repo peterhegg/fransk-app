@@ -64,6 +64,7 @@ export default function App() {
   const [noWordsMsg, setNoWordsMsg] = useState(false);
   const [dagensLoading, setDagensLoading] = useState(false);
   const [exerciseRounds, setExerciseRounds] = useState(() => loadUserProfile().exerciseRounds || 5);
+  const [autoPlay, setAutoPlay] = useState(() => loadUserProfile().autoPlay ?? false);
   const [dagensPointsInfo, setDagensPointsInfo] = useState(null);
   const [glosePointsInfo, setGlosePointsInfo] = useState(null);
   const [gramOvPointsInfo, setGramOvPointsInfo] = useState(null);
@@ -703,14 +704,14 @@ export default function App() {
   if (screen === "dagens-glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} exerciseRounds={exerciseRounds} pointsInfo={dagensPointsInfo} {...navProps} />
+      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} exerciseRounds={exerciseRounds} pointsInfo={dagensPointsInfo} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
   if (screen === "glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={glosePointsInfo} {...navProps} />
+      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={glosePointsInfo} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
@@ -718,7 +719,7 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       {grammarTopic ? (
-        <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+        <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} {...navProps} />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'DM Sans', sans-serif", color: cream, paddingBottom: 66 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card }}>
@@ -740,21 +741,21 @@ export default function App() {
   if (screen === "grammatikk-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={gramOvPointsInfo} {...navProps} />
+      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={gramOvPointsInfo} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
   if (screen === "ordoversettelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <TranslationExerciseScreen title="Ordoversettelse" icon={<TranslateIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <TranslationExerciseScreen title="Ordoversettelse" icon={<TranslateIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
   if (screen === "flervalg") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <MultipleChoiceOnlyScreen title="Flervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={() => setScreen("home")} onFinish={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <MultipleChoiceOnlyScreen title="Flervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={() => setScreen("home")} onFinish={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
@@ -768,14 +769,14 @@ export default function App() {
   if (screen === "oversett-grammatikken") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <TranslationExerciseScreen title="Oversett grammatikken" icon={<TranslateIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <TranslationExerciseScreen title="Oversett grammatikken" icon={<TranslateIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
   if (screen === "grammatikk-flervalg") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <MultipleChoiceOnlyScreen title="Grammatikkflervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={() => setScreen("home")} onFinish={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+      <MultipleChoiceOnlyScreen title="Grammatikkflervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={() => setScreen("home")} onFinish={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} {...navProps} />
     </>
   );
 
@@ -810,7 +811,7 @@ export default function App() {
   return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} onProfileSave={p => setExerciseRounds(p.exerciseRounds || 5)} {...navProps} />
+      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} {...navProps} />
     </>
   );
 }

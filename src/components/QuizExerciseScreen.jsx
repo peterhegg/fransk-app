@@ -10,10 +10,17 @@ export default function QuizExerciseScreen({
   onSubmit, onNext, onBack,
   speak, speaking,
   screen, showWords, onNav,
-  pointsInfo,
+  pointsInfo, autoPlay,
 }) {
   const inputRef = useRef(null);
   const [fireworksDone, setFireworksDone] = useState(false);
+
+  useEffect(() => {
+    if (autoPlay && card && !card.reverse) {
+      const t = setTimeout(() => speak(card.fr), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.fr, card?.reverse, autoPlay]);
   const total = stats.correct + stats.wrong + queue.length;
   const done = stats.correct + stats.wrong;
   const isFromBank = !!card?.id;
