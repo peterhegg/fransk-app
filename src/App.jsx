@@ -30,6 +30,7 @@ import VoiceScreen from "./screens/VoiceScreen.jsx";
 import SayWordScreen from "./screens/SayWordScreen.jsx";
 import SentenceTranslationScreen from "./screens/SentenceTranslationScreen.jsx";
 import SaySentenceScreen from "./screens/SaySentenceScreen.jsx";
+import GenerertFlervalgScreen from "./screens/GenerertFlervalgScreen.jsx";
 
 function TranslateIcon() {
   return (
@@ -243,6 +244,7 @@ export default function App() {
       else if (rs === "grammatikk-flervalg") setScreen("grammatikk-flervalg");
       else if (rs === "oversett-setningen") setScreen("oversett-setningen");
       else if (rs === "si-setningen") setScreen("si-setningen");
+      else if (rs === "generert-flervalg") setScreen("generert-flervalg");
       else if (rs === "chat" && s.modeId) startMode(s.modeId);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -425,6 +427,7 @@ export default function App() {
     else if (id === "grammatikk-flervalg") setScreen("grammatikk-flervalg");
     else if (id === "oversett-setningen") setScreen("oversett-setningen");
     else if (id === "si-setningen") setScreen("si-setningen");
+    else if (id === "generert-flervalg") setScreen("generert-flervalg");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -708,7 +711,7 @@ export default function App() {
   if (screen === "glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={glosePointsInfo} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <QuizExerciseScreen title="Gloseøvelse" icon="◈" emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." queue={gloseQueue} card={gloseCard} input={gloseInput} setInput={setGloseInput} checked={gloseChecked} result={gloseResult} stats={gloseStats} history={gloseHistory} options={gloseOptions} mode={gloseMode} onSubmit={submitGlose} onNext={nextGlose} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={glosePointsInfo} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} isOnline={isOnline} {...navProps} />
     </>
   );
 
@@ -738,7 +741,7 @@ export default function App() {
   if (screen === "grammatikk-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={gramOvPointsInfo} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <QuizExerciseScreen title="Grammatikkøvelse" icon="◐" emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." queue={gramOvQueue} card={gramOvCard} input={gramOvInput} setInput={setGramOvInput} checked={gramOvChecked} result={gramOvResult} stats={gramOvStats} history={gramOvHistory} options={gramOvOptions} mode={gramOvMode} onSubmit={submitGramOvelse} onNext={nextGramOvelse} onBack={() => setScreen("home")} speak={speak} speaking={speaking} pointsInfo={gramOvPointsInfo} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} isOnline={isOnline} {...navProps} />
     </>
   );
 
@@ -788,6 +791,13 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <SaySentenceScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "generert-flervalg") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <GenerertFlervalgScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 

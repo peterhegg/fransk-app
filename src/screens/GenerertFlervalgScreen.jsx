@@ -1,0 +1,276 @@
+import { useState, useRef, useEffect } from "react";
+import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
+import BottomNav from "../components/BottomNav.jsx";
+
+function buildPrompt(words, grammarWords) {
+  const allWords = [...words, ...grammarWords];
+  if (!allWords.length) return null;
+  const sample = shuffle([...allWords]).slice(0, 40);
+  const wordList = sample.map(w => `${w.fr} = ${w.no}`).join(", ");
+  const count = Math.min(10, Math.max(4, Math.floor(allWords.length / 5)));
+  const profile = loadUserProfile();
+  return `Du er en fransktutor. Lag ${count} flervalgsoppgaver for norsk A1/A2-elev${profile.dysleksi ? " med dysleksi (korte, enkle setninger)" : ""}.
+
+ORDBANK (bruk KUN disse franske ordene + grunnleggende funksjonsord: je, tu, il, elle, nous, vous, ils, elles, le, la, les, l', un, une, des, du, de, et, ou, ne, pas, que, qui, à, en, dans, sur, avec, très, bien, aussi, est, sont, suis, es, a, ont, va, ai):
+${wordList}
+
+Veksle mellom disse to typene oppgaver (ca. halvparten av hver):
+Type A: Vis en NORSK setning → eleven velger riktig FRANSK oversettelse blant 4 alternativer (felt "direction":"no-fr")
+Type B: Vis en FRANSK setning → eleven velger riktig NORSK oversettelse blant 4 alternativer (felt "direction":"fr-no")
+
+KRITISK – alternativene skal være VANSKELIGE og NÆRE hverandre:
+- Bruk nesten-identiske setninger som tester pronomen (ils/nous/je), verbbøying (parlent/parlons/parle), artikkel (le/la/les/un/une), preposisjon (dans/en/à), ordstilling
+- Alternativene skal se svært like ut — kun ett eller to ord skiller dem
+- Ikke bruk åpenbart gale alternativer
+
+En SPESIFIKK norsk forklaring av akkurat den grammatiske forskjellen i denne oppgaven (ikke generelle regler).
+
+Svar KUN som JSON-array uten markdown:
+[{"prompt":"setningen som vises","correct":"riktig svar","distractors":["nesten-riktig1","nesten-riktig2","nesten-riktig3"],"direction":"no-fr eller fr-no","tip":"spesifikk forklaring for akkurat denne setningen"}]`;
+}
+
+function FlervalgIcon({ size = 18, opacity = 1 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" style={{ opacity }}>
+      <rect x="3" y="4" width="4" height="4" rx="1" /><line x1="10" y1="6" x2="21" y2="6" />
+      <rect x="3" y="10" width="4" height="4" rx="1" /><line x1="10" y1="12" x2="21" y2="12" />
+      <rect x="3" y="16" width="4" height="4" rx="1" /><line x1="10" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+export default function GenerertFlervalgScreen({
+  words, grammarWords, isOnline, onBack, speak, speaking, screen, showWords, onNav,
+}) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [questions, setQuestions] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [selected, setSelected] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [stats, setStats] = useState({ correct: 0, wrong: 0 });
+  const [history, setHistory] = useState([]);
+  const [done, setDone] = useState(false);
+  const abortRef = useRef(null);
+
+  useEffect(() => {
+    const allWords = [...(words || []), ...(grammarWords || [])];
+    if (!allWords.length) { setLoading(false); setError("no-words"); return; }
+    if (!isOnline) { setLoading(false); setError("offline"); return; }
+    fetchQuestions();
+    return () => abortRef.current?.abort();
+  }, []);
+
+  const fetchQuestions = async () => {
+    const prompt = buildPrompt(words || [], grammarWords || []);
+    if (!prompt) { setLoading(false); setError("no-words"); return; }
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      const res = await fetch(PROXY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 1400,
+          system: "You are a French exercise generator. Respond only with a valid JSON array, no markdown.",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await res.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        if (Array.isArray(parsed) && parsed.length) {
+          const prepared = parsed
+            .filter(q => q.prompt && q.correct && Array.isArray(q.distractors) && q.distractors.length >= 3)
+            .map(q => {
+              const opts = shuffle([q.correct, ...q.distractors.slice(0, 3)]);
+              return { ...q, options: opts };
+            });
+          if (prepared.length) { setQuestions(prepared); setLoading(false); return; }
+        }
+      }
+      setLoading(false); setError("parse");
+    } catch (err) {
+      if (err.name !== "AbortError") { setLoading(false); setError("network"); }
+    }
+  };
+
+  const current = questions[idx];
+  const total = questions.length;
+
+  const submit = () => {
+    if (!selected || !current) return;
+    const passed = selected === current.correct;
+    setChecked(true);
+    setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
+    setHistory(h => [...h, passed ? "correct" : "wrong"]);
+    logDailyAnswer();
+  };
+
+  const next = () => {
+    if (idx + 1 >= questions.length) { setDone(true); return; }
+    setIdx(i => i + 1);
+    setSelected(""); setChecked(false);
+  };
+
+  const navBar = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
+        <FlervalgIcon /> Generert flervalg
+      </div>
+      <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{loading || !total ? "" : `${idx + 1}/${total}`}</div>
+    </div>
+  );
+
+  if (loading) return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      {navBar}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
+        <FlervalgIcon size={32} opacity={0.35} />
+        <div style={{ fontSize: 15, color: "var(--text-subtle)" }}>Genererer flervalgsoppgaver…</div>
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      {navBar}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
+        <div style={{ fontSize: 14, color: "var(--text-subtle)", lineHeight: 1.8 }}>
+          {error === "no-words" ? "Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord."
+            : error === "offline" ? "Ingen internettforbindelse — Claude er ikke tilgjengelig."
+            : "Kunne ikke hente oppgaver. Prøv igjen."}
+        </div>
+        <button onClick={onBack} style={{ background: "var(--accent-bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+
+  if (done) return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      {navBar}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 20 }}>
+        <div style={{ fontSize: 48 }}>🎯</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text)" }}>Runden er ferdig!</div>
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 90 }}>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "var(--color-success)" }}>{stats.correct}</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>Riktige</div>
+          </div>
+          <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 90 }}>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "var(--color-error)" }}>{stats.wrong}</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>Feil</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+          {history.map((h, i) => (
+            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: h === "correct" ? "var(--color-success)" : "var(--color-error)" }} />
+          ))}
+        </div>
+        <button onClick={onBack} className="btn-shine"
+          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          Tilbake til hjem
+        </button>
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+
+  const passed = checked && selected === current?.correct;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+      {navBar}
+      <div style={{ height: 3, background: "var(--border)" }}>
+        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / total) * 100}%`, transition: "width 0.3s" }} />
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>
+          {current?.direction === "fr-no" ? "Oversett til norsk" : "Oversett til fransk"}
+        </div>
+
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px", textAlign: "center", width: "100%", maxWidth: 360, boxShadow: "var(--shadow-md)" }}>
+          <div style={{ fontSize: 22, color: "var(--text)", fontFamily: "var(--font-display)", lineHeight: 1.45, fontStyle: current?.direction === "fr-no" ? "italic" : "normal" }}>{current?.prompt}</div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%", maxWidth: 360 }}>
+          {current?.options.map((opt, i) => {
+            let bg = "var(--surface)", border = "1px solid var(--border)", color = "var(--text)";
+            if (checked) {
+              if (opt === current.correct) { bg = "rgba(0,184,148,0.12)"; border = "2px solid var(--color-success)"; color = "var(--color-success)"; }
+              else if (opt === selected) { bg = "rgba(225,112,85,0.10)"; border = "2px solid var(--color-error)"; color = "var(--color-error)"; }
+            } else if (selected === opt) {
+              bg = "var(--accent-bg)"; border = "2px solid var(--accent)";
+            }
+            const isFr = current?.direction !== "fr-no";
+            return (
+              <button key={i} onClick={() => !checked && setSelected(opt)}
+                style={{ background: bg, border, borderRadius: 14, padding: "14px 10px", cursor: checked ? "default" : "pointer", color, fontFamily: "var(--font-body)", fontSize: 14, lineHeight: 1.35, textAlign: "center", fontStyle: isFr ? "italic" : "normal", transition: "all 0.15s ease" }}>
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+
+        {!checked ? (
+          <button onClick={submit} disabled={!selected} className={selected ? "btn-shine" : ""}
+            style={{ background: selected ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: selected ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: selected ? "pointer" : "default", width: "100%", maxWidth: 360 }}>
+            Bekreft svar
+          </button>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 360, alignItems: "center" }}>
+            <div style={{
+              background: passed ? "rgba(0,184,148,0.10)" : "rgba(225,112,85,0.08)",
+              border: `1px solid ${passed ? "rgba(0,184,148,0.35)" : "rgba(225,112,85,0.3)"}`,
+              borderRadius: 12, padding: "14px 18px", width: "100%", textAlign: "center",
+            }}>
+              <div style={{ fontSize: 15, color: passed ? "var(--color-success)" : "var(--color-error)", fontWeight: "bold", marginBottom: passed ? 0 : 6 }}>
+                {passed ? "✓ Riktig!" : "Feil svar"}
+              </div>
+              {!passed && (
+                <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 6 }}>
+                  Riktig: <strong style={{ color: "var(--text)", fontStyle: current.direction === "fr-no" ? "normal" : "italic" }}>{current.correct}</strong>
+                </div>
+              )}
+              {(() => {
+                const frText = current.direction === "fr-no" ? current.prompt : current.correct;
+                return (
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: passed ? 8 : 0, marginBottom: current.tip ? 8 : 0 }}>
+                    <button onClick={() => speak(frText)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                    <button onClick={() => speak(frText, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  </div>
+                );
+              })()}
+              {current.tip && (
+                <div style={{ marginTop: 4, paddingTop: 8, borderTop: "1px solid rgba(46,107,230,0.1)", textAlign: "left" }}>
+                  <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 5 }}>Huskeregel</div>
+                  <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{current.tip}</div>
+                </div>
+              )}
+            </div>
+            <button onClick={next} className="btn-shine"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+              {idx >= questions.length - 1 ? "Se resultat" : "Neste →"}
+            </button>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+          {history.map((h, i) => (
+            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: h === "correct" ? "var(--color-success)" : "var(--color-error)" }} />
+          ))}
+        </div>
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+}

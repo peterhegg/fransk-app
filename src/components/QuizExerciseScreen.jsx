@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { GRAMMAR_TOPICS } from "../constants.js";
+import { GRAMMAR_TOPICS, PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
@@ -21,13 +21,39 @@ export default function QuizExerciseScreen({
   onSubmit, onNext, onBack,
   speak, speaking,
   screen, showWords, onNav,
-  pointsInfo, autoPlay, onToggleAutoPlay,
+  pointsInfo, autoPlay, onToggleAutoPlay, isOnline,
 }) {
   const inputRef = useRef(null);
   const [fireworksDone, setFireworksDone] = useState(false);
   const [tierPopDone, setTierPopDone] = useState(false);
+  const [aiHint, setAiHint] = useState(null);
+  const [aiHintLoading, setAiHintLoading] = useState(false);
+  const hintAbortRef = useRef(null);
 
-  useEffect(() => { setFireworksDone(false); setTierPopDone(false); }, [card?.fr, card?.reverse]);
+  useEffect(() => { setFireworksDone(false); setTierPopDone(false); setAiHint(null); setAiHintLoading(false); }, [card?.fr, card?.reverse]);
+
+  useEffect(() => {
+    if (!checked || result !== "wrong" || !card || !isOnline) return;
+    hintAbortRef.current?.abort();
+    const controller = new AbortController();
+    hintAbortRef.current = controller;
+    setAiHintLoading(true);
+    setAiHint(null);
+    const question = card.reverse ? `"${card.no}" (norsk → fransk)` : `"${card.fr}" (oversett til norsk)`;
+    const correct = card.reverse ? card.fr : card.no;
+    const prompt = `Norsk A1/A2-elev svarte galt på et franskkort.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — for akkurat disse ordene. Ikke generelle regler. Gi én huskeregel knyttet direkte til akkurat dette ordet/disse ordene.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+    fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+      signal: controller.signal,
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 220, system: "Respond only with a valid JSON object, no markdown.", messages: [{ role: "user", content: prompt }] }),
+    }).then(r => r.json()).then(data => {
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const match = text.match(/\{[\s\S]*?\}/);
+      if (match) setAiHint(JSON.parse(match[0]));
+    }).catch(() => {}).finally(() => setAiHintLoading(false));
+    return () => controller.abort();
+  }, [checked, result]);
 
   useEffect(() => {
     if (autoPlay && card && !card.reverse) {
@@ -179,7 +205,24 @@ export default function QuizExerciseScreen({
                   </div>
                   <PointsBadge pointsInfo={pointsInfo} />
                 </div>
-                {grammarTip && (
+                {(aiHintLoading || aiHint) && (
+                  <div style={{ background: "rgba(46,107,230,0.05)", border: "1px solid rgba(46,107,230,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
+                    {aiHintLoading ? (
+                      <div style={{ fontSize: 12, color: "var(--text-subtle)", opacity: 0.7, textAlign: "center" }}>🤔 Analyserer feilen…</div>
+                    ) : aiHint ? (
+                      <>
+                        {aiHint.forklaring && <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, marginBottom: aiHint.huskeregel ? 8 : 0 }}>{aiHint.forklaring}</div>}
+                        {aiHint.huskeregel && (
+                          <>
+                            <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Huskeregel</div>
+                            <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{aiHint.huskeregel}</div>
+                          </>
+                        )}
+                      </>
+                    ) : null}
+                  </div>
+                )}
+                {grammarTip && !aiHint && !aiHintLoading && (
                   <div style={{ background: "rgba(46,107,230,0.05)", border: "1px solid rgba(46,107,230,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
                     <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Huskeregel — {grammarTip.title}</div>
                     <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{grammarTip.description}</div>

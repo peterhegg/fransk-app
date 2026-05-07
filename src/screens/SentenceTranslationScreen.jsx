@@ -86,11 +86,14 @@ export default function SentenceTranslationScreen({
   const [result, setResult] = useState("");
   const [correctFr, setCorrectFr] = useState("");
   const [explanation, setExplanation] = useState("");
+  const [aiHint, setAiHint] = useState(null);
+  const [aiHintLoading, setAiHintLoading] = useState(false);
   const [stats, setStats] = useState({ correct: 0, wrong: 0 });
   const [history, setHistory] = useState([]);
   const [done, setDone] = useState(false);
   const inputRef = useRef(null);
   const abortRef = useRef(null);
+  const hintAbortRef = useRef(null);
 
   useEffect(() => {
     const allWords = [...(words || []), ...(grammarWords || [])];
@@ -140,6 +143,35 @@ export default function SentenceTranslationScreen({
 
   const current = sentences[idx];
 
+  const fetchAiHint = async (noSentence, frSentence, userInput, wordDiff) => {
+    if (!isOnline) return;
+    hintAbortRef.current?.abort();
+    const controller = new AbortController();
+    hintAbortRef.current = controller;
+    setAiHintLoading(true);
+    setAiHint(null);
+    try {
+      const res = await fetch(PROXY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 250,
+          system: "You are a French tutor. Respond only with a valid JSON object, no markdown.",
+          messages: [{ role: "user", content:
+            `Norsk A1/A2-elev oversatte en setning feil.\nNorsk: "${noSentence}"\nKorrekt fransk: "${frSentence}"\nEleven svarte: "${userInput}"${wordDiff ? `\nFeil: ${wordDiff}` : ""}\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt for akkurat disse ordene — ikke generelle regler. Gi én huskeregel knyttet til akkurat disse ordene/strukturen i denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
+          }],
+        }),
+      });
+      const data = await res.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const match = text.match(/\{[\s\S]*?\}/);
+      if (match) setAiHint(JSON.parse(match[0]));
+    } catch {}
+    setAiHintLoading(false);
+  };
+
   const submit = () => {
     if (!input.trim() || !current) return;
     const { result: res, explanation: exp } = checkSentenceAnswer(input, current.fr);
@@ -148,12 +180,13 @@ export default function SentenceTranslationScreen({
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     logDailyAnswer();
+    if (res !== "correct") fetchAiHint(current.no, current.fr, input, exp);
   };
 
   const next = () => {
     if (idx + 1 >= sentences.length) { setDone(true); return; }
     setIdx(i => i + 1);
-    setInput(""); setChecked(false); setResult(""); setCorrectFr(""); setExplanation("");
+    setInput(""); setChecked(false); setResult(""); setCorrectFr(""); setExplanation(""); setAiHint(null); setAiHintLoading(false);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -267,28 +300,27 @@ export default function SentenceTranslationScreen({
             {result === "close" && (
               <div style={{ background: "rgba(46,107,230,0.07)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 15, color: "var(--accent)", fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
-                {explanation ? (
-                  <div style={{ fontSize: 13, color: "var(--accent)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div>
-                ) : null}
+                {explanation ? <div style={{ fontSize: 13, color: "var(--accent)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div> : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)" }}>Fasit: <strong>{correctFr}</strong></div>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8, marginBottom: (aiHintLoading || aiHint) ? 8 : 0 }}>
                   <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                  <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                <AiHintBlock loading={aiHintLoading} hint={aiHint} />
               </div>
             )}
             {result === "wrong" && (
               <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 15, color: "var(--color-error)", fontWeight: "bold", marginBottom: 6 }}>Feil svar</div>
-                {explanation ? (
-                  <div style={{ fontSize: 13, color: "var(--color-error)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div>
-                ) : null}
+                {explanation ? <div style={{ fontSize: 13, color: "var(--color-error)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div> : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4 }}>Fasit: <strong>{correctFr}</strong></div>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: (aiHintLoading || aiHint) ? 8 : 0 }}>
                   <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                   <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                <AiHintBlock loading={aiHintLoading} hint={aiHint} />
               </div>
             )}
             <button onClick={next} className="btn-shine"
@@ -305,6 +337,29 @@ export default function SentenceTranslationScreen({
         </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+}
+
+function AiHintBlock({ loading, hint }) {
+  if (!loading && !hint) return null;
+  return (
+    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(46,107,230,0.12)", textAlign: "left" }}>
+      {loading ? (
+        <div style={{ fontSize: 12, color: "var(--text-subtle)", opacity: 0.7, textAlign: "center" }}>🤔 Analyserer feilen…</div>
+      ) : hint ? (
+        <>
+          {hint.forklaring && (
+            <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, marginBottom: 8 }}>{hint.forklaring}</div>
+          )}
+          {hint.huskeregel && (
+            <>
+              <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Huskeregel</div>
+              <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{hint.huskeregel}</div>
+            </>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }
