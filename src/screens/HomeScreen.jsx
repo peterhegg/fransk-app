@@ -353,9 +353,9 @@ function ActivityModal({ streak, onClose }) {
       <div style={{ display: "flex", gap: 8, padding: "0 16px 16px", flexShrink: 0 }}>
         {[
           { label: "Svar", val: weekAnswers, color: "var(--accent)" },
-          { label: "Glose", val: weekVocab, color: "#00b894" },
-          { label: "Gram.", val: weekGrammar, color: "#0984e3" },
-          { label: "Snakk", val: weekVoice, color: "#f0a500" },
+          { label: "Glose", val: weekVocab, color: "#fbbf24" },
+          { label: "Gram.", val: weekGrammar, color: "#818cf8" },
+          { label: "Snakk", val: weekVoice, color: "#f87171" },
         ].map(s => (
           <div key={s.label} style={{ flex: 1, background: "var(--bg)", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: s.color }}>{s.val}</div>
@@ -383,10 +383,10 @@ function ActivityModal({ streak, onClose }) {
                   {day.answers > 0 ? day.answers : ""}
                 </div>
                 <div style={{ width: 18, height: barH, borderRadius: "4px 4px 0 0", overflow: "hidden", display: "flex", flexDirection: "column-reverse" }}>
-                  {vH > 0 && <div style={{ width: "100%", height: vH, background: "#00b894", flexShrink: 0 }} />}
-                  {gH > 0 && <div style={{ width: "100%", height: gH, background: "#0984e3", flexShrink: 0 }} />}
-                  {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f0a500", flexShrink: 0 }} />}
-                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(46,107,230,0.4)" : "var(--accent-bg)", flexShrink: 0 }} />}
+                  {vH > 0 && <div style={{ width: "100%", height: vH, background: "#fbbf24", flexShrink: 0 }} />}
+                  {gH > 0 && <div style={{ width: "100%", height: gH, background: "#818cf8", flexShrink: 0 }} />}
+                  {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f87171", flexShrink: 0 }} />}
+                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(90,154,240,0.35)" : "var(--accent-bg)", flexShrink: 0 }} />}
                   {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "var(--accent-bg)", flexShrink: 0 }} />}
                 </div>
                 {isToday ? (
@@ -403,9 +403,9 @@ function ActivityModal({ streak, onClose }) {
         </div>
 
         <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 11, color: "var(--text-subtle)", justifyContent: "center" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00b894", display: "inline-block" }} />Gloser</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#0984e3", display: "inline-block" }} />Grammatikk</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f0a500", display: "inline-block" }} />Samtale</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fbbf24", display: "inline-block" }} />Gloser</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#818cf8", display: "inline-block" }} />Grammatikk</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f87171", display: "inline-block" }} />Samtale</span>
         </div>
 
         <div style={{ marginTop: 16, background: "var(--bg)", borderRadius: 14, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
