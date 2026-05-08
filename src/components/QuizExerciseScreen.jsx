@@ -143,8 +143,8 @@ export default function QuizExerciseScreen({
                   </button>
                 ))}
               </div>
-              <button onClick={onSubmit} disabled={!input.trim()} className={input.trim() ? "btn-shine" : ""}
-                style={{ background: input.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: input.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "16px", cursor: input.trim() ? "pointer" : "default", width: "100%", maxWidth: 340 }}>
+              <button onClick={onSubmit} disabled={!input.trim()} className="btn-shine"
+                style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "16px", cursor: input.trim() ? "pointer" : "default", width: "100%", maxWidth: 340 }}>
                 Bekreft svar
               </button>
             </>
@@ -157,8 +157,8 @@ export default function QuizExerciseScreen({
                 className="input-glow"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
                 autoFocus />
-              <button onClick={onSubmit} disabled={!input.trim()} className={input.trim() ? "btn-shine" : ""}
-                style={{ background: input.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: input.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
+              <button onClick={onSubmit} disabled={!input.trim()} className="btn-shine"
+                style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
                 Sjekk svar
               </button>
             </div>

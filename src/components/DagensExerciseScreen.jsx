@@ -104,15 +104,15 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
                 onKeyDown={e => e.key === "Enter" && noInput.trim() && submit()}
                 placeholder="Skriv det franske ordet…" className="input-glow"
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }} />
-              <button onClick={submit} disabled={!noInput.trim() || !frInput.trim()} className={noInput.trim() && frInput.trim() ? "btn-shine" : ""}
-                style={{ background: noInput.trim() && frInput.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 12, color: noInput.trim() && frInput.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "12px", cursor: noInput.trim() && frInput.trim() ? "pointer" : "default" }}>
+              <button onClick={submit} disabled={!noInput.trim() || !frInput.trim()} className="btn-shine"
+                style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", opacity: noInput.trim() && frInput.trim() ? 1 : 0.4, border: "none", borderRadius: 12, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "12px", cursor: noInput.trim() && frInput.trim() ? "pointer" : "default" }}>
                 Sjekk
               </button>
             </div>
           )}
         </div>
 
-        <div style={{ fontSize: 11, color: "var(--text-subtle)" }}>Runde {round} av {exerciseRounds}</div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)", textAlign: "center", width: "100%" }}>Runde {round} av {exerciseRounds}</div>
 
         {checked && (
           <button onClick={next} className="btn-shine"
@@ -121,10 +121,16 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
           </button>
         )}
 
-        <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "center" }}>
-          {allCards.map((_, i) => (
-            <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i < idx ? "rgba(46,107,230,0.4)" : i === idx ? "var(--accent)" : "var(--border)" }} />
-          ))}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            {Array.from({ length: words.length }, (_, i) => {
+              const posInRound = idx % words.length;
+              return (
+                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < posInRound ? "rgba(90,154,240,0.4)" : i === posInRound ? "var(--accent)" : "rgba(255,255,255,0.15)" }} />
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 10, color: "rgba(232,237,245,0.4)", letterSpacing: 0.5, textTransform: "uppercase" }}>{idx + 1} av {allCards.length} totalt</div>
         </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
@@ -292,8 +298,8 @@ export default function DagensExerciseScreen({
               className="input-glow"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
               autoFocus />
-            <button onClick={onSubmit} disabled={!input.trim()} className={input.trim() ? "btn-shine" : ""}
-              style={{ background: input.trim() ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: input.trim() ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
+            <button onClick={onSubmit} disabled={!input.trim()} className="btn-shine"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
               Sjekk svar
             </button>
           </div>
