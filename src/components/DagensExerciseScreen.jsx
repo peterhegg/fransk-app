@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
-import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 
 function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay, onToggleAutoPlay }) {
@@ -358,8 +358,11 @@ export default function DagensExerciseScreen({
       {pointsInfo?.justMastered && !fireworksDone && (
         <Fireworks onDone={() => setFireworksDone(true)} />
       )}
-      {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      {pointsInfo?.tierAfter > pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+        <>
+        <ConfettiBurst />
         <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+      </>
       )}
     </div>
   );

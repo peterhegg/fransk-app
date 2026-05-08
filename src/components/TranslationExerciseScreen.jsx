@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
-import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 
 
 // Input-only translation exercise (no multiple choice).
@@ -242,8 +242,11 @@ export default function TranslationExerciseScreen({
     {pointsInfo?.justMastered && !fireworksDone && (
       <Fireworks onDone={() => setFireworksDone(true)} />
     )}
-    {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
-      <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+    {pointsInfo?.tierAfter > pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      <>
+        <ConfettiBurst />
+        <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+      </>
     )}
   </>
   );

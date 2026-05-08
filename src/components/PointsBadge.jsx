@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
 
 const TRICOLORE = ["#002395", "#FFFFFF", "#ED2939", "#FFD700", "#002395", "#ED2939", "#FFFFFF", "#FFD700"];
+const CONFETTI_COLORS = ["#5a9af0", "#7db0f5", "#00b894", "#FFD700", "#ED2939", "#c8a03a", "#7ab050", "#e17055", "#FFFFFF"];
 
+// Big fireworks for mastered words
 export function Fireworks({ onDone }) {
   const canvasRef = useRef(null);
 
@@ -15,19 +17,19 @@ export function Fireworks({ onDone }) {
 
     const particles = [];
 
-    const burst = (x, y, count = 80) => {
+    const burst = (x, y, count = 120) => {
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-        const speed = 4 + Math.random() * 9;
+        const speed = 5 + Math.random() * 13;
         particles.push({
           x, y,
           vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 3,
+          vy: Math.sin(angle) * speed - 4,
           alpha: 1,
           color: TRICOLORE[Math.floor(Math.random() * TRICOLORE.length)],
-          size: 3 + Math.random() * 5,
-          decay: 0.008 + Math.random() * 0.008,
-          gravity: 0.1 + Math.random() * 0.08,
+          size: 3 + Math.random() * 6,
+          decay: 0.005 + Math.random() * 0.006,
+          gravity: 0.09 + Math.random() * 0.09,
           trail: [],
         });
       }
@@ -35,12 +37,15 @@ export function Fireworks({ onDone }) {
 
     const W = canvas.width, H = canvas.height;
     const positions = [
-      [W * 0.5, H * 0.18], [W * 0.2, H * 0.22], [W * 0.8, H * 0.2],
-      [W * 0.35, H * 0.12], [W * 0.65, H * 0.15], [W * 0.1, H * 0.35],
-      [W * 0.9, H * 0.3], [W * 0.5, H * 0.35], [W * 0.25, H * 0.42],
-      [W * 0.75, H * 0.38],
+      [W * 0.5, H * 0.15], [W * 0.2, H * 0.2], [W * 0.8, H * 0.18],
+      [W * 0.35, H * 0.1], [W * 0.65, H * 0.12], [W * 0.1, H * 0.32],
+      [W * 0.9, H * 0.28], [W * 0.5, H * 0.3], [W * 0.25, H * 0.42],
+      [W * 0.75, H * 0.38], [W * 0.5, H * 0.07], [W * 0.15, H * 0.48],
+      [W * 0.85, H * 0.44],
     ];
-    positions.forEach(([x, y], i) => setTimeout(() => burst(x, y, 90 + Math.floor(Math.random() * 40)), i * 120));
+    positions.forEach(([x, y], i) =>
+      setTimeout(() => burst(x, y, 110 + Math.floor(Math.random() * 50)), i * 100)
+    );
 
     let frame;
     const animate = () => {
@@ -48,7 +53,7 @@ export function Fireworks({ onDone }) {
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.trail.push({ x: p.x, y: p.y });
-        if (p.trail.length > 7) p.trail.shift();
+        if (p.trail.length > 8) p.trail.shift();
         p.x += p.vx; p.y += p.vy;
         p.vy += p.gravity; p.vx *= 0.98;
         p.alpha -= p.decay;
@@ -77,19 +82,89 @@ export function Fireworks({ onDone }) {
   return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 9998, pointerEvents: "none" }} />;
 }
 
-// Small pop for non-mastery tier changes
+// Lighter confetti for tier UP (non-mastery)
+export function ConfettiBurst({ onDone }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const W = canvas.width, H = canvas.height;
+    const cx = W * 0.5, cy = H * 0.42;
+    const particles = [];
+
+    for (let i = 0; i < 75; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 3 + Math.random() * 9;
+      const isRect = Math.random() > 0.4;
+      particles.push({
+        x: cx + (Math.random() - 0.5) * 60,
+        y: cy + (Math.random() - 0.5) * 40,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 6,
+        alpha: 1,
+        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+        w: isRect ? 7 + Math.random() * 6 : 4 + Math.random() * 5,
+        h: isRect ? 3 + Math.random() * 4 : 4 + Math.random() * 5,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.25,
+        isRect,
+        decay: 0.011 + Math.random() * 0.009,
+        gravity: 0.14 + Math.random() * 0.1,
+      });
+    }
+
+    let frame;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        p.vy += p.gravity; p.vx *= 0.99;
+        p.rot += p.rotSpeed;
+        p.alpha -= p.decay;
+        if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        if (p.isRect) {
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+      if (particles.length > 0) frame = requestAnimationFrame(animate);
+      else onDone?.();
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 9997, pointerEvents: "none" }} />;
+}
+
+// Badge pop for tier UP (non-mastery)
 export function TierPop({ tierAfter, onDone }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => { setVisible(false); onDone?.(); }, 1600);
+    const t = setTimeout(() => { setVisible(false); onDone?.(); }, 1800);
     return () => clearTimeout(t);
   }, []);
 
   if (!visible) return null;
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 9997, pointerEvents: "none",
+      position: "fixed", inset: 0, zIndex: 9996, pointerEvents: "none",
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
       <div style={{
@@ -100,7 +175,7 @@ export function TierPop({ tierAfter, onDone }) {
         fontSize: 18,
         fontWeight: 700,
         fontFamily: "var(--font-display)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
         animation: "tierPopIn 0.35s cubic-bezier(.34,1.56,.64,1) both",
         letterSpacing: 0.5,
         textAlign: "center",

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
-import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 
 
 // Multiple-choice-only exercise with 0.25 pts correct / -2 pts wrong.
@@ -251,8 +251,11 @@ export default function MultipleChoiceOnlyScreen({
     {pointsInfo?.justMastered && !fireworksDone && (
       <Fireworks onDone={() => setFireworksDone(true)} />
     )}
-    {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
-      <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+    {pointsInfo?.tierAfter > pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      <>
+        <ConfettiBurst />
+        <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+      </>
     )}
   </>
   );

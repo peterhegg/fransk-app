@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { GRAMMAR_TOPICS, PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
-import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
+import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 
 
 // Shared screen for Gloseøvelse AND Grammatikkøvelse
@@ -241,8 +241,11 @@ export default function QuizExerciseScreen({
     {pointsInfo?.justMastered && !fireworksDone && (
       <Fireworks onDone={() => setFireworksDone(true)} />
     )}
-    {pointsInfo?.tierAfter !== pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
-      <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+    {pointsInfo?.tierAfter > pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
+      <>
+        <ConfettiBurst />
+        <TierPop tierAfter={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />
+      </>
     )}
     </>
   );
