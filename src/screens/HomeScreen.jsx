@@ -69,7 +69,9 @@ const MODE_SHORT = {
 
 function frenchGreeting() {
   const h = new Date().getHours();
-  return h < 17 ? "Bonjour" : "Bonsoir";
+  if (h >= 5 && h < 17) return "Bonjour";
+  if (h >= 17) return "Bonsoir";
+  return "Bonne nuit";
 }
 
 const getCat = (w) => w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
