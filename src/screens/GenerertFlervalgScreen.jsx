@@ -1,3 +1,4 @@
+import { SpeakButton } from "../components/AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
@@ -152,7 +153,7 @@ export default function GenerertFlervalgScreen({
   );
 
   if (loading) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       {navBar}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
         <FlervalgIcon size={32} opacity={0.35} />
@@ -163,7 +164,7 @@ export default function GenerertFlervalgScreen({
   );
 
   if (error) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       {navBar}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
         <div style={{ fontSize: 14, color: "var(--text-subtle)", lineHeight: 1.8 }}>
@@ -186,7 +187,7 @@ export default function GenerertFlervalgScreen({
   );
 
   if (done) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       {navBar}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 20 }}>
         <div style={{ fontSize: 48 }}>🎯</div>
@@ -194,11 +195,11 @@ export default function GenerertFlervalgScreen({
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 90 }}>
             <div style={{ fontSize: 26, fontWeight: 700, color: "var(--color-success)" }}>{stats.correct}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>Riktige</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1, marginTop: 4 }}>Riktige</div>
           </div>
           <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 90 }}>
             <div style={{ fontSize: 26, fontWeight: 700, color: "var(--color-error)" }}>{stats.wrong}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>Feil</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1, marginTop: 4 }}>Feil</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
@@ -218,14 +219,14 @@ export default function GenerertFlervalgScreen({
   const passed = checked && selected === current?.correct;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       {navBar}
       <div style={{ height: 3, background: "var(--border)" }}>
         <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / total) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
           {current?.direction === "fr-no" ? "Oversett til norsk" : "Oversett til fransk"}
         </div>
 
@@ -283,7 +284,7 @@ export default function GenerertFlervalgScreen({
               })()}
               {current.tip && (
                 <div style={{ marginTop: 4, paddingTop: 8, borderTop: "1px solid rgba(46,107,230,0.1)", textAlign: "left" }}>
-                  <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 5 }}>Huskeregel</div>
+                  <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 5 }}>Huskeregel</div>
                   <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{current.tip}</div>
                 </div>
               )}

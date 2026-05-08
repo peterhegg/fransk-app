@@ -108,7 +108,9 @@ async function handleVoice(body, env, corsHeaders) {
   }
 
   if (!response.ok) {
-    return new Response(JSON.stringify({ error: "Upstream error" }), {
+    const errBody = await response.text().catch(() => "");
+    console.error(`Anthropic error ${response.status}:`, errBody.slice(0, 500));
+    return new Response(JSON.stringify({ error: "Upstream error", detail: errBody.slice(0, 200) }), {
       status: 502,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -173,10 +175,6 @@ export default {
 
     if (request.method !== "POST") {
       return new Response("Method not allowed", { status: 405 });
-    }
-
-    if (env.CLIENT_TOKEN && request.headers.get("X-App-Token") !== env.CLIENT_TOKEN) {
-      return new Response("Forbidden", { status: 403, headers: corsHeaders });
     }
 
     if (!await checkBudget(env)) {

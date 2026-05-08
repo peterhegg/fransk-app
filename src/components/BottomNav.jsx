@@ -20,6 +20,14 @@ export default function BottomNav({ screen, showWords, onNav }) {
   }, []);
 
   if (keyboardOpen) return null;
+
+  const EXERCISE_SCREENS = new Set([
+    "dagens-glose", "glose", "dagens-grammatikk", "grammatikk-ovelse",
+    "ordoversettelse", "flervalg", "si-ordet", "oversett-grammatikken",
+    "grammatikk-flervalg", "oversett-setningen", "si-setningen", "generert-flervalg",
+  ]);
+  if (EXERCISE_SCREENS.has(screen) && !showWords) return null;
+
   const tabs = [
     { id: "home",  label: "Hjem",    emoji: "⌂" },
     { id: "glose", label: "Øv",      emoji: "◈" },

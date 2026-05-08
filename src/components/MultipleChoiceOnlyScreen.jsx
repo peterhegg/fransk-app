@@ -1,19 +1,10 @@
+import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import { useState, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
-function AutoPlayToggle({ autoPlay, onToggle }) {
-  if (!onToggle) return <div style={{ width: 60 }} />;
-  return (
-    <button onClick={onToggle} title={autoPlay ? "Skru av automatisk uttale" : "Skru på automatisk uttale"}
-      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: autoPlay ? "var(--accent)" : "var(--text-subtle)", fontSize: 12, fontFamily: "var(--font-body)", padding: "4px 6px", borderRadius: 8, minWidth: 60, justifyContent: "flex-end" }}>
-      <span style={{ fontSize: 18 }}>{autoPlay ? "🔊" : "🔇"}</span>
-      <span style={{ fontSize: 10, letterSpacing: 0.5 }}>{autoPlay ? "På" : "Av"}</span>
-    </button>
-  );
-}
 
 // Multiple-choice-only exercise with 0.25 pts correct / -2 pts wrong.
 // 20 questions: first 10 fr→no, then 10 no→fr (or fewer if bank is small).
@@ -116,7 +107,7 @@ export default function MultipleChoiceOnlyScreen({
   };
 
   if (!card && !done) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -131,7 +122,7 @@ export default function MultipleChoiceOnlyScreen({
   );
 
   if (done) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -143,11 +134,11 @@ export default function MultipleChoiceOnlyScreen({
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 90 }}>
             <div style={{ fontSize: 26, fontWeight: 700, color: "var(--color-success)" }}>{finalStats.correct}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>Riktige</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1, marginTop: 4 }}>Riktige</div>
           </div>
           <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 90 }}>
             <div style={{ fontSize: 26, fontWeight: 700, color: "var(--color-error)" }}>{finalStats.wrong}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>Feil</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1, marginTop: 4 }}>Feil</div>
           </div>
         </div>
         <div style={{ fontSize: 13, color: "var(--text-subtle)" }}>
@@ -169,7 +160,7 @@ export default function MultipleChoiceOnlyScreen({
 
   return (
   <>
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -181,7 +172,7 @@ export default function MultipleChoiceOnlyScreen({
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
           Flervalg · {isReverse ? "Norsk → Fransk" : "Fransk → Norsk"}
         </div>
 
@@ -190,12 +181,12 @@ export default function MultipleChoiceOnlyScreen({
             <div style={{ fontSize: 30, color: "var(--text)", fontFamily: "var(--font-display)" }}>{card.no}</div>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
+              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Hva betyr dette på norsk?</div>
               <div style={{ fontSize: 30, color: "var(--text)", fontStyle: "italic", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.fr}</div>
               {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({card.phonetic})</div>}
               <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-                <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)" }}>🔊</button>
-                <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)" }}>🐢</button>
+                <SpeakButton onClick={() => speak(card.fr)} />
+                <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
               </div>
             </>
           )}
@@ -226,8 +217,8 @@ export default function MultipleChoiceOnlyScreen({
                     <div style={{ fontSize: 22, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
                     {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({card.phonetic})</div>}
                     <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                      <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                      <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                      <SpeakButton onClick={() => speak(card.fr)} />
+                      <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                     </div>
                   </>
                 )}

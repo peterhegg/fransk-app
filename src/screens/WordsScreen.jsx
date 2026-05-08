@@ -200,8 +200,8 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
         const goalMatch = rest.match(/\[goal:([^\]]+)\]\s*$/);
         const importedGoal = goalMatch ? goalMatch[1].trim() : "core";
         if (goalMatch) rest = rest.slice(0, goalMatch.index).trim();
-        const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
-        const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
+        const ptsMatch = rest.match(/\[pts:([\d.]+)\]\s*$/);
+        const importedPoints = ptsMatch ? parseFloat(ptsMatch[1]) : null;
         if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
         const pm = rest.match(/\(([^)]+)\)\s*$/);
         const phonetic = pm ? pm[1].trim() : "";
@@ -280,8 +280,8 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
         const topicMatch = rest.match(/\[topic:([^\]]+)\]\s*$/);
         const importedTopic = topicMatch ? topicMatch[1].trim() : null;
         if (topicMatch) rest = rest.slice(0, topicMatch.index).trim();
-        const ptsMatch = rest.match(/\[pts:(\d+)\]\s*$/);
-        const importedPoints = ptsMatch ? parseInt(ptsMatch[1], 10) : null;
+        const ptsMatch = rest.match(/\[pts:([\d.]+)\]\s*$/);
+        const importedPoints = ptsMatch ? parseFloat(ptsMatch[1]) : null;
         if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
         const pm = rest.match(/\(([^)]+)\)\s*$/);
         const phonetic = pm ? pm[1].trim() : "";
@@ -325,42 +325,47 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        {grammarView ? (
-          <button onClick={() => { setGrammarView(false); setGramImportOpen(false); }} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Ordbanken</button>
-        ) : (
-          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
+      <div style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
           {grammarView ? (
-            <><span style={{ color: "var(--accent)" }}>◐</span> Grammatikkbanken</>
+            <button onClick={() => { setGrammarView(false); setGramImportOpen(false); }} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Ordbanken</button>
           ) : (
-            <><span style={{ color: "var(--accent)" }}>◈</span> Ordsamlingen din</>
+            <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
           )}
-        </div>
-        {grammarView ? (
-          <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={copyGrammarWords}
-              style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(46,107,230,0.4)"}`, borderRadius: 8, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "4px 10px", cursor: "pointer", transition: "all 0.3s" }}>
-              {gramCopied ? "✓" : "Kopier"}
-            </button>
-            {setGrammarWords && (
-              <button onClick={() => setGramImportOpen(o => !o)}
-                style={{ background: gramImportOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: gramImportOpen ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "4px 10px", cursor: "pointer" }}>
-                Importer
-              </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
+            {grammarView ? (
+              <><span style={{ color: "var(--accent)" }}>◐</span> Grammatikkbanken</>
+            ) : (
+              <><span style={{ color: "var(--accent)" }}>◈</span> Ordsamlingen din</>
             )}
           </div>
-        ) : (
-          <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={() => setCatManageOpen(true)}
-              style={{ background: "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
-            <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
-              style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
-            <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
-              style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
-          </div>
-        )}
+          <div style={{ width: 70 }} />
+        </div>
+        <div style={{ display: "flex", gap: 8, padding: "0 16px 12px" }}>
+          {grammarView ? (
+            <>
+              <button onClick={copyGrammarWords}
+                style={{ background: gramCopied ? "var(--color-success)" : "none", border: `1px solid ${gramCopied ? "var(--color-success)" : "rgba(46,107,230,0.4)"}`, borderRadius: 8, color: gramCopied ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "5px 14px", cursor: "pointer", transition: "all 0.3s" }}>
+                {gramCopied ? "✓ Kopiert" : "Kopier"}
+              </button>
+              {setGrammarWords && (
+                <button onClick={() => setGramImportOpen(o => !o)}
+                  style={{ background: gramImportOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: gramImportOpen ? "white" : "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "5px 14px", cursor: "pointer" }}>
+                  ↑ Importer
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <button onClick={() => setCatManageOpen(true)}
+                style={{ background: "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: "var(--accent)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
+              <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
+                style={{ background: importOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: importOpen ? "white" : "var(--accent)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
+              <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
+                style={{ background: addOpen ? "var(--accent)" : "none", border: "1px solid rgba(46,107,230,0.4)", borderRadius: 8, color: addOpen ? "white" : "var(--accent)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
+            </>
+          )}
+        </div>
       </div>
 
       {importOpen && (

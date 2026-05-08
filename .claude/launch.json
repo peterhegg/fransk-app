@@ -4,8 +4,8 @@
     {
       "name": "fransk-app",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "/Users/peterhegg/Documents/Jobb/Apper/fransk-app"],
-      "port": 5173
+      "runtimeArgs": ["run", "dev"],
+      "port": 5174
     }
   ]
 }

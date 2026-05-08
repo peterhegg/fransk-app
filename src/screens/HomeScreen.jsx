@@ -67,9 +67,9 @@ const MODE_SHORT = {
   "fri":               "Spør fritt",
 };
 
-function timeGreeting() {
+function frenchGreeting() {
   const h = new Date().getHours();
-  return h < 12 ? "God morgen" : h < 17 ? "God ettermiddag" : "God kveld";
+  return h < 17 ? "Bonjour" : "Bonsoir";
 }
 
 const getCat = (w) => w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
@@ -804,8 +804,8 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         {/* Header */}
         <div style={{ padding: "52px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: 13, color: "var(--text-subtle)", fontWeight: 400, marginBottom: 3 }}>Bonjour, {profile.name} 👋</div>
-            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>{timeGreeting()}</div>
+            <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 3, opacity: 0.5, marginBottom: 6, fontWeight: 400 }}>L'ATELIER</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>{frenchGreeting()}, {profile.name} 👋</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <ThemeToggle />

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>L'Atelier — Ikonalternativer v2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #050b14;
+      font-family: -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+    }
+    h1 {
+      color: rgba(232,237,245,0.28);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+    .grid {
+      display: flex;
+      gap: 44px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .icon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .label { color: rgba(232,237,245,0.55); font-size: 12px; }
+    .sub   { color: rgba(232,237,245,0.28); font-size: 10px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>L'Atelier — Eiffeltårn-alternativer</h1>
+  <div class="grid">
+
+    <!-- A: La Nuit Étoilée -->
+    <div class="icon-wrap">
+      <svg width="140" height="140" viewBox="0 0 120 120" style="border-radius:26px;display:block;">
+        <defs>
+          <linearGradient id="a-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#06122a"/>
+            <stop offset="100%" stop-color="#110614"/>
+          </linearGradient>
+          <linearGradient id="a-tower" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#3d80f5"/>
+            <stop offset="44%"  stop-color="#d0dcf2"/>
+            <stop offset="100%" stop-color="#b83030"/>
+          </linearGradient>
+          <linearGradient id="a-city" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#070e1c"/>
+            <stop offset="100%" stop-color="#030710"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" fill="url(#a-sky)"/>
+        <!-- Stars -->
+        <circle cx="11"  cy="9"  r="0.7" fill="white" opacity="0.65"/>
+        <circle cx="30"  cy="5"  r="0.5" fill="white" opacity="0.5"/>
+        <circle cx="52"  cy="10" r="0.9" fill="white" opacity="0.75"/>
+        <circle cx="74"  cy="4"  r="0.5" fill="white" opacity="0.45"/>
+        <circle cx="92"  cy="11" r="0.8" fill="white" opacity="0.7"/>
+        <circle cx="110" cy="6"  r="0.6" fill="white" opacity="0.55"/>
+        <circle cx="18"  cy="26" r="0.4" fill="white" opacity="0.35"/>
+        <circle cx="104" cy="22" r="0.7" fill="white" opacity="0.5"/>
+        <circle cx="38"  cy="20" r="0.45" fill="white" opacity="0.3"/>
+        <circle cx="97"  cy="36" r="0.4" fill="white" opacity="0.4"/>
+        <circle cx="8"   cy="44" r="0.55" fill="white" opacity="0.3"/>
+        <circle cx="113" cy="45" r="0.45" fill="white" opacity="0.35"/>
+        <circle cx="65"  cy="15" r="0.35" fill="white" opacity="0.25"/>
+        <!-- City LEFT (Haussmann with Mansard peaks) -->
+        <path d="M0,120 L0,88 L4,88 L4,82 L6,78 L8,82 L8,88 L11,88 L11,76 L13,72 L15,76 L15,88 L18,88 L18,80 L20,75 L22,80 L22,88 L25,88 L25,74 L28,69 L31,74 L31,88 L34,88 L34,78 L36,74 L38,78 L38,88 L38,120 Z" fill="url(#a-city)"/>
+        <rect x="5"  y="75" width="2" height="5" fill="#050c18"/>
+        <rect x="12" y="70" width="2" height="4" fill="#050c18"/>
+        <rect x="20" y="72" width="2" height="5" fill="#050c18"/>
+        <rect x="29" y="66" width="2" height="5" fill="#050c18"/>
+        <!-- City RIGHT -->
+        <path d="M120,120 L120,88 L116,88 L116,78 L114,74 L112,78 L112,88 L109,88 L109,74 L107,69 L105,74 L105,88 L102,88 L102,80 L100,75 L98,80 L98,88 L95,88 L95,76 L93,72 L91,76 L91,88 L88,88 L88,82 L86,78 L84,82 L84,88 L82,88 L82,120 Z" fill="url(#a-city)"/>
+        <rect x="113" y="71" width="2" height="5" fill="#050c18"/>
+        <rect x="106" y="66" width="2" height="5" fill="#050c18"/>
+        <rect x="99"  y="72" width="2" height="5" fill="#050c18"/>
+        <rect x="92"  y="70" width="2" height="4" fill="#050c18"/>
+        <!-- Ground -->
+        <rect x="0" y="90" width="120" height="30" fill="#030609"/>
+        <!-- Tower -->
+        <path d="M38,90 L50,65 L53,65 L44,90 Z" fill="url(#a-tower)"/>
+        <path d="M82,90 L70,65 L67,65 L76,90 Z" fill="url(#a-tower)"/>
+        <rect x="41" y="79" width="38" height="1.5" fill="url(#a-tower)" opacity="0.55"/>
+        <rect x="48" y="63" width="24" height="3.5" rx="0.8" fill="url(#a-tower)"/>
+        <path d="M51,63 L54,48 L66,48 L69,63 Z" fill="url(#a-tower)"/>
+        <rect x="54" y="56" width="12" height="1.2" fill="white" opacity="0.22"/>
+        <rect x="52" y="46" width="16" height="3" rx="0.7" fill="url(#a-tower)"/>
+        <path d="M54,46 L57.5,32 L62.5,32 L66,46 Z" fill="url(#a-tower)"/>
+        <polygon points="60,17 57.5,32 62.5,32" fill="url(#a-tower)"/>
+        <circle cx="60" cy="16.5" r="1.3" fill="#5589ee" opacity="0.9"/>
+        <text x="60" y="108" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="8" font-style="italic" fill="rgba(232,237,245,0.6)" letter-spacing="0.8">L'Atelier</text>
+      </svg>
+      <div class="label">A — La Nuit Étoilée</div>
+      <div class="sub">Tricolor tårn · stjernehimmel</div>
+    </div>
+
+    <!-- B: Le Crépuscule -->
+    <div class="icon-wrap">
+      <svg width="140" height="140" viewBox="0 0 120 120" style="border-radius:26px;display:block;">
+        <defs>
+          <linearGradient id="b-sky" x1="0.1" y1="0" x2="0.9" y2="1">
+            <stop offset="0%"   stop-color="#0c2245"/>
+            <stop offset="38%"  stop-color="#0d1b2e"/>
+            <stop offset="62%"  stop-color="#0d1b2e"/>
+            <stop offset="100%" stop-color="#1c0c14"/>
+          </linearGradient>
+          <radialGradient id="b-glow" cx="50%" cy="63%" r="38%">
+            <stop offset="0%"   stop-color="#2e6be6" stop-opacity="0.28"/>
+            <stop offset="100%" stop-color="#2e6be6" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="b-city" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#080e1c"/>
+            <stop offset="100%" stop-color="#03060e"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" fill="url(#b-sky)"/>
+        <ellipse cx="60" cy="72" rx="34" ry="26" fill="url(#b-glow)"/>
+        <!-- Crescent moon -->
+        <path d="M96,18 A9,9 0 1 1 96,36 A6.5,6.5 0 1 0 96,18" fill="rgba(200,218,245,0.5)"/>
+        <!-- City LEFT -->
+        <path d="M0,120 L0,88 L4,88 L4,80 L6,76 L8,80 L8,88 L12,88 L12,73 L14,69 L16,73 L16,88 L19,88 L19,77 L21,73 L23,77 L23,88 L26,88 L26,71 L29,66 L32,71 L32,88 L35,88 L35,75 L37,71 L38,75 L38,88 L38,120 Z" fill="url(#b-city)"/>
+        <!-- City RIGHT -->
+        <path d="M120,120 L120,88 L116,88 L116,75 L114,71 L112,75 L112,88 L109,88 L109,71 L107,66 L105,71 L105,88 L102,88 L102,77 L100,73 L98,77 L98,88 L95,88 L95,73 L93,69 L91,73 L91,88 L88,88 L88,80 L86,76 L84,80 L84,88 L82,88 L82,120 Z" fill="url(#b-city)"/>
+        <rect x="0" y="90" width="120" height="30" fill="#030508"/>
+        <!-- Tower silhouette with glowing edges -->
+        <path d="M38,90 L50,65 L53,65 L44,90 Z" fill="#070f20"/>
+        <path d="M38,90 L50,65 L50.8,65.9 L38.8,90 Z" fill="rgba(46,107,230,0.45)"/>
+        <path d="M82,90 L70,65 L67,65 L76,90 Z" fill="#070f20"/>
+        <path d="M82,90 L70,65 L69.2,65.9 L81.2,90 Z" fill="rgba(46,107,230,0.45)"/>
+        <rect x="40" y="79" width="40" height="1.8" fill="#070f20"/>
+        <rect x="48" y="63" width="24" height="3.5" rx="0.8" fill="#070f20"/>
+        <rect x="48" y="63" width="24" height="0.9" rx="0.4" fill="rgba(46,107,230,0.5)"/>
+        <path d="M51,63 L54,48 L66,48 L69,63 Z" fill="#070f20"/>
+        <path d="M51,63 L54,48 L54.6,48.6 L51.6,63 Z" fill="rgba(46,107,230,0.38)"/>
+        <rect x="54" y="56" width="12" height="1.2" fill="#070f20"/>
+        <rect x="52" y="46" width="16" height="3" rx="0.7" fill="#070f20"/>
+        <rect x="52" y="46" width="16" height="0.8" rx="0.4" fill="rgba(46,107,230,0.45)"/>
+        <path d="M54,46 L57.5,32 L62.5,32 L66,46 Z" fill="#070f20"/>
+        <path d="M54,46 L57.5,32 L58,32.5 L54.5,46 Z" fill="rgba(46,107,230,0.35)"/>
+        <polygon points="60,17 57.5,32 62.5,32" fill="#070f20"/>
+        <circle cx="60" cy="16.5" r="2.2" fill="#2e6be6" opacity="0.85"/>
+        <circle cx="60" cy="16.5" r="5"   fill="#2e6be6" opacity="0.18"/>
+        <text x="60" y="108" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="8" font-style="italic" fill="rgba(232,237,245,0.5)" letter-spacing="0.8">L'Atelier</text>
+      </svg>
+      <div class="label">B — Le Crépuscule</div>
+      <div class="sub">App-gradient · silhuett · blå glød</div>
+    </div>
+
+    <!-- C: L'Affiche Bleue -->
+    <div class="icon-wrap">
+      <svg width="140" height="140" viewBox="0 0 120 120" style="border-radius:26px;display:block;">
+        <defs>
+          <linearGradient id="c-bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#091526"/>
+            <stop offset="100%" stop-color="#060c18"/>
+          </linearGradient>
+          <linearGradient id="c-tower" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#5a9af0"/>
+            <stop offset="100%" stop-color="#1a4fbf"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" fill="url(#c-bg)"/>
+        <!-- Art Deco border -->
+        <rect x="7" y="7" width="106" height="106" rx="4" fill="none" stroke="rgba(46,107,230,0.32)" stroke-width="0.8"/>
+        <rect x="10" y="10" width="100" height="100" rx="3" fill="none" stroke="rgba(46,107,230,0.14)" stroke-width="0.5"/>
+        <!-- Tricolor top -->
+        <rect x="13" y="13" width="30" height="1.5" fill="#2e6be6" opacity="0.9"/>
+        <rect x="45" y="13" width="30" height="1.5" fill="rgba(220,228,245,0.6)"/>
+        <rect x="77" y="13" width="30" height="1.5" fill="#b83030" opacity="0.85"/>
+        <!-- City LEFT — Mansard roofs adapted for L'Affiche -->
+        <path d="M13,102 L13,82 L16.5,76 L20,82 L20,76 L24,70 L28,76 L28,80 L31,74 L34,80 L34,83 L36,78 L38,83 L38,102 Z" fill="#0d1c30"/>
+        <!-- Chimneys left -->
+        <rect x="15"   y="72" width="2"   height="5"   fill="#060e1c"/>
+        <rect x="22.5" y="66" width="2"   height="5"   fill="#060e1c"/>
+        <rect x="30"   y="70" width="2"   height="5"   fill="#060e1c"/>
+        <rect x="35.5" y="74" width="1.5" height="4.5" fill="#060e1c"/>
+        <!-- Windows left (blue-tinted glow) -->
+        <rect x="14"   y="84" width="3" height="2" fill="rgba(46,107,230,0.22)"/>
+        <rect x="14"   y="88" width="3" height="2" fill="rgba(46,107,230,0.16)"/>
+        <rect x="21.5" y="79" width="3" height="2" fill="rgba(46,107,230,0.28)"/>
+        <rect x="21.5" y="83" width="3" height="2" fill="rgba(46,107,230,0.2)"/>
+        <rect x="25.5" y="83" width="3" height="2" fill="rgba(46,107,230,0.18)"/>
+        <rect x="29"   y="82" width="2.5" height="2" fill="rgba(46,107,230,0.2)"/>
+        <rect x="29"   y="86" width="2.5" height="2" fill="rgba(46,107,230,0.15)"/>
+
+        <!-- City RIGHT — mirror, Mansard adapted -->
+        <path d="M82,102 L82,83 L84,78 L86,83 L86,80 L89,74 L92,80 L92,76 L96,70 L100,76 L100,82 L103.5,76 L107,82 L107,102 Z" fill="#0d1c30"/>
+        <!-- Chimneys right -->
+        <rect x="83"   y="74" width="1.5" height="4.5" fill="#060e1c"/>
+        <rect x="88"   y="70" width="2"   height="5"   fill="#060e1c"/>
+        <rect x="95.5" y="66" width="2"   height="5"   fill="#060e1c"/>
+        <rect x="103"  y="72" width="2"   height="5"   fill="#060e1c"/>
+        <!-- Windows right -->
+        <rect x="88.5" y="82" width="2.5" height="2" fill="rgba(46,107,230,0.2)"/>
+        <rect x="88.5" y="86" width="2.5" height="2" fill="rgba(46,107,230,0.15)"/>
+        <rect x="91.5" y="83" width="3"   height="2" fill="rgba(46,107,230,0.18)"/>
+        <rect x="93"   y="79" width="3"   height="2" fill="rgba(46,107,230,0.2)"/>
+        <rect x="97"   y="83" width="3"   height="2" fill="rgba(46,107,230,0.28)"/>
+        <rect x="103"  y="84" width="3"   height="2" fill="rgba(46,107,230,0.22)"/>
+        <rect x="103"  y="88" width="3"   height="2" fill="rgba(46,107,230,0.16)"/>
+
+        <line x1="13" y1="101" x2="107" y2="101" stroke="rgba(46,107,230,0.22)" stroke-width="0.7"/>
+
+        <!-- Center background buildings (visible between tower legs) -->
+        <path d="M44,102 L44,81 L48,75 L52,81 L52,102 Z"  fill="#0d1c30"/>
+        <path d="M52,102 L52,77 L60,69 L68,77 L68,102 Z"  fill="#0f1e32"/>
+        <path d="M68,102 L68,81 L72,75 L76,81 L76,102 Z"  fill="#0d1c30"/>
+        <!-- Center chimneys -->
+        <rect x="47"   y="71" width="2" height="5" fill="#0a1526"/>
+        <rect x="59"   y="65" width="2" height="5" fill="#0a1526"/>
+        <rect x="71"   y="71" width="2" height="5" fill="#0a1526"/>
+        <!-- Center windows (blue-tinted) -->
+        <rect x="47.5" y="83" width="2.5" height="2" fill="rgba(46,107,230,0.28)"/>
+        <rect x="56"   y="80" width="3"   height="2" fill="rgba(46,107,230,0.32)"/>
+        <rect x="61"   y="80" width="3"   height="2" fill="rgba(46,107,230,0.28)"/>
+        <rect x="56"   y="84" width="3"   height="2" fill="rgba(46,107,230,0.2)"/>
+        <rect x="61"   y="84" width="3"   height="2" fill="rgba(46,107,230,0.18)"/>
+        <rect x="70"   y="83" width="2.5" height="2" fill="rgba(46,107,230,0.28)"/>
+
+        <!-- Tower -->
+        <path d="M38,90 L50,65 L53,65 L44,90 Z" fill="url(#c-tower)"/>
+        <path d="M82,90 L70,65 L67,65 L76,90 Z" fill="url(#c-tower)"/>
+        <rect x="40" y="80" width="40" height="2" fill="url(#c-tower)" opacity="0.7"/>
+        <rect x="47" y="63" width="26" height="4" rx="1" fill="url(#c-tower)"/>
+        <rect x="47" y="63" width="26" height="0.9" rx="0.4" fill="rgba(255,255,255,0.2)"/>
+        <path d="M51,63 L54,48 L66,48 L69,63 Z" fill="url(#c-tower)"/>
+        <rect x="54" y="56" width="12" height="1.5" fill="rgba(255,255,255,0.18)"/>
+        <rect x="52" y="46" width="16" height="3.5" rx="0.8" fill="url(#c-tower)"/>
+        <rect x="52" y="46" width="16" height="0.8" rx="0.4" fill="rgba(255,255,255,0.2)"/>
+        <path d="M54,46 L57.5,32 L62.5,32 L66,46 Z" fill="url(#c-tower)"/>
+        <polygon points="60,17 57.5,32 62.5,32" fill="url(#c-tower)"/>
+        <path d="M51,63 L54,48 L57.5,32 L60,17" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.7"/>
+        <!-- Tricolor bottom -->
+        <rect x="13" y="105" width="30" height="1.5" fill="#2e6be6" opacity="0.9"/>
+        <rect x="45" y="105" width="30" height="1.5" fill="rgba(220,228,245,0.6)"/>
+        <rect x="77" y="105" width="30" height="1.5" fill="#b83030" opacity="0.85"/>
+        <text x="60" y="114" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7" fill="rgba(232,237,245,0.72)" letter-spacing="2.5" font-weight="700">L'ATELIER</text>
+      </svg>
+      <div class="label">C — L'Affiche Bleue</div>
+      <div class="sub">Plakat-stil · tricolor border</div>
+    </div>
+
+    <!-- D: La Lueur Dorée -->
+    <div class="icon-wrap">
+      <svg width="140" height="140" viewBox="0 0 120 120" style="border-radius:26px;display:block;">
+        <defs>
+          <linearGradient id="d-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#060d1c"/>
+            <stop offset="100%" stop-color="#0c0610"/>
+          </linearGradient>
+          <radialGradient id="d-glow" cx="50%" cy="57%" r="42%">
+            <stop offset="0%"   stop-color="#d4a020" stop-opacity="0.32"/>
+            <stop offset="55%"  stop-color="#a07010" stop-opacity="0.1"/>
+            <stop offset="100%" stop-color="#a07010" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="d-tower" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#e8c44a"/>
+            <stop offset="55%"  stop-color="#c49428"/>
+            <stop offset="100%" stop-color="#8a6810"/>
+          </linearGradient>
+          <linearGradient id="d-city" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#080e1c"/>
+            <stop offset="100%" stop-color="#040810"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" fill="url(#d-sky)"/>
+        <ellipse cx="60" cy="64" rx="42" ry="30" fill="url(#d-glow)"/>
+        <!-- City LEFT — Mansard roofs + chimneys -->
+        <path d="M0,120 L0,88 L3,88 L3,84 L5,80 L7,76 L9,80 L9,84 L9,88 L12,88 L12,82 L13,78 L15,73 L17,78 L17,82 L17,88 L20,88 L20,80 L21,76 L23,72 L25,76 L25,80 L25,88 L28,88 L28,84 L29,79 L32,74 L35,79 L35,84 L35,88 L38,88 L38,120 Z" fill="url(#d-city)"/>
+        <rect x="6"  y="73" width="2.5" height="5" fill="#050b18"/>
+        <rect x="13" y="70" width="2.5" height="5" fill="#050b18"/>
+        <rect x="21" y="68" width="2.5" height="5" fill="#050b18"/>
+        <rect x="30" y="70" width="2.5" height="5" fill="#050b18"/>
+        <rect x="14" y="77" width="2" height="2" fill="rgba(212,180,60,0.22)"/>
+        <rect x="22" y="75" width="2" height="2" fill="rgba(212,180,60,0.22)"/>
+        <!-- City RIGHT — Mansard roofs + chimneys -->
+        <path d="M120,120 L120,88 L117,88 L117,84 L116,79 L113,74 L110,79 L110,84 L110,88 L107,88 L107,84 L106,79 L103,74 L100,79 L100,84 L100,88 L97,88 L97,80 L96,76 L94,72 L92,76 L92,80 L92,88 L89,88 L89,82 L88,78 L86,73 L84,78 L84,82 L84,88 L82,88 L82,120 Z" fill="url(#d-city)"/>
+        <rect x="112" y="70" width="2.5" height="5" fill="#050b18"/>
+        <rect x="105" y="70" width="2.5" height="5" fill="#050b18"/>
+        <rect x="97"  y="68" width="2.5" height="5" fill="#050b18"/>
+        <rect x="87"  y="70" width="2.5" height="5" fill="#050b18"/>
+        <rect x="104" y="77" width="2" height="2" fill="rgba(212,180,60,0.22)"/>
+        <rect x="96"  y="75" width="2" height="2" fill="rgba(212,180,60,0.22)"/>
+        <!-- Ground -->
+        <rect x="0" y="90" width="120" height="30" fill="#030609"/>
+        <ellipse cx="60" cy="91" rx="24" ry="3" fill="#c49428" opacity="0.1"/>
+        <!-- Tower golden -->
+        <path d="M38,90 L50,65 L53,65 L44,90 Z" fill="url(#d-tower)"/>
+        <path d="M82,90 L70,65 L67,65 L76,90 Z" fill="url(#d-tower)"/>
+        <rect x="40" y="79" width="40" height="1.8" fill="#b08820" opacity="0.8"/>
+        <rect x="48" y="63" width="24" height="3.5" rx="0.8" fill="url(#d-tower)"/>
+        <rect x="48" y="63" width="24" height="0.8" rx="0.4" fill="rgba(255,220,80,0.45)"/>
+        <path d="M51,63 L54,48 L66,48 L69,63 Z" fill="url(#d-tower)"/>
+        <rect x="54" y="56" width="12" height="1.2" fill="#906010" opacity="0.8"/>
+        <rect x="52" y="46" width="16" height="3" rx="0.7" fill="url(#d-tower)"/>
+        <rect x="52" y="46" width="16" height="0.8" rx="0.4" fill="rgba(255,220,80,0.4)"/>
+        <path d="M54,46 L57.5,32 L62.5,32 L66,46 Z" fill="url(#d-tower)"/>
+        <polygon points="60,17 57.5,32 62.5,32" fill="url(#d-tower)"/>
+        <!-- Tip glow -->
+        <circle cx="60" cy="16.5" r="9"  fill="#ffd700" opacity="0.07"/>
+        <circle cx="60" cy="16.5" r="5"  fill="#ffd700" opacity="0.18"/>
+        <circle cx="60" cy="16.5" r="2"  fill="#ffd700" opacity="0.95"/>
+        <!-- Light dots (illumination) -->
+        <circle cx="60" cy="38" r="0.6" fill="rgba(255,210,60,0.55)"/>
+        <circle cx="57" cy="42" r="0.5" fill="rgba(255,210,60,0.4)"/>
+        <circle cx="63" cy="42" r="0.5" fill="rgba(255,210,60,0.4)"/>
+        <circle cx="60" cy="55" r="0.6" fill="rgba(255,210,60,0.4)"/>
+        <text x="60" y="107" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="8" font-style="italic" fill="rgba(212,168,40,0.8)" letter-spacing="0.8">L'Atelier</text>
+      </svg>
+      <div class="label">D — La Lueur Dorée</div>
+      <div class="sub">Gyllen glød · mansardtak · chimneys</div>
+    </div>
+
+  </div>
+</body>
+</html>

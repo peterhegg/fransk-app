@@ -1,19 +1,10 @@
+import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
-function AutoPlayToggle({ autoPlay, onToggle }) {
-  if (!onToggle) return <div style={{ width: 60 }} />;
-  return (
-    <button onClick={onToggle} title={autoPlay ? "Skru av automatisk uttale" : "Skru på automatisk uttale"}
-      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: autoPlay ? "var(--accent)" : "var(--text-subtle)", fontSize: 12, fontFamily: "var(--font-body)", padding: "4px 6px", borderRadius: 8, minWidth: 60, justifyContent: "flex-end" }}>
-      <span style={{ fontSize: 18 }}>{autoPlay ? "🔊" : "🔇"}</span>
-      <span style={{ fontSize: 10, letterSpacing: 0.5 }}>{autoPlay ? "På" : "Av"}</span>
-    </button>
-  );
-}
 
 // Input-only translation exercise (no multiple choice).
 // Used for "Ordoversettelse" (glose bank) and "Oversett grammatikken" (grammar bank).
@@ -121,7 +112,7 @@ export default function TranslationExerciseScreen({
   };
 
   if (!card) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -137,7 +128,7 @@ export default function TranslationExerciseScreen({
 
   return (
   <>
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -149,24 +140,24 @@ export default function TranslationExerciseScreen({
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
           {card.id ? `Repetisjon · niv. ${card.level}` : "Nytt ord"}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
           {isReverse ? (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Oversett til fransk</div>
+              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Oversett til fransk</div>
               <div style={{ fontSize: 34, color: "var(--text)", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.no}</div>
             </>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Oversett til norsk</div>
+              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Oversett til norsk</div>
               <div style={{ fontSize: 34, color: "var(--text)", fontStyle: "italic", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.fr}</div>
               {card.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 8 }}>({card.phonetic})</div>}
               <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center" }}>
-                <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)" }}>🔊</button>
-                <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)" }}>🐢</button>
+                <SpeakButton onClick={() => speak(card.fr)} />
+                <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
               </div>
             </>
           )}
@@ -199,8 +190,8 @@ export default function TranslationExerciseScreen({
                     <div style={{ fontSize: 22, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
                     {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({card.phonetic})</div>}
                     <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                      <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                      <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                      <SpeakButton onClick={() => speak(card.fr)} />
+                      <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                     </div>
                   </>
                 )}
@@ -214,8 +205,8 @@ export default function TranslationExerciseScreen({
                 <div style={{ fontSize: 15, color: "var(--text)" }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
                 {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.8, marginTop: 6 }}>{card.phonetic}</div>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-                  <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  <SpeakButton onClick={() => speak(card.fr)} />
+                  <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                 </div>
                 <PointsBadge pointsInfo={pointsInfo} />
               </div>
@@ -227,8 +218,8 @@ export default function TranslationExerciseScreen({
                 <div style={{ fontSize: 18, color: "var(--text)", marginBottom: 4 }}>{isReverse ? card.fr : card.no}</div>
                 {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 4 }}>
-                  <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  <SpeakButton onClick={() => speak(card.fr)} />
+                  <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                 </div>
                 <PointsBadge pointsInfo={pointsInfo} />
               </div>

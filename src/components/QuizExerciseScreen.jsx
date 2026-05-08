@@ -1,19 +1,10 @@
+import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import { useRef, useState, useEffect } from "react";
 import { GRAMMAR_TOPICS, PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop } from "./PointsBadge.jsx";
 
-function AutoPlayToggle({ autoPlay, onToggle }) {
-  if (!onToggle) return <div style={{ width: 60 }} />;
-  return (
-    <button onClick={onToggle} title={autoPlay ? "Skru av automatisk uttale" : "Skru på automatisk uttale"}
-      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: autoPlay ? "var(--accent)" : "var(--text-subtle)", fontSize: 12, fontFamily: "var(--font-body)", padding: "4px 6px", borderRadius: 8, minWidth: 60, justifyContent: "flex-end" }}>
-      <span style={{ fontSize: 18 }}>{autoPlay ? "🔊" : "🔇"}</span>
-      <span style={{ fontSize: 10, letterSpacing: 0.5 }}>{autoPlay ? "På" : "Av"}</span>
-    </button>
-  );
-}
 
 // Shared screen for Gloseøvelse AND Grammatikkøvelse
 export default function QuizExerciseScreen({
@@ -81,7 +72,7 @@ export default function QuizExerciseScreen({
   };
 
   if (!card) return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -97,7 +88,7 @@ export default function QuizExerciseScreen({
 
   return (
     <>
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
@@ -109,24 +100,24 @@ export default function QuizExerciseScreen({
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2, textTransform: "uppercase" }}>
+        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
           {isFromBank ? `Repetisjon · niv. ${card.level}` : "Nytt ord"}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
           {isReverse ? (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Oversett til fransk</div>
+              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Oversett til fransk</div>
               <div style={{ fontSize: 34, color: "var(--text)", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.no}</div>
             </>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Hva betyr dette på norsk?</div>
+              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Hva betyr dette på norsk?</div>
               <div style={{ fontSize: 34, color: "var(--text)", fontStyle: "italic", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.fr}</div>
               {card.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 8 }}>({card.phonetic})</div>}
               <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center" }}>
-                <button onClick={() => speak(card.fr)} title="Normal hastighet" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)", lineHeight: 1 }}>🔊</button>
-                <button onClick={() => speak(card.fr, 0.4)} title="Sakte" style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.45)", lineHeight: 1 }}>🐢</button>
+                <SpeakButton onClick={() => speak(card.fr)} />
+                <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
               </div>
             </>
           )}
@@ -173,8 +164,8 @@ export default function QuizExerciseScreen({
                     <div style={{ fontSize: 22, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
                     {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({card.phonetic})</div>}
                     <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                      <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                      <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                      <SpeakButton onClick={() => speak(card.fr)} />
+                      <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                     </div>
                   </>
                 )}
@@ -188,8 +179,8 @@ export default function QuizExerciseScreen({
                 <div style={{ fontSize: 15, color: "var(--text)" }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
                 {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.8, marginTop: 6 }}>{card.phonetic}</div>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-                  <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  <SpeakButton onClick={() => speak(card.fr)} />
+                  <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                 </div>
                 <PointsBadge pointsInfo={pointsInfo} />
               </div>
@@ -202,8 +193,8 @@ export default function QuizExerciseScreen({
                   <div style={{ fontSize: 18, color: "var(--text)", marginBottom: 4 }}>{isReverse ? card.fr : card.no}</div>
                   {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 4 }}>
-                    <button onClick={() => speak(card.fr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                    <button onClick={() => speak(card.fr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                    <SpeakButton onClick={() => speak(card.fr)} />
+                    <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
                   </div>
                   <PointsBadge pointsInfo={pointsInfo} />
                 </div>
@@ -216,7 +207,7 @@ export default function QuizExerciseScreen({
                         {aiHint.forklaring && <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, marginBottom: aiHint.huskeregel ? 8 : 0 }}>{aiHint.forklaring}</div>}
                         {aiHint.huskeregel && (
                           <>
-                            <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Huskeregel</div>
+                            <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 4 }}>Huskeregel</div>
                             <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{aiHint.huskeregel}</div>
                           </>
                         )}
@@ -226,7 +217,7 @@ export default function QuizExerciseScreen({
                 )}
                 {grammarTip && !aiHint && !aiHintLoading && (
                   <div style={{ background: "rgba(46,107,230,0.05)", border: "1px solid rgba(46,107,230,0.15)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
-                    <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Huskeregel — {grammarTip.title}</div>
+                    <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 6 }}>Huskeregel — {grammarTip.title}</div>
                     <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{grammarTip.description}</div>
                   </div>
                 )}

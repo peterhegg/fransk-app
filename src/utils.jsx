@@ -108,10 +108,34 @@ export function getQuizOptions(card, bank = [], isReverse = false) {
 export function todayStr() { return new Date().toISOString().split("T")[0]; }
 
 // --- Storage ---
+function stripWordTags(field) {
+  if (!field) return field;
+  return field
+    .replace(/\s*\[pts:[\d.]+\]/g, "")
+    .replace(/\s*\[goal:[^\]]+\]/g, "")
+    .replace(/\s*\[cat:[^\]]+\]/g, "")
+    .trim();
+}
+
+function migrateWord(w) {
+  const no = stripWordTags(w.no || "");
+  const pm = no.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (pm) {
+    return { ...w, no: pm[1].trim(), phonetic: w.phonetic || pm[2].trim() };
+  }
+  return no !== w.no ? { ...w, no } : w;
+}
+
 export function loadWords() {
   try {
     const s = localStorage.getItem(WORDS_KEY);
-    if (s) return JSON.parse(s);
+    if (s) {
+      const arr = JSON.parse(s);
+      const migrated = arr.map(migrateWord);
+      const dirty = migrated.some((w, i) => w !== arr[i]);
+      if (dirty) saveWords(migrated);
+      return migrated;
+    }
     const old = localStorage.getItem("fransk-laering-ord");
     if (old) {
       const arr = JSON.parse(old);
