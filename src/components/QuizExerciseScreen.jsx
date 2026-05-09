@@ -25,7 +25,7 @@ export default function QuizExerciseScreen({
   useEffect(() => { setFireworksDone(false); setTierPopDone(false); setAiHint(null); setAiHintLoading(false); }, [card?.fr, card?.reverse]);
 
   useEffect(() => {
-    if (!checked || result !== "wrong" || !card || !isOnline) return;
+    if (!checked || result !== "wrong" || !card || !isOnline || !card.topicId) return;
     hintAbortRef.current?.abort();
     const controller = new AbortController();
     hintAbortRef.current = controller;
