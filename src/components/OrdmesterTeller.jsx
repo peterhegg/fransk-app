@@ -114,7 +114,7 @@ function MasteryGraph({ masteredCount, midpoint }) {
         {/* Y-axis labels */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: H + 14, paddingBottom: 14, flexShrink: 0, width: 22 }}>
           <div style={{ fontSize: 8, color: "var(--text-subtle)", textAlign: "right", lineHeight: 1 }}>{yMax}</div>
-          <div style={{ fontSize: 8, color: "rgba(46,107,230,0.65)", textAlign: "right", lineHeight: 1, fontWeight: 600 }}>{midpoint}</div>
+          <div style={{ fontSize: 8, color: "rgba(230,211,168,0.7)", textAlign: "right", lineHeight: 1, fontWeight: 600 }}>{midpoint}</div>
           <div style={{ fontSize: 8, color: "var(--text-subtle)", textAlign: "right", lineHeight: 1 }}>{yMin}</div>
         </div>
         {/* SVG graph */}
@@ -122,25 +122,25 @@ function MasteryGraph({ masteredCount, midpoint }) {
           <svg width="100%" viewBox={`0 0 ${W} ${H + 14}`} style={{ display: "block", overflow: "visible" }}>
             {/* Midpoint dashed line */}
             <line x1={PAD} y1={midY} x2={W - PAD} y2={midY}
-              stroke="rgba(46,107,230,0.25)" strokeWidth="1" strokeDasharray="3 3" />
+              stroke="rgba(230,211,168,0.2)" strokeWidth="1" strokeDasharray="3 3" />
             {/* Area fill */}
             {areaD && (
               <path d={areaD} fill="url(#masteryGrad)" opacity="0.18" />
             )}
             {/* Line */}
             {pathD && (
-              <path d={pathD} fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={pathD} fill="none" stroke="var(--cream)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             )}
             {/* Dots */}
             {days.map((day, i) => day.yFrac !== null && (
               <g key={day.date}>
                 <circle cx={xOf(i)} cy={yOf(day.yFrac)} r={day.isToday ? 4 : 2.5}
-                  fill={day.isToday ? "var(--accent)" : "var(--surface)"}
-                  stroke="var(--accent)" strokeWidth={day.isToday ? 0 : 1.5} />
+                  fill={day.isToday ? "var(--cream)" : "var(--surface)"}
+                  stroke="var(--cream)" strokeWidth={day.isToday ? 0 : 1.5} />
                 {/* Count label above dot */}
                 <text x={xOf(i)} y={yOf(day.yFrac) - 6}
                   textAnchor="middle" fontSize="7"
-                  fill={day.isToday ? "var(--accent)" : "rgba(46,107,230,0.55)"}
+                  fill={day.isToday ? "var(--cream)" : "rgba(230,211,168,0.5)"}
                   fontWeight={day.isToday ? "700" : "400"}>
                   {day.count}
                 </text>
@@ -150,15 +150,15 @@ function MasteryGraph({ masteredCount, midpoint }) {
             {days.map((day, i) => (
               <text key={day.date + "l"} x={xOf(i)} y={H + 12}
                 textAnchor="middle" fontSize="7.5"
-                fill={day.isToday ? "var(--accent)" : "var(--text-subtle)"}
+                fill={day.isToday ? "var(--cream)" : "var(--text-subtle)"}
                 fontWeight={day.isToday ? "700" : "400"}>
                 {day.label}
               </text>
             ))}
             <defs>
               <linearGradient id="masteryGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" />
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                <stop offset="0%" stopColor="var(--cream)" />
+                <stop offset="100%" stopColor="var(--cream)" stopOpacity="0" />
               </linearGradient>
             </defs>
           </svg>
@@ -211,14 +211,14 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
         </div>
         {onEdit && (
           <button onClick={onEdit}
-            style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 11, fontWeight: 500, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            style={{ background: "transparent", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream)", fontSize: 11, fontWeight: 500, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
             Tilpass
           </button>
         )}
       </div>
 
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6, marginBottom: 12 }}>
-        <span style={{ fontSize: 32, fontWeight: 600, color: "var(--accent)", lineHeight: 1 }}>
+        <span style={{ fontSize: 32, fontWeight: 600, color: "var(--cream)", lineHeight: 1 }}>
           {displayed}
         </span>
         <span style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1, textTransform: "uppercase" }}>
@@ -226,24 +226,24 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
         </span>
       </div>
 
-      <div style={{ position: "relative", height: 6, background: "var(--accent-bg)", borderRadius: 99, overflow: "hidden", marginBottom: 8 }}>
+      <div style={{ position: "relative", height: 6, background: "rgba(230,211,168,0.1)", borderRadius: 99, overflow: "hidden", marginBottom: 8 }}>
         <div style={{
           position: "absolute", left: 0, top: 0, height: "100%",
           width: `${barWidth}%`,
-          background: "linear-gradient(to right, var(--accent), var(--accent-light))",
+          background: "var(--cream)",
           borderRadius: 99,
           transition: "width 1.2s cubic-bezier(0.22,1,0.36,1)",
-          boxShadow: barWidth > 5 ? "0 0 8px rgba(46,107,230,0.35)" : "none",
+          boxShadow: barWidth > 5 ? "0 0 8px rgba(230,211,168,0.25)" : "none",
         }} />
       </div>
 
       {!allDone ? (
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-subtle)" }}>
           <span>{progressInSegment} / {segmentSize}</span>
-          <span style={{ color: "var(--accent)", opacity: 0.7 }}>Mål: {goal.target} — {goal.reward}</span>
+          <span style={{ color: "var(--cream-deep)", opacity: 0.8 }}>Mål: {goal.target} — {goal.reward}</span>
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: "var(--accent)", letterSpacing: 2, textTransform: "uppercase" }}>
+        <div style={{ fontSize: 12, color: "var(--cream)", letterSpacing: 2, textTransform: "uppercase" }}>
           ✦ Alle mål nådd — Bon voyage! ✦
         </div>
       )}
@@ -257,8 +257,8 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
               style={{
                 width: active ? 8 : 6, height: active ? 8 : 6,
                 borderRadius: "50%",
-                background: done ? "var(--accent)" : active ? "rgba(46,107,230,0.45)" : "var(--accent-bg)",
-                border: active ? "1px solid var(--accent)" : "none",
+                background: done ? "var(--cream)" : active ? "rgba(230,211,168,0.35)" : "rgba(230,211,168,0.1)",
+                border: active ? "1px solid var(--cream)" : "none",
                 transition: "all 0.4s",
               }} />
           );
