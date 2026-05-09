@@ -774,16 +774,22 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
 
         {/* Pierre card */}
         <div style={{ padding: "0 22px 14px" }}>
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center" }}>
+          <button
+            onClick={() => {
+              if (!dagensDone) onStart("dagens-glose");
+              else if (!grammarDoneToday) onStart("dagens-grammatikk");
+              else onStart("glose");
+            }}
+            style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center", cursor: "pointer", textAlign: "left" }}>
             <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "#1a1410", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
               <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
-                «{frenchGreeting()} {profile.name} — {dagensDone ? "bra jobbet i dag! Øv mer?" : "har du tid til dagens gloser?"}»
+                «{frenchGreeting()} {profile.name} — {!dagensDone ? "har du tid til dagens gloser?" : !grammarDoneToday ? "grammatikk venter på deg!" : "bra jobbet i dag! Øv mer?"}»
               </div>
             </div>
             <IcoArrow size={18} stroke="var(--cream-deep)" sw={1.5} />
-          </div>
+          </button>
         </div>
 
         {/* Search results */}
