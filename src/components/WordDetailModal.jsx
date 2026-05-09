@@ -89,10 +89,10 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
         onTouchEnd={handleTouchEnd}
         style={{
           position: "relative",
-          background: "var(--surface)",
+          background: "var(--surface-solid)",
           borderRadius: "24px 24px 0 0",
           padding: "24px 24px 40px",
-          boxShadow: "0 -8px 40px rgba(46,107,230,0.15)",
+          boxShadow: "0 -4px 32px rgba(0,0,0,0.4)",
           animation: animated ? "none" : "slideUp 0.25s ease both",
           transform: animated ? `translateY(${dragY}px)` : undefined,
           transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",
@@ -118,7 +118,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "10px 14px", outline: "none" }} />
 
               <div style={{ marginTop: 8, background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
-                <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aksepterte fr-stavemåter</div>
+                <div style={{ fontSize: 11, color: "var(--cream-deep)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aksepterte fr-stavemåter</div>
                 {frAccepted.map((v, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                     <span style={{ flex: 1, fontSize: 13, color: "var(--text)", fontStyle: "italic" }}>{v}</span>
@@ -132,12 +132,12 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
                     placeholder="Legg til fr-stavemåte…"
                     style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 13, padding: "7px 10px", outline: "none" }} />
                   <button onClick={() => { if (newFrAccepted.trim()) { setFrAccepted(a => [...a, newFrAccepted.trim()]); setNewFrAccepted(""); } }}
-                    style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 13, fontWeight: 600, padding: "7px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+</button>
+                    style={{ background: "rgba(230,211,168,0.1)", border: "none", borderRadius: 8, color: "var(--cream)", fontSize: 13, fontWeight: 600, padding: "7px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+</button>
                 </div>
               </div>
 
               <div style={{ background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
-                <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aksepterte no-stavemåter</div>
+                <div style={{ fontSize: 11, color: "var(--cream-deep)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Aksepterte no-stavemåter</div>
                 {noAccepted.map((v, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                     <span style={{ flex: 1, fontSize: 13, color: "var(--text)" }}>{v}</span>
@@ -151,7 +151,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
                     placeholder="Legg til no-stavemåte…"
                     style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 13, padding: "7px 10px", outline: "none" }} />
                   <button onClick={() => { if (newNoAccepted.trim()) { setNoAccepted(a => [...a, newNoAccepted.trim()]); setNewNoAccepted(""); } }}
-                    style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, color: "var(--accent)", fontSize: 13, fontWeight: 600, padding: "7px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+</button>
+                    style={{ background: "rgba(230,211,168,0.1)", border: "none", borderRadius: 8, color: "var(--cream)", fontSize: 13, fontWeight: 600, padding: "7px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+</button>
                 </div>
               </div>
 
@@ -161,7 +161,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
                   Avbryt
                 </button>
                 <button onClick={saveWord}
-                  style={{ flex: 2, background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontFamily: "var(--font-body)", fontWeight: 500, fontSize: 14, padding: "11px", cursor: "pointer" }}>
+                  style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "11px", cursor: "pointer" }}>
                   Lagre
                 </button>
               </div>
@@ -169,7 +169,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
           ) : (
             <div style={{ textAlign: "center", position: "relative" }}>
               <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{word.fr}</div>
-              {word.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({word.phonetic})</div>}
+              {word.phonetic && <div style={{ fontSize: 14, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 6 }}>({word.phonetic})</div>}
               <div style={{ fontSize: 18, color: "var(--text-subtle)" }}>{word.no}</div>
               {(word.frAccepted?.length > 0 || word.noAccepted?.length > 0) && (
                 <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-subtle)" }}>
@@ -179,11 +179,11 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
               )}
               <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10 }}>
                 <button onClick={() => speakFr(word.fr)}
-                  style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 17 }}>
+                  style={{ background: "rgba(230,211,168,0.1)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 17 }}>
                   🔊
                 </button>
                 <button onClick={() => setEditingWord(true)}
-                  style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, height: 36, padding: "0 14px", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                  style={{ background: "rgba(230,211,168,0.1)", border: "none", borderRadius: 10, height: 36, padding: "0 14px", color: "var(--cream)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)" }}>
                   Rediger
                 </button>
               </div>
@@ -193,10 +193,10 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
 
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
           <div style={{ flex: 1, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", textAlign: "center" }}>
-            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--accent)" }}>{pts}</div>
+            <div style={{ fontSize: 20, fontWeight: 600, color: "var(--cream)" }}>{pts}</div>
             <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>av {MASTERY_POINTS} pts</div>
-            <div style={{ height: 4, background: "var(--border)", borderRadius: 99, overflow: "hidden", marginTop: 8 }}>
-              <div style={{ height: "100%", width: `${Math.min(100, (pts / MASTERY_POINTS) * 100)}%`, background: "linear-gradient(to right, var(--accent), var(--accent-light))", borderRadius: 99 }} />
+            <div style={{ height: 4, background: "rgba(230,211,168,0.1)", borderRadius: 99, overflow: "hidden", marginTop: 8 }}>
+              <div style={{ height: "100%", width: `${Math.min(100, (pts / MASTERY_POINTS) * 100)}%`, background: "var(--cream)", borderRadius: 99 }} />
             </div>
           </div>
           <div style={{ flex: 1, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", textAlign: "center" }}>
@@ -215,7 +215,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
             </div>
             {!isGrammar && (
               <button onClick={() => setEditingCat(e => !e)}
-                style={{ background: "var(--accent-bg)", border: "none", borderRadius: 10, color: "var(--accent)", fontSize: 12, fontWeight: 500, padding: "6px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                style={{ background: "rgba(230,211,168,0.1)", border: "none", borderRadius: 10, color: "var(--cream)", fontSize: 12, fontWeight: 500, padding: "6px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
                 {editingCat ? "Avbryt" : "Endre"}
               </button>
             )}
@@ -225,13 +225,13 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                 {allCats.map(cat => (
                   <button key={cat} onClick={() => setSelectedCat(cat)}
-                    style={{ background: selectedCat === cat ? "var(--accent)" : "var(--surface)", border: `1px solid ${selectedCat === cat ? "var(--accent)" : "var(--border)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 12, color: selectedCat === cat ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                    style={{ background: selectedCat === cat ? "rgba(230,211,168,0.18)" : "var(--surface)", border: `1px solid ${selectedCat === cat ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 12, color: selectedCat === cat ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                     {cat}
                   </button>
                 ))}
               </div>
               <button onClick={save}
-                style={{ width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontFamily: "var(--font-body)", fontWeight: 500, fontSize: 14, padding: "12px", cursor: "pointer" }}>
+                style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "12px", cursor: "pointer" }}>
                 Lagre kategori
               </button>
             </>

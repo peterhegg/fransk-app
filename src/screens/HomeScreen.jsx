@@ -175,9 +175,9 @@ function SheetModal({ onClose, children, style = {} }) {
         onTouchEnd={handleTouchEnd}
         style={{
           position: "relative",
-          background: "var(--surface)",
+          background: "var(--surface-solid)",
           borderRadius: "24px 24px 0 0",
-          boxShadow: "0 -8px 40px rgba(46,107,230,0.15)",
+          boxShadow: "0 -4px 32px rgba(0,0,0,0.4)",
           animation: animated ? "none" : "slideUp 0.25s ease both",
           transform: animated ? `translateY(${dragY}px)` : undefined,
           transition: animated && dragY === 0 ? "transform 0.3s ease" : "none",
@@ -233,9 +233,9 @@ function VocabGoalOrderModal({ onClose, onSave, words }) {
               </div>
               <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                 <button onClick={() => move(i, -1)} disabled={i === 0}
-                  style={{ background: i === 0 ? "var(--bg)" : "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === 0 ? "default" : "pointer", fontSize: 14, color: i === 0 ? "var(--text-subtle)" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+                  style={{ background: i === 0 ? "var(--bg)" : "rgba(230,211,168,0.1)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === 0 ? "default" : "pointer", fontSize: 14, color: i === 0 ? "var(--text-subtle)" : "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
                 <button onClick={() => move(i, 1)} disabled={i === order.length - 1}
-                  style={{ background: i === order.length - 1 ? "var(--bg)" : "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === order.length - 1 ? "default" : "pointer", fontSize: 14, color: i === order.length - 1 ? "var(--text-subtle)" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>↓</button>
+                  style={{ background: i === order.length - 1 ? "var(--bg)" : "rgba(230,211,168,0.1)", border: "none", borderRadius: 8, width: 30, height: 30, cursor: i === order.length - 1 ? "default" : "pointer", fontSize: 14, color: i === order.length - 1 ? "var(--text-subtle)" : "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center" }}>↓</button>
               </div>
             </div>
           );
@@ -247,7 +247,7 @@ function VocabGoalOrderModal({ onClose, onSave, words }) {
           Tilbakestill
         </button>
         <button onClick={() => { saveGoalOrder(order); onSave(order); }}
-          style={{ flex: 2, background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 500, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre rekkefølge
         </button>
       </div>
@@ -309,7 +309,7 @@ function OrdmesterEditModal({ onClose, onSave }) {
           </div>
         ))}
         <button onClick={addGoal}
-          style={{ width: "100%", background: "none", border: "1px dashed var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px", cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 8 }}>
+          style={{ width: "100%", background: "none", border: "1px dashed rgba(230,211,168,0.25)", borderRadius: 12, color: "var(--cream-deep)", fontSize: 13, padding: "10px", cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 8 }}>
           + Legg til mål
         </button>
       </div>
@@ -319,7 +319,7 @@ function OrdmesterEditModal({ onClose, onSave }) {
           Tilbakestill
         </button>
         <button onClick={handleSave}
-          style={{ flex: 2, background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 500, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre mål
         </button>
       </div>
@@ -355,7 +355,7 @@ function ActivityModal({ streak, onClose }) {
 
       <div style={{ display: "flex", gap: 8, padding: "0 16px 16px", flexShrink: 0 }}>
         {[
-          { label: "Svar", val: weekAnswers, color: "var(--accent)" },
+          { label: "Svar", val: weekAnswers, color: "var(--cream)" },
           { label: "Glose", val: weekVocab, color: "#fbbf24" },
           { label: "Gram.", val: weekGrammar, color: "#818cf8" },
           { label: "Snakk", val: weekVoice, color: "#f87171" },
@@ -382,18 +382,18 @@ function ActivityModal({ streak, onClose }) {
             const restH = barH - vH - gH - sH;
             return (
               <div key={day.date} style={{ flexShrink: 0, width: 30, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
+                <div style={{ fontSize: 9, color: isToday ? "var(--cream)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
                   {day.answers > 0 ? day.answers : ""}
                 </div>
                 <div style={{ width: 18, height: barH, borderRadius: "4px 4px 0 0", overflow: "hidden", display: "flex", flexDirection: "column-reverse" }}>
                   {vH > 0 && <div style={{ width: "100%", height: vH, background: "#fbbf24", flexShrink: 0 }} />}
                   {gH > 0 && <div style={{ width: "100%", height: gH, background: "#818cf8", flexShrink: 0 }} />}
                   {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f87171", flexShrink: 0 }} />}
-                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(90,154,240,0.35)" : "var(--accent-bg)", flexShrink: 0 }} />}
-                  {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "var(--accent-bg)", flexShrink: 0 }} />}
+                  {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--cream)" : day.answers > 0 ? "rgba(230,211,168,0.28)" : "rgba(230,211,168,0.08)", flexShrink: 0 }} />}
+                  {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "rgba(230,211,168,0.08)", flexShrink: 0 }} />}
                 </div>
                 {isToday ? (
-                  <div style={{ fontSize: 9, color: "var(--accent)", fontWeight: 700, textAlign: "center", lineHeight: 1.3 }}>i dag</div>
+                  <div style={{ fontSize: 9, color: "var(--cream)", fontWeight: 700, textAlign: "center", lineHeight: 1.3 }}>i dag</div>
                 ) : (
                   <div style={{ textAlign: "center", lineHeight: 1.2 }}>
                     <div style={{ fontSize: 9, color: "var(--text-subtle)" }}>{dayN}.</div>
@@ -413,7 +413,7 @@ function ActivityModal({ streak, onClose }) {
 
         <div style={{ marginTop: 16, background: "var(--bg)", borderRadius: 14, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontSize: 13, color: "var(--text)" }}>🔥 Streak</div>
-          <div style={{ fontSize: 18, fontWeight: 600, color: "var(--accent)" }}>{streak} dager</div>
+          <div style={{ fontSize: 18, fontWeight: 600, color: "var(--cream)" }}>{streak} dager</div>
         </div>
       </div>
 
@@ -517,7 +517,7 @@ function UserProfileModal({ onClose, onSave }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {LEVELS.map(l => (
               <button key={l} onClick={() => set("level", l)}
-                style={{ background: profile.level === l ? "var(--accent)" : "var(--bg)", border: `1px solid ${profile.level === l ? "var(--accent)" : "var(--border)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 12, color: profile.level === l ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                style={{ background: profile.level === l ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${profile.level === l ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", fontSize: 12, color: profile.level === l ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                 {l}
               </button>
             ))}
@@ -533,7 +533,7 @@ function UserProfileModal({ onClose, onSave }) {
             <div style={{ display: "flex", gap: 8 }}>
               {["han", "hun"].map(g => (
                 <button key={g} onClick={() => set(f.key, g)}
-                  style={{ flex: 1, background: profile[f.key] === g ? "var(--accent)" : "var(--bg)", border: `1px solid ${profile[f.key] === g ? "var(--accent)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 13, color: profile[f.key] === g ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                  style={{ flex: 1, background: profile[f.key] === g ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${profile[f.key] === g ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 13, color: profile[f.key] === g ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                   {g === "han" ? "Han/gutt" : "Hun/jente"}
                 </button>
               ))}
@@ -546,7 +546,7 @@ function UserProfileModal({ onClose, onSave }) {
           <div style={{ display: "flex", gap: 8 }}>
             {[1, 2, 3, 4, 5].map(n => (
               <button key={n} onClick={() => set("exerciseRounds", n)}
-                style={{ flex: 1, background: (profile.exerciseRounds || 5) === n ? "var(--accent)" : "var(--bg)", border: `1px solid ${(profile.exerciseRounds || 5) === n ? "var(--accent)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: (profile.exerciseRounds || 5) === n ? "white" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                style={{ flex: 1, background: (profile.exerciseRounds || 5) === n ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${(profile.exerciseRounds || 5) === n ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: (profile.exerciseRounds || 5) === n ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                 {n}
               </button>
             ))}
@@ -559,7 +559,7 @@ function UserProfileModal({ onClose, onSave }) {
             <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 2 }}>Spiller av fransk automatisk i øvelser</div>
           </div>
           <button onClick={() => set("autoPlay", !profile.autoPlay)}
-            style={{ width: 44, height: 26, borderRadius: 13, background: profile.autoPlay ? "var(--accent)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+            style={{ width: 44, height: 26, borderRadius: 13, background: profile.autoPlay ? "rgba(230,211,168,0.65)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
             <div style={{ position: "absolute", top: 3, left: profile.autoPlay ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
           </button>
         </div>
@@ -570,7 +570,7 @@ function UserProfileModal({ onClose, onSave }) {
             <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 2 }}>Kortere tekster, alltid fonetikk</div>
           </div>
           <button onClick={() => set("dysleksi", !profile.dysleksi)}
-            style={{ width: 44, height: 26, borderRadius: 13, background: profile.dysleksi ? "var(--accent)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+            style={{ width: 44, height: 26, borderRadius: 13, background: profile.dysleksi ? "rgba(230,211,168,0.65)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
             <div style={{ position: "absolute", top: 3, left: profile.dysleksi ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
           </button>
         </div>
@@ -578,7 +578,7 @@ function UserProfileModal({ onClose, onSave }) {
 
       <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)" }}>
         <button onClick={() => { saveUserProfile(profile); onSave(profile); }}
-          style={{ width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 500, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre profil
         </button>
       </div>
