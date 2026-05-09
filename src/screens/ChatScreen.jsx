@@ -119,22 +119,22 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 84 + keyboardOffset }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
-          <span style={{ color: "var(--accent)" }}>{mode?.icon}</span><span>{mode?.label}</span>
+          <span style={{ color: "var(--cream)" }}>{mode?.icon}</span><span>{mode?.label}</span>
         </div>
-        <button onClick={onShowWords} style={{ background: "none", border: "1px solid rgba(46,107,230,0.3)", borderRadius: 20, color: "var(--accent)", fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>◈ {words.length}</button>
+        <button onClick={onShowWords} style={{ background: "none", border: "1px solid rgba(230,211,168,0.25)", borderRadius: 20, color: "var(--cream-deep)", fontSize: 12, padding: "4px 12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>◈ {words.length}</button>
       </div>
 
       {!isOnline && (
-        <div style={{ background: "rgba(46,107,230,0.08)", borderBottom: "1px solid var(--border)", padding: "8px 16px", fontSize: 13, color: "var(--accent)", textAlign: "center" }}>
+        <div style={{ background: "rgba(230,211,168,0.06)", borderBottom: "1px solid var(--border)", padding: "8px 16px", fontSize: 13, color: "var(--cream-deep)", textAlign: "center" }}>
           Ingen internettforbindelse — Claude er ikke tilgjengelig
         </div>
       )}
 
       {mode?.id === "teksthjelp" && (
         <button onClick={() => setShowBooks(b => !b)}
-          style={{ background: "rgba(46,107,230,0.04)", border: "none", borderBottom: "1px solid var(--border)", color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", width: "100%" }}>
+          style={{ background: "rgba(230,211,168,0.04)", border: "none", borderBottom: "1px solid var(--border)", color: "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 16px", cursor: "pointer", textAlign: "left", width: "100%" }}>
           {showBooks ? "▲ Lukk boksamling" : "▼ Velg setning fra bøkene dine"}
         </button>
       )}
@@ -155,7 +155,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
           {BOOK_EXCERPTS.map((ex, i) => (
             <button key={i} onClick={() => { setInput(ex.text); setShowBooks(false); }}
               style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", outline: "none" }}>
-              <div style={{ fontSize: 11, color: "var(--accent)", letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>{ex.book} · {ex.hint}</div>
+              <div style={{ fontSize: 11, color: "var(--cream-deep)", letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>{ex.book} · {ex.hint}</div>
               <div style={{ fontSize: 14, color: "var(--text)", fontStyle: "italic" }}>"{ex.text}"</div>
             </button>
           ))}
@@ -165,17 +165,17 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16, justifyContent: "flex-end" }}>
         {messages.map((msg, i) => (
           <div key={i} style={msg.role === "user"
-            ? { alignSelf: "flex-end", maxWidth: "80%", background: "var(--accent-bg)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: "18px 4px 18px 18px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 }
+            ? { alignSelf: "flex-end", maxWidth: "80%", background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.2)", borderRadius: "18px 4px 18px 18px", padding: "12px 16px", fontSize: 15, lineHeight: 1.6 }
             : msg.content.includes("✓ LÆRT:")
               ? { alignSelf: "flex-start", maxWidth: "88%", background: "rgba(0,184,148,0.08)", border: "1px solid rgba(0,184,148,0.3)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "var(--shadow-sm)" }
               : { alignSelf: "flex-start", maxWidth: "88%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px", boxShadow: "var(--shadow-sm)" }
           }>
             {msg.role === "assistant" && (
-              <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Claude ✦</span>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => speak(stripSuggestions(msg.content))} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.5)", fontSize: 14, cursor: "pointer", padding: 0 }}>🔊</button>
-                  <button onClick={() => speak(stripSuggestions(msg.content), 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--accent)" : "rgba(46,107,230,0.5)", fontSize: 14, cursor: "pointer", padding: 0 }}>🐢</button>
+                  <button onClick={() => speak(stripSuggestions(msg.content))} style={{ background: "none", border: "none", color: speaking ? "var(--cream)" : "var(--text-subtle)", fontSize: 14, cursor: "pointer", padding: 0 }}>🔊</button>
+                  <button onClick={() => speak(stripSuggestions(msg.content), 0.4)} style={{ background: "none", border: "none", color: speaking ? "var(--cream)" : "var(--text-subtle)", fontSize: 14, cursor: "pointer", padding: 0 }}>🐢</button>
                 </div>
               </div>
             )}
@@ -184,8 +184,8 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
         ))}
         {loading && (
           <div style={{ alignSelf: "flex-start", maxWidth: "88%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px" }}>
-            <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase" }}>Claude ✦</div>
-            <div style={{ display: "flex", gap: 6, fontSize: 28, color: "var(--accent)", opacity: 0.5 }}><span>·</span><span>·</span><span>·</span></div>
+            <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase" }}>Claude ✦</div>
+            <div style={{ display: "flex", gap: 6, fontSize: 28, color: "var(--cream)", opacity: 0.5 }}><span>·</span><span>·</span><span>·</span></div>
           </div>
         )}
         <div ref={bottomRef} />
@@ -195,7 +195,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "8px 16px 0", background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
           {suggestions.map((s, i) => (
             <button key={i} onClick={() => send(s)} className="suggestion-chip"
-              style={{ background: "none", border: "1px solid rgba(46,107,230,0.35)", borderRadius: 20, color: "var(--accent)", fontFamily: "var(--font-body)", fontSize: 13, padding: "6px 14px", cursor: "pointer" }}>
+              style={{ background: "none", border: "1px solid rgba(230,211,168,0.25)", borderRadius: 20, color: "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "6px 14px", cursor: "pointer" }}>
               {s}
             </button>
           ))}
@@ -213,7 +213,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
           style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "10px 14px", resize: "none", outline: "none", lineHeight: 1.5 }}
           rows={2} />
         <button onClick={() => send()} disabled={loading || !input.trim()}
-          style={{ background: loading || !input.trim() ? "var(--accent-bg)" : "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: loading || !input.trim() ? "var(--text-subtle)" : "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: loading || !input.trim() ? "default" : "pointer", whiteSpace: "nowrap" }}>
+          style={{ background: loading || !input.trim() ? "rgba(230,211,168,0.08)" : "var(--cream)", border: "none", borderRadius: 14, color: loading || !input.trim() ? "var(--text-subtle)" : "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: loading || !input.trim() ? "default" : "pointer", whiteSpace: "nowrap" }}>
           Send
         </button>
       </div>

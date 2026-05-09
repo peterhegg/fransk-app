@@ -56,7 +56,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
         flexShrink: 0,
       }}>
         <button onClick={onBack} style={{
-          background: "none", border: "none", color: "var(--accent)",
+          background: "none", border: "none", color: "var(--cream-deep)",
           fontSize: "var(--font-size-sm)", cursor: "pointer",
           fontFamily: "var(--font-body)", padding: 0,
         }}>
@@ -78,8 +78,8 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             style={{
               fontSize: "var(--font-size-xs)",
-              background: "var(--accent-bg)",
-              color: "var(--accent)",
+              background: "rgba(230,211,168,0.1)",
+              color: "var(--cream-deep)",
               borderRadius: "var(--radius-full)",
               padding: "2px 8px",
               fontWeight: "var(--font-weight-medium)",
