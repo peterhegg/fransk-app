@@ -224,7 +224,7 @@ export default function QuizExerciseScreen({
               </>
             )}
             <button onClick={onNext} className="btn-shine"
-              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
+              style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
               {queue.length <= 1 ? "Ferdig!" : "Neste ord →"}
             </button>
           </div>

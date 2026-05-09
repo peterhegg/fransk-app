@@ -106,7 +106,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
         {checked && (
           <button onClick={next} className="btn-shine"
-            style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
+            style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
             {isLast ? "Start testing →" : "Neste →"}
           </button>
         )}
@@ -204,7 +204,7 @@ export default function DagensExerciseScreen({
           {topic.pairs.length > 3 && <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 6, textAlign: "center" }}>+ {topic.pairs.length - 3} til</div>}
         </div>
         <button onClick={onStartExercise} className="btn-shine"
-          style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", marginTop: 8, boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
+          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", marginTop: 8, boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
           Start øvelsen →
         </button>
       </div>
@@ -236,7 +236,7 @@ export default function DagensExerciseScreen({
       </div>
       <div style={{ flexShrink: 0, padding: "12px 24px", paddingBottom: "calc(12px + 66px)", background: "var(--bg)", borderTop: "1px solid var(--border)" }}>
         <button onClick={onBack} className="btn-shine"
-          style={{ width: "100%", background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
+          style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
           Tilbake til hjem
         </button>
       </div>
@@ -342,7 +342,7 @@ export default function DagensExerciseScreen({
               </>
             )}
             <button onClick={onNext} className="btn-shine"
-              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
+              style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
               {queue.length <= 1 && phase === 2 ? "Fullfør!" : queue.length <= 1 ? "Del 2 →" : result === "wrong" ? "Prøv igjen →" : "Neste →"}
             </button>
           </div>
