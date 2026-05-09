@@ -116,7 +116,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
             {Array.from({ length: words.length }, (_, i) => {
               const posInRound = idx % words.length;
               return (
-                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < posInRound ? "rgba(90,154,240,0.4)" : i === posInRound ? "var(--accent)" : "rgba(255,255,255,0.15)" }} />
+                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < posInRound ? "rgba(90,154,240,0.4)" : i === posInRound ? "var(--cream)" : "rgba(255,255,255,0.15)" }} />
               );
             })}
           </div>

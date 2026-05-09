@@ -18,7 +18,7 @@ export default function ConversationBubble({ message }) {
         maxWidth: "82%",
         padding: "10px 14px",
         borderRadius: isUser ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
-        background: isUser ? "var(--accent-bg)" : "var(--surface)",
+        background: isUser ? "rgba(230,211,168,0.1)" : "var(--surface)",
         border: "1px solid var(--border)",
         boxShadow: isUser ? "none" : "var(--shadow-sm)",
         fontSize: "var(--font-size-base)",

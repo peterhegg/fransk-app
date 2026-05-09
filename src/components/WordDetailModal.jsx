@@ -200,7 +200,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
             </div>
           </div>
           <div style={{ flex: 1, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", textAlign: "center" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: MASTERY_COLORS[tier] || "var(--accent)", marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: MASTERY_COLORS[tier] || "var(--cream)", marginBottom: 4 }}>
               {tier === 5 ? "★ mestret" : MASTERY_LABELS[tier]}
             </div>
             <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>Mestringsnivå</div>

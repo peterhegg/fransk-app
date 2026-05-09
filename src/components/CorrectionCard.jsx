@@ -10,7 +10,7 @@ export default function CorrectionCard({ correction }) {
       exit={{ opacity: 0, y: -4 }}
       transition={{ type: "spring", stiffness: 400, damping: 32 }}
       style={{
-        background: "var(--accent-bg)",
+        background: "rgba(230,211,168,0.08)",
         border: "1px solid var(--border)",
         borderRadius: "var(--radius-md)",
         padding: "10px 14px",
@@ -21,7 +21,7 @@ export default function CorrectionCard({ correction }) {
     >
       <div style={{
         fontSize: "var(--font-size-xs)",
-        color: "var(--accent)",
+        color: "var(--cream-deep)",
         letterSpacing: 1.5,
         textTransform: "uppercase",
         marginBottom: 6,

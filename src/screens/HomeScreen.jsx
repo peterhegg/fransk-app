@@ -99,11 +99,11 @@ function MiniGraph({ days, onTap }) {
           return (
             <div key={day.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
               {day.answers > 0 && (
-                <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: 600, lineHeight: 1 }}>{day.answers}</div>
+                <div style={{ fontSize: 9, color: isToday ? "var(--cream)" : "var(--text-subtle)", fontWeight: 600, lineHeight: 1 }}>{day.answers}</div>
               )}
               {day.answers === 0 && <div style={{ height: 13 }} />}
-              <div style={{ width: "100%", height: barH, background: isToday ? "var(--accent)" : day.answers > 0 ? "rgba(46,107,230,0.42)" : "var(--border)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
-              <div style={{ fontSize: 9, color: isToday ? "var(--accent)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400, whiteSpace: "nowrap" }}>{dayLabel}</div>
+              <div style={{ width: "100%", height: barH, background: isToday ? "var(--cream)" : day.answers > 0 ? "rgba(230,211,168,0.35)" : "var(--border)", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease" }} />
+              <div style={{ fontSize: 9, color: isToday ? "var(--cream)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400, whiteSpace: "nowrap" }}>{dayLabel}</div>
             </div>
           );
         })}
@@ -802,10 +802,10 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                     <button onClick={(e) => { e.stopPropagation(); speakFr(w.fr); }}
-                      style={{ background: "var(--accent-bg)", border: "none", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>
+                      style={{ background: "rgba(230,211,168,0.1)", border: "none", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>
                       🔊
                     </button>
-                    <span style={{ fontSize: 11, color: MASTERY_COLORS[tier] || "var(--accent)", fontWeight: 500 }}>{MASTERY_LABELS[tier]}</span>
+                    <span style={{ fontSize: 11, color: MASTERY_COLORS[tier] || "var(--text-subtle)", fontWeight: 500 }}>{MASTERY_LABELS[tier]}</span>
                   </div>
                 </div>
               );
@@ -875,7 +875,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
                     : "linear-gradient(to top, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.04) 100%)"
                   }} />
                   {card.done && (
-                    <div style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "white", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>✓</div>
+                    <div style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#1a1410", boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>✓</div>
                   )}
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px 18px", textAlign: "left" }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 4, letterSpacing: "-0.2px" }}>

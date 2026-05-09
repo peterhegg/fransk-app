@@ -2,7 +2,7 @@ export function AutoPlayToggle({ autoPlay, onToggle }) {
   if (!onToggle) return <div style={{ width: 40 }} />;
   return (
     <button onClick={onToggle} title={autoPlay ? "Skru av automatisk uttale" : "Skru på automatisk uttale"}
-      style={{ background: "none", border: "none", cursor: "pointer", color: autoPlay ? "var(--accent)" : "var(--text-subtle)", fontSize: 20, padding: "4px", borderRadius: 8, width: 40, display: "flex", justifyContent: "flex-end" }}>
+      style={{ background: "none", border: "none", cursor: "pointer", color: autoPlay ? "var(--cream)" : "var(--text-subtle)", fontSize: 20, padding: "4px", borderRadius: 8, width: 40, display: "flex", justifyContent: "flex-end" }}>
       {autoPlay ? "🔊" : "🔇"}
     </button>
   );
