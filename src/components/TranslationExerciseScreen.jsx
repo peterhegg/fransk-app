@@ -114,8 +114,8 @@ export default function TranslationExerciseScreen({
   if (!card) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--cream)" }}>{icon}</span>{title}</div>
         <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 16 }}>
@@ -130,31 +130,31 @@ export default function TranslationExerciseScreen({
   <>
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--accent)" }}>{icon}</span>{title}</div>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--cream)" }}>{icon}</span>{title}</div>
         <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
 
       <div style={{ height: 3, background: "var(--border)" }}>
-        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${total > 0 ? (done / total) * 100 : 0}%`, transition: "width 0.3s" }} />
+        <div style={{ height: "100%", background: "var(--cream)", width: `${total > 0 ? (done / total) * 100 : 0}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
           {card.id ? `Repetisjon · niv. ${card.level}` : "Nytt ord"}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px 40px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
           {isReverse ? (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Oversett til fransk</div>
+              <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 2, marginBottom: 10 }}>Oversett til fransk</div>
               <div style={{ fontSize: 34, color: "var(--text)", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.no}</div>
             </>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 2, marginBottom: 10 }}>Oversett til norsk</div>
+              <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 2, marginBottom: 10 }}>Oversett til norsk</div>
               <div style={{ fontSize: 34, color: "var(--text)", fontStyle: "italic", marginBottom: 8, fontFamily: "var(--font-display)" }}>{card.fr}</div>
-              {card.phonetic && <div style={{ fontSize: 14, color: "var(--accent)", opacity: 0.7, marginBottom: 8 }}>({card.phonetic})</div>}
+              {card.phonetic && <div style={{ fontSize: 14, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 8 }}>({card.phonetic})</div>}
               <div style={{ display: "flex", gap: 16, marginTop: 4, justifyContent: "center" }}>
                 <SpeakButton onClick={() => speak(card.fr)} />
                 <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
@@ -176,7 +176,7 @@ export default function TranslationExerciseScreen({
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
             />
             <button onClick={submit} disabled={!input.trim()} className="btn-shine"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
+              style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
               Sjekk svar
             </button>
           </div>
@@ -187,8 +187,8 @@ export default function TranslationExerciseScreen({
                 <div style={{ fontSize: 16, color: "var(--color-success)", fontWeight: "bold", marginBottom: isReverse ? 8 : 0 }}>✓ Riktig!</div>
                 {isReverse && (
                   <>
-                    <div style={{ fontSize: 22, color: "var(--accent)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
-                    {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.7, marginBottom: 6 }}>({card.phonetic})</div>}
+                    <div style={{ fontSize: 22, color: "var(--text)", fontStyle: "italic", fontFamily: "var(--font-display)", marginBottom: 2 }}>{card.fr}</div>
+                    {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
                     <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
                       <SpeakButton onClick={() => speak(card.fr)} />
                       <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
@@ -199,11 +199,11 @@ export default function TranslationExerciseScreen({
               </div>
             )}
             {result === "close" && (
-              <div style={{ background: "rgba(46,107,230,0.07)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 16, color: "var(--accent)", fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
+              <div style={{ background: "rgba(230,211,168,0.06)", border: "1px solid rgba(230,211,168,0.18)", borderRadius: 12, padding: "16px 24px", textAlign: "center", width: "100%" }}>
+                <div style={{ fontSize: 16, color: "var(--amber)", fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 15, color: "var(--text)" }}>Riktig: <strong>{isReverse ? card.fr : card.no}</strong></div>
-                {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.8, marginTop: 6 }}>{card.phonetic}</div>}
+                {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.8, marginTop: 6 }}>{card.phonetic}</div>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
                   <SpeakButton onClick={() => speak(card.fr)} />
                   <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
@@ -216,7 +216,7 @@ export default function TranslationExerciseScreen({
                 <div style={{ fontSize: 16, color: "var(--color-error)", fontWeight: "bold", marginBottom: 6 }}>Prøv igjen neste gang</div>
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 6 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 18, color: "var(--text)", marginBottom: 4 }}>{isReverse ? card.fr : card.no}</div>
-                {card.phonetic && <div style={{ fontSize: 13, color: "var(--accent)", opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
+                {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 6 }}>({card.phonetic})</div>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 4 }}>
                   <SpeakButton onClick={() => speak(card.fr)} />
                   <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
@@ -225,7 +225,7 @@ export default function TranslationExerciseScreen({
               </div>
             )}
             <button onClick={next} className="btn-shine"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(46,107,230,0.35)" }}>
+              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
               {queue.length <= 1 ? "Ferdig!" : "Neste ord →"}
             </button>
           </div>

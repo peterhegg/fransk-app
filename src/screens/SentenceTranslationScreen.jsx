@@ -208,7 +208,7 @@ export default function SentenceTranslationScreen({
       <Header onBack={onBack} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
         <div style={{ fontSize: 32, opacity: 0.4 }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="2">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="16" y2="12"/><line x1="3" y1="18" x2="19" y2="18"/>
           </svg>
         </div>
@@ -227,7 +227,7 @@ export default function SentenceTranslationScreen({
             : error === "offline" ? "Ingen internettforbindelse — Claude er ikke tilgjengelig."
             : "Kunne ikke hente setninger. Prøv igjen."}
         </div>
-        <button onClick={onBack} style={{ background: "var(--accent-bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
@@ -255,7 +255,7 @@ export default function SentenceTranslationScreen({
           ))}
         </div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -266,19 +266,19 @@ export default function SentenceTranslationScreen({
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
           <SentenceIcon /> Oversett setningen
         </div>
-        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{idx + 1}/{sentences.length}</div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1 }}>{idx + 1}/{sentences.length}</div>
       </div>
 
       <div style={{ height: 3, background: "var(--border)" }}>
-        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / sentences.length) * 100}%`, transition: "width 0.3s" }} />
+        <div style={{ height: "100%", background: "var(--cream)", width: `${((idx + 1) / sentences.length) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
           Oversett til fransk
         </div>
 
@@ -299,7 +299,7 @@ export default function SentenceTranslationScreen({
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "14px 16px", outline: "none", textAlign: "center" }}
             />
             <button onClick={submit} disabled={!input.trim()} className="btn-shine"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
+              style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
               Sjekk svar
             </button>
           </div>
@@ -311,14 +311,14 @@ export default function SentenceTranslationScreen({
               </div>
             )}
             {result === "close" && (
-              <div style={{ background: "rgba(46,107,230,0.07)", border: "1px solid rgba(46,107,230,0.2)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
-                <div style={{ fontSize: 15, color: "var(--accent)", fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
-                {explanation ? <div style={{ fontSize: 13, color: "var(--accent)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div> : null}
+              <div style={{ background: "rgba(230,211,168,0.06)", border: "1px solid rgba(230,211,168,0.18)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
+                <div style={{ fontSize: 15, color: "var(--amber)", fontWeight: "bold", marginBottom: 6 }}>~ Nesten riktig!</div>
+                {explanation ? <div style={{ fontSize: 13, color: "var(--cream-deep)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div> : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)" }}>Fasit: <strong>{correctFr}</strong></div>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8, marginBottom: (aiHintLoading || aiHint) ? 8 : 0 }}>
-                  <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                  <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
                 <AiHintBlock loading={aiHintLoading} hint={aiHint} />
               </div>
@@ -330,14 +330,14 @@ export default function SentenceTranslationScreen({
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4 }}>Fasit: <strong>{correctFr}</strong></div>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: (aiHintLoading || aiHint) ? 8 : 0 }}>
-                  <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                  <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                  <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                  <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
                 <AiHintBlock loading={aiHintLoading} hint={aiHint} />
               </div>
             )}
             <button onClick={next} className="btn-shine"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
               {idx >= sentences.length - 1 ? "Se resultat" : "Neste setning →"}
             </button>
           </div>
@@ -357,7 +357,7 @@ export default function SentenceTranslationScreen({
 function AiHintBlock({ loading, hint }) {
   if (!loading && !hint) return null;
   return (
-    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(46,107,230,0.12)", textAlign: "left" }}>
+    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", textAlign: "left" }}>
       {loading ? (
         <div style={{ fontSize: 12, color: "var(--text-subtle)", opacity: 0.7, textAlign: "center" }}>🤔 Analyserer feilen…</div>
       ) : hint ? (
@@ -367,7 +367,7 @@ function AiHintBlock({ loading, hint }) {
           )}
           {hint.huskeregel && (
             <>
-              <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 4 }}>Huskeregel</div>
+              <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 4 }}>Huskeregel</div>
               <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{hint.huskeregel}</div>
             </>
           )}
@@ -380,7 +380,7 @@ function AiHintBlock({ loading, hint }) {
 function Header({ onBack }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><SentenceIcon /> Oversett setningen</div>
       <div style={{ width: 60 }} />
     </div>
@@ -389,7 +389,7 @@ function Header({ onBack }) {
 
 function SentenceIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="2.2" strokeLinecap="round">
       <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="16" y2="12"/><line x1="3" y1="18" x2="19" y2="18"/>
     </svg>
   );

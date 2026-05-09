@@ -185,7 +185,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
 
   const header = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si setningen!</div>
       <div style={{ width: 60 }} />
     </div>
@@ -196,7 +196,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
       {header}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32, textAlign: "center" }}>
         <div style={{ fontSize: 32, opacity: 0.4 }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="2">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="16" y2="12"/><line x1="3" y1="18" x2="19" y2="18"/>
           </svg>
         </div>
@@ -215,7 +215,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
             : error === "offline" ? "Ingen internettforbindelse — Claude er ikke tilgjengelig."
             : "Kunne ikke hente setninger. Prøv igjen."}
         </div>
-        <button onClick={onBack} style={{ background: "var(--accent-bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
@@ -243,7 +243,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
           ))}
         </div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -254,17 +254,17 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si setningen!</div>
-        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{idx + 1}/{sentences.length}</div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1 }}>{idx + 1}/{sentences.length}</div>
       </div>
 
       <div style={{ height: 3, background: "var(--border)" }}>
-        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / sentences.length) * 100}%`, transition: "width 0.3s" }} />
+        <div style={{ height: "100%", background: "var(--cream)", width: `${((idx + 1) / sentences.length) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 24 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
           Si denne setningen på fransk
         </div>
 
@@ -273,7 +273,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
           <div style={{ fontSize: 24, color: "var(--text)", fontFamily: "var(--font-display)", fontStyle: "italic", lineHeight: 1.4, marginBottom: 18 }}>{current?.fr}</div>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <button onClick={() => speak(current.fr, 0.8)} title="Hør setningen"
-              style={{ background: speaking ? "var(--accent-bg)" : "var(--bg)", border: `1.5px solid ${speaking ? "var(--accent)" : "var(--border)"}`, borderRadius: 12, padding: "10px 16px", cursor: "pointer", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
+              style={{ background: speaking ? "rgba(230,211,168,0.08)" : "var(--bg)", border: `1.5px solid ${speaking ? "var(--cream)" : "var(--border)"}`, borderRadius: 12, padding: "10px 16px", cursor: "pointer", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
               🔊 Hør
             </button>
             <button onClick={() => speak(current.fr, 0.4)} title="Sakte"
@@ -301,7 +301,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
             <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4, fontStyle: "italic" }}>{current?.fr}</div>
             <div style={{ display: "flex", gap: 8, marginTop: 10, justifyContent: "center" }}>
               <button onClick={() => speak(current.fr, 0.6)}
-                style={{ background: "none", border: "1px solid var(--accent)", borderRadius: 10, padding: "7px 14px", color: "var(--accent)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                style={{ background: "none", border: "1px solid rgba(230,211,168,0.4)", borderRadius: 10, padding: "7px 14px", color: "var(--cream-deep)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
                 🔊 Hør igjen
               </button>
               <button onClick={next}
@@ -325,16 +325,16 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
             style={{
               background: isListening
                 ? "rgba(46,107,230,0.15)"
-                : "linear-gradient(135deg, var(--accent), var(--accent-light))",
+                : "var(--cream)",
               border: isListening ? "2px solid var(--accent)" : "none",
               borderRadius: 14,
-              color: isListening ? "var(--accent)" : "white",
+              color: isListening ? "var(--accent)" : "#1a1410",
               fontFamily: "var(--font-body)",
-              fontWeight: "500",
+              fontWeight: "600",
               fontSize: 16,
               padding: "16px 48px",
               cursor: isListening ? "default" : "pointer",
-              boxShadow: isListening ? "none" : "0 4px 16px rgba(46,107,230,0.35)",
+              boxShadow: isListening ? "none" : "0 4px 16px rgba(230,211,168,0.15)",
               display: "flex",
               alignItems: "center",
               gap: 10,
@@ -374,7 +374,7 @@ function PulsingDot() {
 
 function MicIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
       <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
       <line x1="12" y1="19" x2="12" y2="22"/>

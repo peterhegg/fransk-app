@@ -44,7 +44,7 @@ direction er "no-fr" eller "fr-no". tip forklarer akkurat denne forskjellen, ikk
 
 function FlervalgIcon({ size = 18, opacity = 1 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" style={{ opacity }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="2.2" strokeLinecap="round" style={{ opacity }}>
       <rect x="3" y="4" width="4" height="4" rx="1" /><line x1="10" y1="6" x2="21" y2="6" />
       <rect x="3" y="10" width="4" height="4" rx="1" /><line x1="10" y1="12" x2="21" y2="12" />
       <rect x="3" y="16" width="4" height="4" rx="1" /><line x1="10" y1="18" x2="21" y2="18" />
@@ -144,11 +144,11 @@ export default function GenerertFlervalgScreen({
 
   const navBar = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
         <FlervalgIcon /> Generert flervalg
       </div>
-      <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{loading || !total ? "" : `${idx + 1}/${total}`}</div>
+      <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1 }}>{loading || !total ? "" : `${idx + 1}/${total}`}</div>
     </div>
   );
 
@@ -177,9 +177,9 @@ export default function GenerertFlervalgScreen({
         <div style={{ display: "flex", gap: 10 }}>
           {(error === "parse" || error === "network") && (
             <button onClick={() => { setError(""); setLoading(true); fetchQuestions(); }}
-              style={{ background: "var(--accent)", border: "none", borderRadius: 12, color: "white", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+              style={{ background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           )}
-          <button onClick={onBack} style={{ background: "var(--accent-bg)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--accent)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+          <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
@@ -208,7 +208,7 @@ export default function GenerertFlervalgScreen({
           ))}
         </div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -222,11 +222,11 @@ export default function GenerertFlervalgScreen({
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       {navBar}
       <div style={{ height: 3, background: "var(--border)" }}>
-        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / total) * 100}%`, transition: "width 0.3s" }} />
+        <div style={{ height: "100%", background: "var(--cream)", width: `${((idx + 1) / total) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
           {current?.direction === "fr-no" ? "Oversett til norsk" : "Oversett til fransk"}
         </div>
 
@@ -241,7 +241,7 @@ export default function GenerertFlervalgScreen({
               if (opt === current.correct) { bg = "rgba(0,184,148,0.12)"; border = "2px solid var(--color-success)"; color = "var(--color-success)"; }
               else if (opt === selected) { bg = "rgba(225,112,85,0.10)"; border = "2px solid var(--color-error)"; color = "var(--color-error)"; }
             } else if (selected === opt) {
-              bg = "var(--accent-bg)"; border = "2px solid var(--accent)";
+              bg = "rgba(230,211,168,0.1)"; border = "1.5px solid var(--cream)";
             }
             const isFr = current?.direction !== "fr-no";
             return (
@@ -255,7 +255,7 @@ export default function GenerertFlervalgScreen({
 
         {!checked ? (
           <button onClick={submit} disabled={!selected} className={selected ? "btn-shine" : ""}
-            style={{ background: selected ? "linear-gradient(135deg, var(--accent), var(--accent-light))" : "var(--accent-bg)", border: "none", borderRadius: 14, color: selected ? "white" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: selected ? "pointer" : "default", width: "100%", maxWidth: 360 }}>
+            style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: selected ? "pointer" : "default", width: "100%", maxWidth: 360 }}>
             Bekreft svar
           </button>
         ) : (
@@ -277,20 +277,20 @@ export default function GenerertFlervalgScreen({
                 const frText = current.direction === "fr-no" ? current.prompt : current.correct;
                 return (
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: passed ? 8 : 0, marginBottom: current.tip ? 8 : 0 }}>
-                    <button onClick={() => speak(frText)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🔊</button>
-                    <button onClick={() => speak(frText, 0.4)} style={{ background: "none", border: "none", color: "rgba(46,107,230,0.55)", fontSize: 18, cursor: "pointer" }}>🐢</button>
+                    <button onClick={() => speak(frText)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🔊</button>
+                    <button onClick={() => speak(frText, 0.4)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                   </div>
                 );
               })()}
               {current.tip && (
-                <div style={{ marginTop: 4, paddingTop: 8, borderTop: "1px solid rgba(46,107,230,0.1)", textAlign: "left" }}>
-                  <div style={{ fontSize: 10, color: "var(--accent)", letterSpacing: 2, marginBottom: 5 }}>Huskeregel</div>
+                <div style={{ marginTop: 4, paddingTop: 8, borderTop: "1px solid var(--border)", textAlign: "left" }}>
+                  <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 5 }}>Huskeregel</div>
                   <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{current.tip}</div>
                 </div>
               )}
             </div>
             <button onClick={next} className="btn-shine"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
               {idx >= questions.length - 1 ? "Se resultat" : "Neste →"}
             </button>
           </div>

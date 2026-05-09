@@ -106,7 +106,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
 
   const header = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si ordet</div>
       <div style={{ width: 60 }} />
     </div>
@@ -131,7 +131,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
         <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text)" }}>Bra jobba!</div>
         <div style={{ fontSize: 14, color: "var(--text-subtle)" }}>Du har øvd på {queue.length} ord.</div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-light))", border: "none", borderRadius: 14, color: "white", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -144,29 +144,29 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si ordet</div>
-        <div style={{ fontSize: 11, color: "rgba(46,107,230,0.55)", letterSpacing: 1 }}>{idx + 1}/{queue.length}</div>
+        <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1 }}>{idx + 1}/{queue.length}</div>
       </div>
 
       <div style={{ height: 3, background: "var(--border)" }}>
-        <div style={{ height: "100%", background: "linear-gradient(to right, var(--accent), var(--accent-light))", width: `${((idx + 1) / queue.length) * 100}%`, transition: "width 0.3s" }} />
+        <div style={{ height: "100%", background: "var(--cream)", width: `${((idx + 1) / queue.length) * 100}%`, transition: "width 0.3s" }} />
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 24 }}>
-        <div style={{ fontSize: 10, color: "rgba(46,107,230,0.45)", letterSpacing: 2 }}>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
           Si dette ordet høyt på fransk
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "40px 48px", textAlign: "center", width: "100%", maxWidth: 340, boxShadow: "var(--shadow-md)" }}>
           <div style={{ fontSize: 42, fontStyle: "italic", color: "var(--text)", fontFamily: "var(--font-display)", marginBottom: 14, lineHeight: 1.2 }}>{card.fr}</div>
           {card.phonetic && (
-            <div style={{ fontSize: 18, color: "var(--accent)", opacity: 0.75, marginBottom: 16 }}>({card.phonetic})</div>
+            <div style={{ fontSize: 18, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 16 }}>({card.phonetic})</div>
           )}
           <div style={{ fontSize: 15, color: "var(--text-subtle)", marginBottom: 20 }}>{card.no}</div>
           <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
             <button onClick={() => speak(card.fr, 0.8)} title="Hør normal hastighet"
-              style={{ background: speaking ? "var(--accent-bg)" : "var(--bg)", border: `1.5px solid ${speaking ? "var(--accent)" : "var(--border)"}`, borderRadius: 14, padding: "14px 20px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
+              style={{ background: speaking ? "rgba(230,211,168,0.08)" : "var(--bg)", border: `1.5px solid ${speaking ? "var(--cream)" : "var(--border)"}`, borderRadius: 14, padding: "14px 20px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
               🔊 Hør
             </button>
             <button onClick={() => speak(card.fr, 0.4)} title="Sakte"
@@ -193,12 +193,12 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
             }
             {card.phonetic && (
               <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4 }}>
-                Uttale: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{card.phonetic}</span>
+                Uttale: <span style={{ color: "var(--cream-deep)", fontWeight: 600 }}>{card.phonetic}</span>
               </div>
             )}
             <div style={{ display: "flex", gap: 8, marginTop: 10, justifyContent: "center" }}>
               <button onClick={() => speak(card.fr, 0.6)}
-                style={{ background: "none", border: "1px solid var(--accent)", borderRadius: 10, padding: "7px 14px", color: "var(--accent)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                style={{ background: "none", border: "1px solid rgba(230,211,168,0.4)", borderRadius: 10, padding: "7px 14px", color: "var(--cream-deep)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>
                 🔊 Hør igjen
               </button>
               <button onClick={next}
@@ -222,16 +222,16 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
             style={{
               background: isListening
                 ? "rgba(46,107,230,0.15)"
-                : "linear-gradient(135deg, var(--accent), var(--accent-light))",
+                : "var(--cream)",
               border: isListening ? "2px solid var(--accent)" : "none",
               borderRadius: 14,
-              color: isListening ? "var(--accent)" : "white",
+              color: isListening ? "var(--accent)" : "#1a1410",
               fontFamily: "var(--font-body)",
-              fontWeight: "500",
+              fontWeight: "600",
               fontSize: 16,
               padding: "16px 48px",
               cursor: isListening ? "default" : "pointer",
-              boxShadow: isListening ? "none" : "0 4px 16px rgba(46,107,230,0.35)",
+              boxShadow: isListening ? "none" : "0 4px 16px rgba(230,211,168,0.15)",
               display: "flex",
               alignItems: "center",
               gap: 10,
@@ -266,7 +266,7 @@ function PulsingDot() {
 
 function MicIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
       <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
       <line x1="12" y1="19" x2="12" y2="22"/>
