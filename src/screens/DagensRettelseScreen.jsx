@@ -241,15 +241,16 @@ export default function DagensRettelseScreen({
                 {result === "correct" ? "Riktig! ✓" : result === "close" ? "Nesten! ~" : "Feil ✗"}
               </div>
               {result === "wrong" && (
-                <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
+                <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginBottom: 8 }}>
                   Riktig svar: <span style={{ color: "var(--cream)", fontFamily: isReverse ? "var(--font-display)" : "var(--font-body)", fontStyle: isReverse ? "italic" : "normal" }}>
                     {isReverse ? card.fr : card.no}
                   </span>
                 </div>
               )}
-              {isReverse && (result === "correct" || result === "close") && card.fr && (
-                <div style={{ marginTop: 6 }}>
-                  <SpeakButton fr={card.fr} speak={speak} speaking={speaking} size={18} />
+              {card.fr && (
+                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                  <SpeakButton onClick={() => speak(card.fr)} />
+                  <SpeakButton onClick={() => speak(card.fr, 0.5)} slow />
                 </div>
               )}
             </motion.div>
@@ -257,15 +258,15 @@ export default function DagensRettelseScreen({
         </AnimatePresence>
 
         {pointsInfo && <PointsBadge info={pointsInfo} onFireworksDone={() => setFireworksDone(true)} onTierPopDone={() => setTierPopDone(true)} />}
-      </div>
 
-      {checked && (
-        <div style={{ padding: "12px 20px 24px", flexShrink: 0 }}>
-          <button onClick={next} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "#1a1410", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            {queue.length <= 1 ? "Ferdig" : result === "wrong" ? "Prøv igjen" : "Neste →"}
-          </button>
-        </div>
-      )}
+        {checked && (
+          <div style={{ padding: "12px 0 108px" }}>
+            <button onClick={next} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "#1a1410", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+              {queue.length <= 1 ? "Ferdig" : result === "wrong" ? "Prøv igjen" : "Neste →"}
+            </button>
+          </div>
+        )}
+      </div>
 
       {pointsInfo?.justMastered && !fireworksDone && <Fireworks onDone={() => setFireworksDone(true)} />}
       {pointsInfo && pointsInfo.tierAfter > pointsInfo.tierBefore && !pointsInfo.justMastered && !fireworksDone && (
