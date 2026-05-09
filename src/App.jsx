@@ -12,7 +12,7 @@ import {
   getQuizOptions, checkQuizAnswer, todayStr,
   getTodaysGloseWords, getCurrentGrammarTopic,
   incrementAnswerCount, loadAnswerCount, updateWordPoints,
-  logDailyAnswer, logVocabSession, logGrammarSession, logWordAnswer,
+  logDailyAnswer, logVocabSession, logGrammarSession, logDagligGrammatikk, logWordAnswer,
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
   loadUserProfile, saveUserProfile, getWordTier, loadActivityLog,
@@ -606,6 +606,7 @@ export default function App() {
       const progress = [...loadGrammarProgress(), grammarTopic.id];
       saveGrammarProgress(progress);
       logGrammarSession();
+      logDagligGrammatikk();
       maybeTouchStreak();
       setGrammarPhase(3);
       return;

@@ -393,6 +393,9 @@ export function logDailyAnswer(type = "vocab") {
 }
 export function logVocabSession() {}
 export function logGrammarSession() {}
+export function logDagligGrammatikk() {
+  touchDay(e => ({ ...e, dagligGrammatikk: (e.dagligGrammatikk || 0) + 1 }));
+}
 export function logVoiceSession() { touchDay(e => ({ ...e, voice: (e.voice || 0) + 1 })); }
 
 // ─── Today's word answers ────────────────────────────────────────────────────

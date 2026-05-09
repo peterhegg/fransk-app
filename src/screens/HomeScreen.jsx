@@ -698,7 +698,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const grammarDoneToday = (() => {
     const log = loadActivityLog();
     const entry = log.find(e => e.date === todayStr());
-    return (entry?.grammar || 0) > 0;
+    return (entry?.dagligGrammatikk || 0) > 0;
   })();
 
   const dagensOvelse = [
