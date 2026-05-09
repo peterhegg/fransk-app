@@ -5,7 +5,7 @@ import {
   logDailyAnswer, logWordAnswer, loadAnswerCount, touchStreak, getWordTier,
   shuffle,
 } from "../utils.jsx";
-import { MASTERY_POINTS } from "../constants.js";
+import { MASTERY_POINTS, PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "../components/PointsBadge.jsx";
 import { AutoPlayToggle, SpeakButton } from "../components/AudioControls.jsx";
@@ -38,10 +38,16 @@ export default function DagensRettelseScreen({
   const [fireworksDone, setFireworksDone] = useState(false);
   const [tierPopDone, setTierPopDone] = useState(false);
   const [done, setDone] = useState(false);
+  const [aiHint, setAiHint] = useState(null);
+  const [aiHintLoading, setAiHintLoading] = useState(false);
   const inputRef = useRef(null);
 
   const isReverse = !!card?.reverse;
   const total = stats.correct + stats.wrong + queue.length;
+
+  useEffect(() => {
+    setAiHint(null); setAiHintLoading(false);
+  }, [card?.fr, card?.reverse]);
 
   useEffect(() => {
     if (!checked && inputRef.current) inputRef.current.focus();
@@ -59,6 +65,29 @@ export default function DagensRettelseScreen({
       const t = setTimeout(() => speak(card.fr), 300);
       return () => clearTimeout(t);
     }
+  }, [checked]);
+
+  useEffect(() => {
+    if (!checked || !card || !PROXY_URL) return;
+    const controller = new AbortController();
+    setAiHintLoading(true);
+    const question = isReverse ? `"${card.no}" (norsk → fransk)` : `"${card.fr}" (fransk → norsk)`;
+    const correct = isReverse ? card.fr : card.no;
+    const wasWrong = result === "wrong";
+    const prompt = wasWrong
+      ? `Norsk A1/A2-elev svarte galt på et franskkort.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (1-2 korte setninger) SPESIFIKT hva som er galt. Gi én huskeregel knyttet direkte til akkurat dette ordet.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
+      : `Norsk A1/A2-elev lærte seg et franskt ord riktig: ${card.fr} = ${card.no}.\n\nGi én kort huskeregel på norsk som hjelper eleven å huske akkurat dette ordet. Ingen forklaring, bare huskeregelen.\nSvar KUN som JSON: {"forklaring":"","huskeregel":"..."}`;
+    fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+      signal: controller.signal,
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 180, system: "Respond only with a valid JSON object, no markdown.", messages: [{ role: "user", content: prompt }] }),
+    }).then(r => r.json()).then(data => {
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const match = text.match(/\{[\s\S]*?\}/);
+      if (match) setAiHint(JSON.parse(match[0]));
+    }).catch(() => {}).finally(() => setAiHintLoading(false));
+    return () => controller.abort();
   }, [checked]);
 
   const submit = () => {
@@ -251,6 +280,23 @@ export default function DagensRettelseScreen({
                 <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
                   <SpeakButton onClick={() => speak(card.fr)} />
                   <SpeakButton onClick={() => speak(card.fr, 0.5)} slow />
+                </div>
+              )}
+              {(aiHintLoading || aiHint) && (
+                <div style={{ marginTop: 12, background: "rgba(230,211,168,0.04)", border: "1px solid rgba(230,211,168,0.14)", borderRadius: 10, padding: "10px 14px" }}>
+                  {aiHintLoading ? (
+                    <div style={{ fontSize: 12, color: "var(--text-subtle)", opacity: 0.7 }}>🤔 Analyserer…</div>
+                  ) : aiHint ? (
+                    <>
+                      {aiHint.forklaring && <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, marginBottom: aiHint.huskeregel ? 8 : 0 }}>{aiHint.forklaring}</div>}
+                      {aiHint.huskeregel && (
+                        <>
+                          <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Huskeregel</div>
+                          <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{aiHint.huskeregel}</div>
+                        </>
+                      )}
+                    </>
+                  ) : null}
                 </div>
               )}
             </motion.div>
