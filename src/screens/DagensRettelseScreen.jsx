@@ -96,7 +96,7 @@ export default function DagensRettelseScreen({
     setChecked(true); setResult(res);
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
-    logDailyAnswer("vocab");
+    logDailyAnswer("rettelse");
 
     // Find matching word in bank to update SRS
     const gc = incrementAnswerCount();

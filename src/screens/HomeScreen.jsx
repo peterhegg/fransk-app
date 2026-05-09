@@ -345,6 +345,7 @@ function ActivityModal({ streak, onClose }) {
   const weekVocab = last7.reduce((s, d) => s + d.vocab, 0);
   const weekGrammar = last7.reduce((s, d) => s + d.grammar, 0);
   const weekVoice = last7.reduce((s, d) => s + d.voice, 0);
+  const weekRettelse = last7.reduce((s, d) => s + (d.rettelse || 0), 0);
 
   return (
     <SheetModal onClose={onClose}>
@@ -359,6 +360,7 @@ function ActivityModal({ streak, onClose }) {
           { label: "Glose", val: weekVocab, color: "#fbbf24" },
           { label: "Gram.", val: weekGrammar, color: "#818cf8" },
           { label: "Snakk", val: weekVoice, color: "#f87171" },
+          { label: "Rettelse", val: weekRettelse, color: "var(--color-error)" },
         ].map(s => (
           <div key={s.label} style={{ flex: 1, background: "var(--bg)", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: s.color }}>{s.val}</div>
@@ -375,11 +377,12 @@ function ActivityModal({ streak, onClose }) {
             const d = new Date(day.date + "T12:00:00");
             const dayN = d.getDate();
             const monthAbbr = d.toLocaleDateString("nb", { month: "short" });
-            const total = day.vocab + day.grammar + day.voice;
+            const total = day.vocab + day.grammar + day.voice + (day.rettelse || 0);
             const vH = total > 0 && day.answers > 0 ? Math.round((day.vocab / total) * barH) : 0;
             const gH = total > 0 && day.answers > 0 ? Math.round((day.grammar / total) * barH) : 0;
             const sH = total > 0 && day.answers > 0 ? Math.round((day.voice / total) * barH) : 0;
-            const restH = barH - vH - gH - sH;
+            const rH = total > 0 && day.answers > 0 ? Math.round(((day.rettelse || 0) / total) * barH) : 0;
+            const restH = barH - vH - gH - sH - rH;
             return (
               <div key={day.date} style={{ flexShrink: 0, width: 30, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
                 <div style={{ fontSize: 9, color: isToday ? "var(--cream)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
@@ -389,6 +392,7 @@ function ActivityModal({ streak, onClose }) {
                   {vH > 0 && <div style={{ width: "100%", height: vH, background: "#fbbf24", flexShrink: 0 }} />}
                   {gH > 0 && <div style={{ width: "100%", height: gH, background: "#818cf8", flexShrink: 0 }} />}
                   {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f87171", flexShrink: 0 }} />}
+                  {rH > 0 && <div style={{ width: "100%", height: rH, background: "var(--color-error)", flexShrink: 0 }} />}
                   {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--cream)" : day.answers > 0 ? "rgba(230,211,168,0.28)" : "rgba(230,211,168,0.08)", flexShrink: 0 }} />}
                   {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "rgba(230,211,168,0.08)", flexShrink: 0 }} />}
                 </div>
