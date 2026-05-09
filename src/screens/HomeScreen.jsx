@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak } from "../utils.jsx";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { IcoGrid, IcoSwap, IcoList, IcoMic as IcoMicSvg, IcoPen, IcoChat as IcoChatSvg, IcoSpeak, IcoArrow, IcoFlame, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
@@ -749,6 +749,9 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     return { id: "dagens-glose", msg: "start med dagens gloser!" };
   })();
 
+  const rettelseWords = loadWorstWords(5, 10);
+  const rettelseCount = rettelseWords.length;
+
   const dagensOvelse = [
     {
       id: "dagens-glose",
@@ -763,6 +766,14 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       sub: grammarDoneToday ? "Fullført i dag ✓" : `${grammarProgress} temaer fullført`,
       done: grammarDoneToday,
       img: MODE_IMAGES["dagens-grammatikk"],
+    },
+    {
+      id: "dagens-rettelse",
+      title: "Dagens rettelse",
+      sub: rettelseCount > 0 ? `${rettelseCount} ord trenger ekstra øvelse` : "Øv mer for å aktivere",
+      done: false,
+      disabled: rettelseCount === 0,
+      img: MODE_IMAGES["dagens-rettelse"] || "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop",
     },
   ].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
 
@@ -903,20 +914,20 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         <div style={{ padding: "0 0 28px" }}>
           <div style={{ padding: "4px 22px 10px", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
             <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 22, letterSpacing: "-0.4px", color: "var(--text)" }}>Dagens øvelse</h2>
-            {dagensOvelse.every(c => c.done) && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "var(--font-body)" }}>2 av 2 ✓</span>}
+            {dagensOvelse.filter(c => !c.disabled).every(c => c.done) && dagensOvelse.some(c => !c.disabled) && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "var(--font-body)" }}>{dagensOvelse.filter(c => !c.disabled).length} av {dagensOvelse.filter(c => !c.disabled).length} ✓</span>}
           </div>
           <div style={{ display: "flex", gap: 12, padding: "0 22px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
             {dagensOvelse.map(card => {
               const isLoading = card.id === "dagens-glose" && dagensLoading;
               return (
                 <button key={card.id}
-                  onClick={() => !card.done && !isLoading && onStart(card.id)}
+                  onClick={() => !card.done && !card.disabled && !isLoading && onStart(card.id)}
                   style={{
                     flexShrink: 0, width: "calc(80vw)", maxWidth: 320, height: 200,
                     borderRadius: 20, overflow: "hidden", position: "relative",
                     border: "none", padding: 0,
-                    cursor: card.done || isLoading ? "default" : "pointer",
-                    opacity: isLoading ? 0.75 : 1,
+                    cursor: card.done || card.disabled || isLoading ? "default" : "pointer",
+                    opacity: card.disabled || isLoading ? 0.5 : 1,
                     boxShadow: "var(--shadow-md)",
                   }}>
                   <img src={card.img} alt={card.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />

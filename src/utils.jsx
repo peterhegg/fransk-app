@@ -409,6 +409,41 @@ export function logWordAnswer(fr, no, phonetic, pointsBefore, pointsAfter, resul
     entries.push({ fr, no, phonetic: phonetic || "", pointsBefore: pointsBefore || 0, pointsAfter: pointsAfter || 0, result });
     localStorage.setItem(TODAYS_ANSWERS_KEY, JSON.stringify({ date: today, entries }));
   } catch {}
+  if (result === "wrong") logWordError(fr, no, phonetic);
+}
+
+// ─── Word error history (10-day rolling) ─────────────────────────────────────
+const WORD_ERRORS_KEY = "fransk-word-errors";
+
+function logWordError(fr, no, phonetic) {
+  try {
+    const today = todayStr();
+    const store = JSON.parse(localStorage.getItem(WORD_ERRORS_KEY) || "{}");
+    const entry = store[fr] || { fr, no: no || "", phonetic: phonetic || "", errors: {} };
+    entry.errors[today] = (entry.errors[today] || 0) + 1;
+    // prune keys older than 15 days
+    const cutoff = new Date(Date.now() - 15 * 86400000).toISOString().split("T")[0];
+    Object.keys(entry.errors).forEach(d => { if (d < cutoff) delete entry.errors[d]; });
+    store[fr] = entry;
+    localStorage.setItem(WORD_ERRORS_KEY, JSON.stringify(store));
+  } catch {}
+}
+
+export function loadWorstWords(n = 5, days = 10) {
+  try {
+    const store = JSON.parse(localStorage.getItem(WORD_ERRORS_KEY) || "{}");
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
+    return Object.values(store)
+      .map(entry => {
+        const total = Object.entries(entry.errors)
+          .filter(([d]) => d >= cutoff)
+          .reduce((s, [, c]) => s + c, 0);
+        return { ...entry, errorCount: total };
+      })
+      .filter(e => e.errorCount > 0)
+      .sort((a, b) => b.errorCount - a.errorCount)
+      .slice(0, n);
+  } catch { return []; }
 }
 
 export function loadTodaysWordAnswers() {

@@ -15,7 +15,7 @@ import {
   logDailyAnswer, logVocabSession, logGrammarSession, logDagligGrammatikk, logWordAnswer,
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
-  loadUserProfile, saveUserProfile, getWordTier, loadActivityLog,
+  loadUserProfile, saveUserProfile, getWordTier, loadActivityLog, loadWorstWords,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -31,6 +31,7 @@ import SayWordScreen from "./screens/SayWordScreen.jsx";
 import SentenceTranslationScreen from "./screens/SentenceTranslationScreen.jsx";
 import SaySentenceScreen from "./screens/SaySentenceScreen.jsx";
 import GenerertFlervalgScreen from "./screens/GenerertFlervalgScreen.jsx";
+import DagensRettelseScreen from "./screens/DagensRettelseScreen.jsx";
 
 function TranslateIcon() {
   return (
@@ -428,6 +429,7 @@ export default function App() {
     else if (id === "oversett-setningen") setScreen("oversett-setningen");
     else if (id === "si-setningen") setScreen("si-setningen");
     else if (id === "generert-flervalg") setScreen("generert-flervalg");
+    else if (id === "dagens-rettelse") setScreen("dagens-rettelse");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -799,6 +801,13 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <GenerertFlervalgScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+    </>
+  );
+
+  if (screen === "dagens-rettelse") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <DagensRettelseScreen words={words} setWords={setWords} worstWords={loadWorstWords(5, 10)} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
