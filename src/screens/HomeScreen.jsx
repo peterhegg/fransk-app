@@ -711,7 +711,12 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     if (!grammarDoneToday && hasGrammarTopics)
       return { id: "dagens-grammatikk", msg: "grammatikk venter på deg!" };
 
-    // 2. SRS — overdue items are highest value
+    // 3. Correction — words with most errors last 10 days
+    const worstNow = loadWorstWords(5, 10);
+    if (worstNow.length > 0)
+      return { id: "dagens-rettelse", msg: `du har ${worstNow.length} ord du sliter med — la oss fikse det!` };
+
+    // 4. SRS — overdue items are highest value
     if (dueCount > 0 && grammarOvDue > 0) {
       // pick whichever side has been practiced less today
       if ((todayEntry.grammar || 0) <= (todayEntry.vocab || 0))
