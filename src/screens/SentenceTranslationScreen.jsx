@@ -193,7 +193,6 @@ export default function SentenceTranslationScreen({
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     logDailyAnswer("grammar");
-    if (res !== "correct") fetchAiHint(current.no, current.fr, input, exp);
   };
 
   const next = () => {
@@ -316,10 +315,11 @@ export default function SentenceTranslationScreen({
                 {explanation ? <div style={{ fontSize: 13, color: "var(--cream-deep)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div> : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)" }}>Fasit: <strong>{correctFr}</strong></div>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8, marginBottom: (aiHintLoading || aiHint) ? 8 : 0 }}>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8, marginBottom: 8 }}>
                   <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                   <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                {!aiHint && !aiHintLoading && <button onClick={() => fetchAiHint(current?.no, correctFr, input, explanation)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 14px", fontSize: 12, color: "var(--text-subtle)", cursor: "pointer", fontFamily: "var(--font-body)", marginBottom: 8 }}>💡 Få tilbakemelding</button>}
                 <AiHintBlock loading={aiHintLoading} hint={aiHint} />
               </div>
             )}
@@ -329,10 +329,11 @@ export default function SentenceTranslationScreen({
                 {explanation ? <div style={{ fontSize: 13, color: "var(--color-error)", marginBottom: 6, fontWeight: 500 }}>{explanation}</div> : null}
                 <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                 <div style={{ fontSize: 14, color: "var(--text)", marginBottom: 4 }}>Fasit: <strong>{correctFr}</strong></div>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: (aiHintLoading || aiHint) ? 8 : 0 }}>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 8 }}>
                   <button onClick={() => speak(correctFr)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🔊</button>
                   <button onClick={() => speak(correctFr, 0.4)} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 18, cursor: "pointer" }}>🐢</button>
                 </div>
+                {!aiHint && !aiHintLoading && <button onClick={() => fetchAiHint(current?.no, correctFr, input, explanation)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 14px", fontSize: 12, color: "var(--text-subtle)", cursor: "pointer", fontFamily: "var(--font-body)", marginBottom: 8 }}>💡 Få tilbakemelding</button>}
                 <AiHintBlock loading={aiHintLoading} hint={aiHint} />
               </div>
             )}

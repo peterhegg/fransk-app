@@ -67,8 +67,8 @@ export default function DagensRettelseScreen({
     }
   }, [checked]);
 
-  useEffect(() => {
-    if (!checked || !card || !PROXY_URL) return;
+  const requestHint = () => {
+    if (!card || !PROXY_URL || aiHintLoading || aiHint) return;
     const controller = new AbortController();
     setAiHintLoading(true);
     const question = isReverse ? `"${card.no}" (norsk → fransk)` : `"${card.fr}" (fransk → norsk)`;
@@ -87,8 +87,7 @@ export default function DagensRettelseScreen({
       const match = text.match(/\{[\s\S]*?\}/);
       if (match) setAiHint(JSON.parse(match[0]));
     }).catch(() => {}).finally(() => setAiHintLoading(false));
-    return () => controller.abort();
-  }, [checked]);
+  };
 
   const submit = () => {
     if (!input.trim() || !card) return;
@@ -281,6 +280,11 @@ export default function DagensRettelseScreen({
                   <SpeakButton onClick={() => speak(card.fr)} />
                   <SpeakButton onClick={() => speak(card.fr, 0.5)} slow />
                 </div>
+              )}
+              {!aiHint && !aiHintLoading && (
+                <button onClick={requestHint} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 14px", fontSize: 12, color: "var(--text-subtle)", cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 10 }}>
+                  💡 Få tilbakemelding
+                </button>
               )}
               {(aiHintLoading || aiHint) && (
                 <div style={{ marginTop: 12, background: "rgba(230,211,168,0.04)", border: "1px solid rgba(230,211,168,0.14)", borderRadius: 10, padding: "10px 14px" }}>
