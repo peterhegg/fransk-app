@@ -701,6 +701,54 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     return (entry?.dagligGrammatikk || 0) > 0;
   })();
 
+  const todayEntry = loadActivityLog().find(e => e.date === todayStr()) || { vocab: 0, grammar: 0, voice: 0 };
+  const hasGrammarTopics = completedGrammar.length < GRAMMAR_TOPICS.length;
+
+  const pierreRecommend = (() => {
+    // 1. Daily duties first
+    if (!dagensDone)
+      return { id: "dagens-glose", msg: "har du tid til dagens gloser?" };
+    if (!grammarDoneToday && hasGrammarTopics)
+      return { id: "dagens-grammatikk", msg: "grammatikk venter på deg!" };
+
+    // 2. SRS — overdue items are highest value
+    if (dueCount > 0 && grammarOvDue > 0) {
+      // pick whichever side has been practiced less today
+      if ((todayEntry.grammar || 0) <= (todayEntry.vocab || 0))
+        return { id: "grammatikk-ovelse", msg: `${grammarOvDue} grammatikkord venter på repetisjon!` };
+      return { id: "glose", msg: `${dueCount} gloser klar for repetisjon!` };
+    }
+    if (dueCount > 0)
+      return { id: "glose", msg: `${dueCount} gloser klar for repetisjon!` };
+    if (grammarOvDue > 0)
+      return { id: "grammatikk-ovelse", msg: `${grammarOvDue} grammatikkord venter på repetisjon!` };
+
+    // 3. Balance vocab vs grammar practice today
+    const vocabToday = todayEntry.vocab || 0;
+    const grammarToday = todayEntry.grammar || 0;
+    const voiceToday = todayEntry.voice || 0;
+
+    if (words.length >= 5 && grammarToday > vocabToday)
+      return { id: "ordoversettelse", msg: "prøv ordoversettelse for variasjon?" };
+    if ((grammarWords || []).length >= 5 && vocabToday > grammarToday)
+      return { id: "oversett-grammatikken", msg: "oversett litt grammatikk i dag?" };
+
+    // 4. Voice practice if neglected
+    if (words.length >= 3 && voiceToday === 0)
+      return { id: "si-ordet", msg: "øv på uttalen — prøv Si ordet!" };
+
+    // 5. Varied exercise rotation
+    if (words.length >= 8 && vocabToday === 0)
+      return { id: "flervalg", msg: "flervalg er bra for å befeste ord!" };
+    if ((grammarWords || []).length >= 5 && grammarToday === 0)
+      return { id: "grammatikk-flervalg", msg: "grammatikkflervalg — kjapt og effektivt!" };
+
+    // 6. Fallback
+    if (words.length > 0)
+      return { id: "glose", msg: "bra jobbet i dag — vil du øve mer?" };
+    return { id: "dagens-glose", msg: "start med dagens gloser!" };
+  })();
+
   const dagensOvelse = [
     {
       id: "dagens-glose",
@@ -775,17 +823,13 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         {/* Pierre card */}
         <div style={{ padding: "0 22px 14px" }}>
           <button
-            onClick={() => {
-              if (!dagensDone) onStart("dagens-glose");
-              else if (!grammarDoneToday) onStart("dagens-grammatikk");
-              else onStart("glose");
-            }}
+            onClick={() => onStart(pierreRecommend.id)}
             style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center", cursor: "pointer", textAlign: "left" }}>
             <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "#1a1410", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
               <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
-                «{frenchGreeting()} {profile.name} — {!dagensDone ? "har du tid til dagens gloser?" : !grammarDoneToday ? "grammatikk venter på deg!" : "bra jobbet i dag! Øv mer?"}»
+                «{frenchGreeting()} {profile.name} — {pierreRecommend.msg}»
               </div>
             </div>
             <IcoArrow size={18} stroke="var(--cream-deep)" sw={1.5} />
