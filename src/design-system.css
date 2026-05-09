@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500;600&family=Spectral:ital,wght@0,400;1,400;1,500&display=swap');
 
 :root {
   /* ── Fonts ─────────────────────────────────────────────────────── */
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', sans-serif;
+  --font-serif: 'Spectral', Georgia, serif;
 
   /* ── Typography scale ──────────────────────────────────────────── */
   --font-size-xs:   0.6875rem;   /* 11px */
@@ -56,22 +57,30 @@
   --color-success:       #00b894;
   --color-error:         #e17055;
 
-  --color-bg:            #1e3060;
-  --color-text:          #e8edf5;
-  --color-card:          #243560;
-  --color-border:        rgba(255, 255, 255, 0.10);
+  --color-bg:            #0a1628;
+  --color-text:          #eef2fa;
+  --color-card:          #13223b;
+  --color-border:        rgba(255, 255, 255, 0.07);
 
-  /* Semantic aliases (used in voice feature + new components) */
+  /* Semantic aliases */
   --accent:         #5a9af0;
   --accent-light:   #7db0f5;
   --accent-bg:      rgba(90, 154, 240, 0.15);
-  --surface:        rgba(255, 255, 255, 0.08);
-  --bg:             #1e3060;
-  --text:           #e8edf5;
-  --text-subtle:    rgba(232, 237, 245, 0.55);
-  --border:         rgba(255, 255, 255, 0.10);
-  --nav-bg:         rgba(20, 38, 80, 0.97);
-  --app-bg:         linear-gradient(102deg, #1e3d7a 0%, #182f60 26%, #1c2e50 40%, #1c2e50 60%, #3d1428 74%, #341120 100%);
+  --surface:        rgba(18, 32, 55, 0.62);
+  --surface-solid:  #13223b;
+  --bg:             #0a1628;
+  --text:           #eef2fa;
+  --text-subtle:    rgba(238, 242, 250, 0.55);
+  --text-muted:     rgba(238, 242, 250, 0.28);
+  --border:         rgba(255, 255, 255, 0.07);
+  --nav-bg:         rgba(10, 18, 32, 0.92);
+  --app-bg:         radial-gradient(900px 600px at 115% -8%, rgba(120,30,45,0.55) 0%, transparent 58%), radial-gradient(800px 600px at -15% 65%, rgba(22,55,110,0.42) 0%, transparent 68%), #0a1628;
+  /* Warm palette (home screen) */
+  --cream:          #e6d3a8;
+  --cream-deep:     #c9b78d;
+  --sage:           #9eb6a4;
+  --terra:          #c47a5a;
+  --amber:          #d4a574;
 
   /* ── Shadows ───────────────────────────────────────────────────── */
   --shadow-sm:         0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.06);

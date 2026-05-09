@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
 import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { IcoGrid, IcoSwap, IcoList, IcoMic as IcoMicSvg, IcoPen, IcoChat as IcoChatSvg, IcoSpeak, IcoArrow, IcoFlame, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import WordDetailModal from "../components/WordDetailModal.jsx";
@@ -586,95 +587,31 @@ function UserProfileModal({ onClose, onSave }) {
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
-function IcoFlashcard() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="4" width="20" height="16" rx="3"/><line x1="2" y1="9" x2="22" y2="9"/>
-    </svg>
-  );
-}
-function IcoTranslate() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4"/>
-    </svg>
-  );
-}
-function IcoMultiChoice() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/>
-      <rect x="3" y="13" width="4" height="4" rx="1"/><line x1="10" y1="15" x2="21" y2="15"/>
-      <polyline points="4 7 5 8 7 5"/>
-    </svg>
-  );
-}
-function IcoMic() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-      <line x1="12" y1="19" x2="12" y2="22"/>
-      <line x1="8" y1="22" x2="16" y2="22"/>
-    </svg>
-  );
-}
-function IcoGrammar() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-    </svg>
-  );
-}
-function IcoSentence() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="16" y2="12"/><line x1="3" y1="18" x2="19" y2="18"/>
-    </svg>
-  );
-}
-function IcoChat() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>
-  );
-}
-function IcoVoice() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-    </svg>
-  );
-}
-
 const GLOSE_ITEMS = [
-  { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoFlashcard,  img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
-  { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoTranslate,  img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
-  { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoMultiChoice,img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
-  { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMic,        img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
+  { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoGrid,    img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
+  { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoSwap,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
+  { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoList,    img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
+  { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMicSvg,  img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [
-  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoGrammar,     img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
-  { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoTranslate,   img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
-  { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoMultiChoice, img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
-  { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSentence,    img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
-  { id: "generert-flervalg",     label: "Generert flervalg",     sub: "AI-lager flervalg, begge retninger", Icon: IcoMultiChoice, img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
-  { id: "si-setningen",          label: "Si setningen!",         sub: "Hør og si hele setningen høyt",    Icon: IcoMic,         img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
-  { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChat,        img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
-  { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoVoice,       img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
+  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
+  { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoSwap,     img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
+  { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoList,     img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
+  { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSwap,     img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
+  { id: "generert-flervalg",     label: "Generert flervalg",     sub: "AI-lager flervalg, begge retninger", Icon: IcoList,   img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
+  { id: "si-setningen",          label: "Si setningen!",         sub: "Hør og si hele setningen høyt",    Icon: IcoMicSvg,  img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
+  { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChatSvg, img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
+  { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoSpeak,   img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
 ];
 
 function TaskSection({ title, items, onStart }) {
   return (
     <div style={{ padding: "0 0 28px" }}>
-      <div style={{ padding: "0 20px 12px" }}>
-        <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>{title}</span>
+      <div style={{ padding: "4px 22px 10px", display: "flex", alignItems: "baseline" }}>
+        <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 22, letterSpacing: "-0.4px", color: "var(--text)" }}>{title}</h2>
       </div>
-      <div style={{ display: "flex", gap: 12, padding: "0 20px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
+      <div style={{ display: "flex", gap: 12, padding: "0 22px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
         {items.map(item => (
           <TaskCard key={item.id} item={item} onStart={onStart} />
         ))}
@@ -685,32 +622,26 @@ function TaskSection({ title, items, onStart }) {
 
 function TaskCard({ item, onStart }) {
   return (
-    <button
-      onClick={() => onStart(item.id)}
-      style={{
-        flexShrink: 0,
-        width: 160,
-        height: 148,
-        borderRadius: 18,
-        overflow: "hidden",
-        position: "relative",
-        border: "none",
-        padding: 0,
-        cursor: "pointer",
-        boxShadow: "var(--shadow-md)",
-        transition: "transform 0.18s ease, box-shadow 0.18s ease",
-      }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
-    >
+    <button onClick={() => onStart(item.id)} style={{
+      flex: "0 0 auto", width: 200, height: 160, borderRadius: 18, overflow: "hidden",
+      position: "relative", border: "none", padding: 0, cursor: "pointer",
+      boxShadow: "var(--shadow-md)", transition: "transform 0.18s ease",
+    }}
+    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; }}
+    onMouseLeave={e => { e.currentTarget.style.transform = ""; }}>
       <img src={item.img} alt={item.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.04) 100%)" }} />
-      <div style={{ position: "absolute", top: 11, left: 12, color: "rgba(255,255,255,0.85)" }}>
-        <item.Icon />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.78) 100%)" }} />
+      <div style={{
+        position: "absolute", top: 12, left: 12, width: 32, height: 32, borderRadius: 10,
+        background: "rgba(0,0,0,0.42)", backdropFilter: "blur(8px)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        display: "grid", placeItems: "center", color: "var(--cream)",
+      }}>
+        <item.Icon size={15} stroke="var(--cream)" sw={1.6} />
       </div>
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px 13px", textAlign: "left" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "white", letterSpacing: "-0.1px", lineHeight: 1.25, marginBottom: 2 }}>{item.label}</div>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.62)", lineHeight: 1.3 }}>{item.sub}</div>
+      <div style={{ position: "absolute", left: 12, right: 12, bottom: 12 }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 500, color: "#fff", letterSpacing: "-0.2px", lineHeight: 1.2, marginBottom: 2 }}>{item.label}</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.70)", lineHeight: 1.3 }}>{item.sub}</div>
       </div>
     </button>
   );
@@ -804,40 +735,55 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 84, scrollbarWidth: "none" }}>
 
         {/* Header */}
-        <div style={{ padding: "52px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ padding: "52px 22px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: 10, color: "var(--text-subtle)", letterSpacing: 3, opacity: 0.5, marginBottom: 6, fontWeight: 400 }}>L'ATELIER</div>
-            <div style={{ fontSize: 28, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>{frenchGreeting()}, {profile.name} 👋</div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ThemeToggle />
-            <div style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--accent-light))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "var(--shadow-sm)" }}>
-              🇫🇷
+            <div style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: 3.4, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 6, fontWeight: 400, opacity: 0.85 }}>L'Atelier</div>
+            <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 34, letterSpacing: "-0.7px", color: "var(--text)", lineHeight: 1.05 }}>
+              {frenchGreeting()}, {profile.name}
+            </h1>
+            <div style={{ marginTop: 4, fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 13, color: "var(--text-subtle)" }}>
+              {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
             </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", paddingTop: 14 }}>
+            <ThemeToggle />
+            <div style={{ width: 36, height: 36, borderRadius: 99, overflow: "hidden", background: "linear-gradient(180deg,#0055A4 33%,#fff 33% 67%,#EF4135 67%)", border: "1.5px solid var(--cream)", flexShrink: 0 }} />
           </div>
         </div>
 
         {/* Search + profile */}
-        <div style={{ padding: "0 20px 16px", display: "flex", gap: 10, position: "relative" }}>
-          <div style={{ flex: 1, background: "var(--surface)", border: `1.5px solid ${searchOpen ? "var(--accent)" : "var(--border)"}`, borderRadius: 14, padding: "0 16px", display: "flex", alignItems: "center", gap: 8, transition: "border-color 0.2s" }}>
-            <span style={{ opacity: 0.4, flexShrink: 0 }}>🔍</span>
+        <div style={{ padding: "0 22px 14px", display: "flex", gap: 10, position: "relative" }}>
+          <div style={{ flex: 1, height: 46, borderRadius: 14, background: "var(--surface)", border: `1px solid ${searchOpen ? "var(--cream)" : "var(--border)"}`, display: "flex", alignItems: "center", padding: "0 14px", gap: 10, transition: "border-color 0.2s" }}>
+            <IcoSearch size={16} stroke="var(--text-muted)" sw={1.5} />
             <input
               ref={searchRef}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
               placeholder="Søk på ord eller tema…"
-              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", padding: "13px 0" }}
+              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)" }}
             />
             {searchQuery && (
               <button onClick={() => { setSearchQuery(""); setSearchOpen(false); }} style={{ background: "none", border: "none", color: "var(--text-subtle)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
             )}
           </div>
-          <button onClick={() => setProfileOpen(true)} style={{ width: 48, height: 48, borderRadius: 14, background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", flexShrink: 0, cursor: "pointer" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-            </svg>
+          <button onClick={() => setProfileOpen(true)} style={{ width: 46, height: 46, borderRadius: 14, background: "var(--surface)", border: "1px solid var(--border)", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}>
+            <IcoUser size={18} stroke="var(--cream)" sw={1.5} />
           </button>
+        </div>
+
+        {/* Pierre card */}
+        <div style={{ padding: "0 22px 14px" }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center" }}>
+            <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "#1a1410", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
+            <div>
+              <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
+              <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
+                «{frenchGreeting()} {profile.name} — {dagensDone ? "bra jobbet i dag! Øv mer?" : "har du tid til dagens gloser?"}»
+              </div>
+            </div>
+            <IcoArrow size={18} stroke="var(--cream-deep)" sw={1.5} />
+          </div>
         </div>
 
         {/* Search results */}
@@ -871,70 +817,45 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         )}
 
         {/* Stats row */}
-        <div style={{ display: "flex", gap: 10, padding: "0 20px 28px" }}>
-          {/* Ord lært */}
-          <button onClick={onShowWords} style={{
-            flex: 1, background: "var(--surface)", borderRadius: 16,
-            padding: "14px 8px 12px", textAlign: "center",
-            boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
-            cursor: "pointer", fontFamily: "var(--font-body)",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-          }}>
-            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{words.length}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Ord lært</div>
+        <div style={{ display: "flex", gap: 8, padding: "0 22px 22px" }}>
+          <button onClick={onShowWords} style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 14px", minHeight: 100, display: "flex", flexDirection: "column", justifyContent: "space-between", cursor: "pointer", fontFamily: "var(--font-body)", textAlign: "left" }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--cream)", lineHeight: 1, letterSpacing: "-0.5px" }}>{words.length}</div>
+              <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 4 }}>Ord lært</div>
+            </div>
           </button>
 
-          {/* Streak */}
-          <button onClick={() => setActivityOpen(true)} style={{
-            flex: 1, background: "var(--surface)", borderRadius: 16,
-            padding: "14px 8px 12px", textAlign: "center",
-            boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
-            cursor: "pointer", fontFamily: "var(--font-body)",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-          }}>
-            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{streak}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Streak</div>
+          <button onClick={() => setActivityOpen(true)} style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 14px", minHeight: 100, display: "flex", flexDirection: "column", justifyContent: "space-between", cursor: "pointer", fontFamily: "var(--font-body)", textAlign: "left" }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--amber)", lineHeight: 1, letterSpacing: "-0.5px" }}>{streak}</div>
+              <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 4 }}>Streak</div>
+            </div>
             {streakData.startDate && streak > 0 && (
-              <div style={{ fontSize: 10, color: "var(--text-subtle)", lineHeight: 1.3, marginTop: 1 }}>
-                fra {fmtDate(streakData.startDate)}
-              </div>
-            )}
-            {bestStreak.days > 0 && streak !== bestStreak.days && (
-              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, lineHeight: 1.3, marginTop: 1 }}>
-                Rekord: {bestStreak.days}d
-                {bestStreak.startDate && (() => {
-                  const end = bestStreak.endDate && bestStreak.endDate !== bestStreak.startDate ? ` – ${fmtDate(bestStreak.endDate)}` : "";
-                  return ` (${fmtDate(bestStreak.startDate)}${end})`;
-                })()}
-              </div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.4 }}>fra {fmtDate(streakData.startDate)}{bestStreak.days > streak ? <><br /><span style={{ color: "var(--cream-deep)" }}>Rekord: {bestStreak.days}d</span></> : null}</div>
             )}
           </button>
 
-          {/* Svar i dag */}
-          <button onClick={() => setSvarOpen(true)} style={{
-            flex: 1, background: "var(--surface)", borderRadius: 16,
-            padding: "14px 8px 12px", textAlign: "center",
-            boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
-            cursor: "pointer", fontFamily: "var(--font-body)",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-          }}>
-            <div style={{ fontSize: 26, fontWeight: 600, color: "var(--text)", lineHeight: 1, fontFamily: "var(--font-display)" }}>{todayAnswers}</div>
-            <div style={{ fontSize: 11, color: "var(--text-subtle)", fontWeight: 400 }}>Svar i dag</div>
-            <div style={{ width: "100%", padding: "0 4px", marginTop: 2 }}>
-              <div style={{ height: 4, borderRadius: 2, background: "var(--border)", overflow: "hidden" }}>
-                <div style={{ height: "100%", borderRadius: 2, background: "var(--accent)", width: `${Math.min(100, (todayAnswers / 150) * 100)}%`, transition: "width 0.3s ease" }} />
+          <button onClick={() => setSvarOpen(true)} style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 14px", minHeight: 100, display: "flex", flexDirection: "column", justifyContent: "space-between", cursor: "pointer", fontFamily: "var(--font-body)", textAlign: "left" }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--sage)", lineHeight: 1, letterSpacing: "-0.5px" }}>{todayAnswers}</div>
+              <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 4 }}>Svar i dag</div>
+            </div>
+            <div>
+              <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 6 }}>
+                <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / 150) * 100)}%`, background: "var(--sage)", borderRadius: 2, transition: "width 0.3s ease" }} />
               </div>
-              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 500, marginTop: 2 }}>{todayAnswers}/150</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>{todayAnswers}/150</div>
             </div>
           </button>
         </div>
 
         {/* Dagens øvelse — horisontal scroll */}
         <div style={{ padding: "0 0 28px" }}>
-          <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.2px" }}>Dagens øvelse</span>
+          <div style={{ padding: "4px 22px 10px", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+            <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 22, letterSpacing: "-0.4px", color: "var(--text)" }}>Dagens øvelse</h2>
+            {dagensOvelse.every(c => c.done) && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "var(--font-body)" }}>2 av 2 ✓</span>}
           </div>
-          <div style={{ display: "flex", gap: 12, padding: "0 20px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
+          <div style={{ display: "flex", gap: 12, padding: "0 22px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
             {dagensOvelse.map(card => {
               const isLoading = card.id === "dagens-glose" && dagensLoading;
               return (
@@ -968,42 +889,42 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
         </div>
 
-        {/* Fremgang siste 7 dager */}
+        {/* Siste 7 dager */}
         {(() => {
           const weekTotal = last7Days.reduce((s, d) => s + d.answers, 0);
           const bestDay = last7Days.reduce((best, d) => d.answers > best.answers ? d : best, { answers: 0 });
-          const todayAnswers = last7Days[6]?.answers || 0;
+          const todayAns = last7Days[6]?.answers || 0;
+          const max = Math.max(...last7Days.map(d => d.answers), 1);
           return (
-            <div style={{ margin: "0 20px 28px", borderRadius: 20, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)", background: "var(--surface)" }}>
-              {/* Top strip — accent gradient */}
-              <div style={{ background: "linear-gradient(102deg, rgba(30,61,122,0.9) 0%, rgba(28,46,80,0.9) 50%, rgba(52,17,32,0.9) 100%)", padding: "16px 18px 14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>Siste 7 dager</div>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                      <span style={{ fontSize: 32, fontWeight: 700, color: "white", fontFamily: "var(--font-display)", lineHeight: 1 }}>{weekTotal}</span>
-                      <span style={{ fontSize: 12, color: "rgba(232,237,245,0.55)" }}>svar totalt</span>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    {todayAnswers > 0 && (
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-light)" }}>+{todayAnswers} i dag</div>
-                    )}
-                    {bestDay.answers > 0 && (
-                      <div style={{ fontSize: 11, color: "rgba(232,237,245,0.45)", marginTop: 2 }}>Beste: {bestDay.answers} svar</div>
-                    )}
-                  </div>
+            <div style={{ margin: "0 22px 28px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "16px 18px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 9, letterSpacing: 2.4, textTransform: "uppercase", color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginBottom: 4 }}>Siste 7 dager</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 22, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.3px", lineHeight: 1 }}>{weekTotal.toLocaleString("nb")} svar</div>
                 </div>
-                <MiniGraph days={last7Days} onTap={() => setActivityOpen(true)} />
+                <button onClick={() => setActivityOpen(true)} style={{ background: "transparent", border: "none", color: "var(--cream)", fontFamily: "var(--font-body)", fontSize: 11, display: "flex", alignItems: "center", gap: 5, cursor: "pointer", padding: 0 }}>
+                  Se historikk <IcoArrow size={12} stroke="var(--cream)" sw={1.5} />
+                </button>
               </div>
-              {/* Bottom row */}
-              <div style={{ display: "flex", borderTop: "1px solid var(--border)" }}>
-                <button onClick={() => setActivityOpen(true)} style={{ flex: 1, background: "none", border: "none", borderRight: "1px solid var(--border)", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "10px 0" }}>
-                  Historikk ›
-                </button>
-                <button onClick={() => setSvarOpen(true)} style={{ flex: 1, background: "none", border: "none", color: "var(--accent)", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "10px 0" }}>
-                  Svar i dag ›
-                </button>
+              <div style={{ height: 80, display: "flex", alignItems: "flex-end", gap: 5 }}>
+                {last7Days.map((d, i) => {
+                  const isToday = i === 6;
+                  const hPct = d.answers === 0 ? 3 : Math.max(8, (d.answers / max) * 100);
+                  const dt = new Date(d.date + "T12:00:00");
+                  const lbl = isToday ? "i dag" : dt.toLocaleDateString("nb", { weekday: "short" }).slice(0, 2);
+                  return (
+                    <div key={d.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%" }}>
+                      <div style={{ flex: 1, width: "100%", display: "flex", alignItems: "flex-end" }}>
+                        <div style={{ width: "100%", height: `${hPct}%`, borderRadius: 4, background: isToday ? "var(--cream)" : d.answers > 0 ? "var(--cream-deep)" : "rgba(255,255,255,0.06)", transition: "height 0.4s ease" }} />
+                      </div>
+                      <div style={{ fontSize: 9, color: isToday ? "var(--cream)" : "var(--text-muted)", fontWeight: isToday ? 600 : 400, textAlign: "center" }}>{lbl}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                {todayAns > 0 && <span style={{ fontSize: 11, color: "var(--cream)", fontFamily: "var(--font-body)", fontWeight: 600 }}>+{todayAns} i dag</span>}
+                {bestDay.answers > 0 && <span style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 11, color: "var(--text-subtle)" }}>beste dag: {bestDay.answers}</span>}
               </div>
             </div>
           );
@@ -1016,26 +937,25 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />
 
         {/* Læringsmål */}
-        <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "0 20px 16px", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", cursor: "pointer" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-subtle)", fontWeight: 500 }}>Læringsmål</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 500 }}>Bolk {idx + 1} av {orderedGoals.length}</span>
-              <span style={{ fontSize: 13, color: "var(--text-subtle)" }}>›</span>
+        <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "0 22px 16px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "16px 18px", cursor: "pointer" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: 9, letterSpacing: 2.4, textTransform: "uppercase", color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Læringsmål</div>
+            <div style={{ fontSize: 11, color: "var(--cream)", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 4 }}>
+              Bolk {idx + 1} av {orderedGoals.length} <IcoArrow size={12} stroke="var(--cream)" sw={1.5} />
             </div>
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 16, color: "var(--text)", marginBottom: 12 }}>{activeGoal.label}</div>
-          <div style={{ height: 6, background: "var(--accent-bg)", borderRadius: 99, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(to right, var(--accent), var(--accent-light))", borderRadius: 99, transition: "width 0.8s ease" }} />
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 22, fontWeight: 500, color: "var(--text)", marginTop: 4, letterSpacing: "-0.3px" }}>{activeGoal.label}</div>
+          <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
+            <span>{activeWordCount} / {activeGoal.target} ord i bolken</span>
+            <span style={{ color: "var(--cream)", fontWeight: 600 }}>{Math.round(pct)} %</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ fontSize: 11, color: "var(--text-subtle)" }}>{activeWordCount} / {activeGoal.target} ord i bolken</span>
-            <span style={{ fontSize: 11, color: "var(--accent)" }}>{Math.round(pct)}%</span>
+          <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 6 }}>
+            <div style={{ width: `${pct}%`, height: "100%", background: "var(--cream)", borderRadius: 2, transition: "width 0.8s ease" }} />
           </div>
         </div>
 
         {/* Ordmestertelleren */}
-        <div style={{ margin: "0 20px 0", background: "var(--surface)", borderRadius: 20, padding: "18px 20px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
+        <div style={{ margin: "0 22px 0", background: "var(--surface)", borderRadius: 18, padding: "16px 18px", border: "1px solid var(--border)" }}>
           <OrdmesterTeller key={ordmesterVersion} masteredCount={masteredCount} onEdit={() => setOrdmesterEditOpen(true)} />
         </div>
 
