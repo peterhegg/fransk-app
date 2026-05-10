@@ -108,6 +108,23 @@ export function getQuizOptions(card, bank = [], isReverse = false) {
 export function todayStr() { return new Date().toISOString().split("T")[0]; }
 
 // --- Storage ---
+function stripFrArticle(fr) {
+  return fr.replace(/^(le |la |les |l')/i, "").trim();
+}
+
+function stripPhoneticArticle(p) {
+  return p.replace(/^(lə |la |læ |l'|l )/i, "").trim();
+}
+
+function lookupForms(baseFr) {
+  for (const section of Object.values(STATIC_VOCAB)) {
+    if (!Array.isArray(section)) continue;
+    const match = section.find(e => e.fr === baseFr);
+    if (match && match.forms) return match.forms;
+  }
+  return [];
+}
+
 function stripWordTags(field) {
   if (!field) return field;
   return field
@@ -118,12 +135,70 @@ function stripWordTags(field) {
 }
 
 function migrateWord(w) {
-  const no = stripWordTags(w.no || "");
+  let result = { ...w };
+  // strip tag cruft from no field
+  const no = stripWordTags(result.no || "");
   const pm = no.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
   if (pm) {
-    return { ...w, no: pm[1].trim(), phonetic: w.phonetic || pm[2].trim() };
+    result = { ...result, no: pm[1].trim(), phonetic: result.phonetic || pm[2].trim() };
+  } else if (no !== result.no) {
+    result = { ...result, no };
   }
-  return no !== w.no ? { ...w, no } : w;
+  // strip article from fr (le/la/les/l')
+  const baseFr = stripFrArticle(result.fr || "");
+  if (baseFr !== result.fr) {
+    result = {
+      ...result,
+      fr: baseFr,
+      phonetic: stripPhoneticArticle(result.phonetic || ""),
+    };
+  }
+  // add forms if missing
+  if (!result.forms) {
+    result = { ...result, forms: lookupForms(result.fr) };
+  }
+  return result;
+}
+
+const WB_MIGRATION_KEY = "fransk-wb-migration";
+const WB_MIGRATION_VERSION = 2;
+
+const SENTENCE_ENTRIES = new Set([
+  "Je suis à Paris", "Tu es au café", "Il est au musée",
+  "Elle est à la bibliothèque", "Nous sommes à la ville",
+  "être-bøying", "je suis",
+]);
+
+function isSentenceLike(fr) {
+  return /^(Je|Tu|Il|Elle|Nous|Vous|Ils|Elles)\s.+\s/i.test(fr);
+}
+
+function runWordBankMigrations(words) {
+  const version = parseInt(localStorage.getItem(WB_MIGRATION_KEY) || "0");
+  if (version >= WB_MIGRATION_VERSION) return words;
+
+  let result = [...words];
+
+  if (version < 2) {
+    // Remove sentence entries, deduplicate by fr (keep highest pts)
+    const removed = result.filter(w => SENTENCE_ENTRIES.has(w.fr) || isSentenceLike(w.fr));
+    result = result.filter(w => !SENTENCE_ENTRIES.has(w.fr) && !isSentenceLike(w.fr));
+    const seen = new Map();
+    for (const w of result) {
+      const ex = seen.get(w.fr);
+      if (!ex || (w.points || 0) > (ex.points || 0)) seen.set(w.fr, w);
+    }
+    result = [...seen.values()];
+    // Add "à" if not present, using max pts from removed sentences
+    if (!result.some(w => w.fr === "à")) {
+      const pts = Math.max(...removed.map(w => w.points || 0), 0);
+      result.push({ id: Date.now() + Math.random(), fr: "à", no: "til / i / på", phonetic: "a", forms: [], level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: pts, goal: "core" });
+    }
+    saveWords(result);
+  }
+
+  localStorage.setItem(WB_MIGRATION_KEY, WB_MIGRATION_VERSION.toString());
+  return result;
 }
 
 export function loadWords() {
@@ -132,9 +207,10 @@ export function loadWords() {
     if (s) {
       const arr = JSON.parse(s);
       const migrated = arr.map(migrateWord);
-      const dirty = migrated.some((w, i) => w !== arr[i]);
-      if (dirty) saveWords(migrated);
-      return migrated;
+      const cleaned = runWordBankMigrations(migrated);
+      const dirty = cleaned !== migrated || migrated.some((w, i) => w !== arr[i]);
+      if (dirty) saveWords(cleaned);
+      return cleaned;
     }
     const old = localStorage.getItem("fransk-laering-ord");
     if (old) {
@@ -507,7 +583,14 @@ FRI: Svar fritt på spørsmål om fransk. Kan spille ${p.teacherName} (${teacher
 }
 
 export function loadGeneratedVocab() {
-  try { return JSON.parse(localStorage.getItem(GENERATED_VOCAB_KEY) || "[]"); } catch { return []; }
+  try {
+    const arr = JSON.parse(localStorage.getItem(GENERATED_VOCAB_KEY) || "[]");
+    if (arr.some(e => /^(le |la |les |l')/i.test(e.fr || ""))) {
+      localStorage.removeItem(GENERATED_VOCAB_KEY);
+      return [];
+    }
+    return arr;
+  } catch { return []; }
 }
 
 export function saveGeneratedVocab(words) {
@@ -531,8 +614,9 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
     ? [...VOCAB_LIST, ...(STATIC_VOCAB.core || [])]
     : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
-  const allVocab = [...staticBase, ...goalGenerated];
-  const newVocab = allVocab.filter(v => !learnedFr.has(v.fr));
+  const normalize = v => v.phonetic ? v : { ...v, phonetic: v.p || "" };
+  const allVocab = [...staticBase, ...goalGenerated].map(normalize);
+  const newVocab = allVocab.filter(v => !learnedFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
   const selected = newVocab.slice(0, 5);
   const exercise = { date: todayStr(), goal: goalId, words: selected, phase1done: false, phase2done: false };
   localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(exercise));
@@ -546,6 +630,34 @@ export function needsNewVocab(words, generatedVocab = [], goalId = "core") {
     : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
   return [...staticBase, ...goalGenerated].filter(v => !learnedFr.has(v.fr)).length < 10;
+}
+
+const VERB_FORM_TYPES = new Set(["v","pr","pc","imp","f","c","impv","pp"]);
+const ARTICLE_FORM_TYPES = new Set(["n","np"]);
+
+export function getArticleQuestions(words) {
+  const questions = [];
+  for (const w of words) {
+    if (!w.forms) continue;
+    const nForms = w.forms.filter(([, t]) => t === "n");
+    for (const [form] of nForms) {
+      const m = form.match(/^(le|la|les|l')\s+(.+)$/i);
+      if (m) questions.push({ word: w, form, article: m[1], noun: m[2] });
+    }
+  }
+  return questions;
+}
+
+export function getConjugationQuestions(words) {
+  const questions = [];
+  for (const w of words) {
+    if (!w.forms) continue;
+    const verbForms = w.forms.filter(([, t]) => VERB_FORM_TYPES.has(t));
+    for (const [form, type] of verbForms) {
+      questions.push({ word: w, form, type });
+    }
+  }
+  return questions;
 }
 
 export function getCurrentGrammarTopic() {

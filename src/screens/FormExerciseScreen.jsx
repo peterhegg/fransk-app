@@ -1,0 +1,351 @@
+import { useState, useRef, useEffect } from "react";
+import { updateWordPoints, incrementAnswerCount, scheduleNext, touchStreak, getWordTier, shuffle, checkQuizAnswer } from "../utils.jsx";
+import { MASTERY_POINTS } from "../constants.js";
+import BottomNav from "../components/BottomNav.jsx";
+import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "../components/PointsBadge.jsx";
+import { AutoPlayToggle } from "../components/AudioControls.jsx";
+
+const ARTICLE_OPTIONS = ["le", "la", "les", "l'"];
+
+const FORM_TYPE_LABELS = {
+  pr: "Présent", pc: "Passé composé", imp: "Imparfait",
+  f: "Futur", c: "Conditionnel", impv: "Impératif", pp: "Participe passé",
+};
+
+function extractArticle(form) {
+  const m = form.match(/^(le|la|les|l')\s+(.+)$/i);
+  return m ? { article: m[1], noun: m[2] } : null;
+}
+
+function buildArticleQueue(words) {
+  const cards = [];
+  for (const w of words) {
+    if (!w.forms?.length) continue;
+    for (const [form, type] of w.forms) {
+      if (type !== "n") continue;
+      const parsed = extractArticle(form);
+      if (parsed) cards.push({ word: w, noun: parsed.noun, answer: parsed.article });
+    }
+  }
+  return shuffle(cards).slice(0, 15);
+}
+
+function buildConjugationQueue(words) {
+  const verbTypes = new Set(["pr", "pc", "imp", "f", "c", "impv"]);
+  const cards = [];
+  for (const w of words) {
+    if (!w.forms?.length) continue;
+    for (const [form, type] of w.forms) {
+      if (!verbTypes.has(type)) continue;
+      cards.push({ word: w, form, formType: type });
+    }
+  }
+  return shuffle(cards).slice(0, 15);
+}
+
+function updateBank(words, setWords, cardWord, result, gc) {
+  return words.map(w => {
+    if (w.fr !== cardWord.fr) return w;
+    const updated = updateWordPoints(w, result, gc);
+    const srOverride = updated._srOverride;
+    const { _srOverride: _, ...clean } = updated;
+    if (srOverride) return { ...clean, ...srOverride };
+    if ((clean.points || 0) < MASTERY_POINTS) {
+      const passed = result !== "wrong";
+      const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
+      return { ...clean, level: nl, nextReview: nr };
+    }
+    return clean;
+  });
+}
+
+export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+  const [queue, setQueue] = useState(() => buildArticleQueue(words));
+  const [card, setCard] = useState(() => queue[0] || null);
+  const [checked, setChecked] = useState(false);
+  const [chosen, setChosen] = useState(null);
+  const [result, setResult] = useState("");
+  const [stats, setStats] = useState({ correct: 0, wrong: 0 });
+  const [pointsInfo, setPointsInfo] = useState(null);
+  const [fireworksDone, setFireworksDone] = useState(false);
+  const [tierPopDone, setTierPopDone] = useState(false);
+  const [done, setDone] = useState(false);
+  const total = queue.length + stats.correct + stats.wrong;
+
+  useEffect(() => {
+    if (autoPlay && card?.noun && !checked) {
+      const t = setTimeout(() => speak(card.noun), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.noun, checked]);
+
+  const submit = (pick) => {
+    if (checked || !card) return;
+    setChosen(pick);
+    const res = pick === card.answer ? "correct" : "wrong";
+    setChecked(true); setResult(res);
+    setStats(s => ({ correct: s.correct + (res !== "wrong" ? 1 : 0), wrong: s.wrong + (res === "wrong" ? 1 : 0) }));
+    const gc = incrementAnswerCount();
+    const bw = words.find(w => w.fr === card.word.fr);
+    if (bw) {
+      const ptsBefore = bw.points || 0;
+      const updated = updateWordPoints({ ...bw }, res, gc);
+      setPointsInfo({ pts: updated.points || 0, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(updated.points || 0), justMastered: (updated.points || 0) >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      setWords(prev => updateBank(prev, setWords, card.word, res, gc));
+    }
+    if (autoPlay) speak(card.noun);
+  };
+
+  const next = () => {
+    const remaining = queue.slice(1);
+    if (result === "wrong") {
+      const at = Math.min(3, remaining.length);
+      const recycled = [...remaining.slice(0, at), { ...card }, ...remaining.slice(at)];
+      setQueue(recycled); setCard(recycled[0]);
+      setChecked(false); setChosen(null); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+      return;
+    }
+    if (!remaining.length) { touchStreak(); setDone(true); return; }
+    setQueue(remaining); setCard(remaining[0]);
+    setChecked(false); setChosen(null); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+  };
+
+  const navBar = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <span style={{ color: "var(--text)", fontSize: 15 }}>⬡ Artikkeltest</span>
+      <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
+    </div>
+  );
+
+  if (!card || done) return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", color: "var(--text)" }}>
+      {navBar}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 16 }}>
+        {done ? (
+          <>
+            <div style={{ fontSize: 36 }}>✓</div>
+            <div style={{ fontSize: 20, color: "var(--cream)", fontFamily: "var(--font-display)" }}>Ferdig! {stats.correct}/{total} riktige</div>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 20, color: "var(--text-subtle)" }}>Ingen ord med artikkelformer ennå.</div>
+            <div style={{ fontSize: 14, color: "var(--text-subtle)", opacity: 0.7 }}>Lær substantiver i Dagens øvelse.</div>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+          </>
+        )}
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+
+  const pct = Math.round((stats.correct + stats.wrong) / (total || 1) * 100);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", color: "var(--text)" }}>
+      {navBar}
+      <div style={{ height: 3, background: "var(--bg)" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: "var(--cream)", borderRadius: 99, transition: "width 0.4s" }} />
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 24 }}>
+        {pointsInfo && (
+          <>
+            {pointsInfo.justMastered && !fireworksDone && <Fireworks onDone={() => setFireworksDone(true)} />}
+            {pointsInfo.tierAfter > pointsInfo.tierBefore && !tierPopDone && <TierPop tier={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />}
+            {pointsInfo.justMastered && !fireworksDone && <ConfettiBurst />}
+          </>
+        )}
+
+        <div style={{ fontSize: 13, color: "var(--text-subtle)" }}>{stats.correct + stats.wrong + 1} / {total}</div>
+
+        <div style={{ background: "var(--surface)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "var(--shadow-md)" }}>
+          <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 10 }}>Sett inn riktig artikkel:</div>
+          <div style={{ fontSize: 36, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>
+            <span style={{ color: "var(--text-subtle)", opacity: 0.5 }}>___ </span>{card.noun}
+          </div>
+          {card.word.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.7, marginTop: 4 }}>({card.word.phonetic})</div>}
+          <div style={{ fontSize: 14, color: "var(--text-subtle)", marginTop: 6 }}>{card.word.no}</div>
+
+          {checked && (
+            <div style={{ marginTop: 16, fontSize: 15, fontWeight: 600, color: result === "correct" ? "var(--color-success)" : "var(--color-error)" }}>
+              {result === "correct" ? "Riktig!" : `Riktig: ${card.answer} ${card.noun}`}
+            </div>
+          )}
+        </div>
+
+        {!checked ? (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 380 }}>
+            {ARTICLE_OPTIONS.map(opt => (
+              <button key={opt} onClick={() => submit(opt)} style={{ background: "var(--surface)", border: "2px solid var(--border)", borderRadius: 14, color: "var(--cream)", fontFamily: "var(--font-display)", fontSize: 20, fontStyle: "italic", padding: "18px 12px", cursor: "pointer", transition: "all 0.15s" }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            {pointsInfo && <PointsBadge info={pointsInfo} />}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 380, opacity: 0.4 }}>
+              {ARTICLE_OPTIONS.map(opt => (
+                <button key={opt} disabled style={{ background: chosen === opt ? (result === "correct" ? "rgba(100,200,100,0.2)" : "rgba(200,80,80,0.2)") : (opt === card.answer && result === "wrong" ? "rgba(100,200,100,0.2)" : "var(--surface)"), border: `2px solid ${chosen === opt ? (result === "correct" ? "var(--color-success)" : "var(--color-error)") : (opt === card.answer && result === "wrong" ? "var(--color-success)" : "var(--border)")}`, borderRadius: 14, color: "var(--cream)", fontFamily: "var(--font-display)", fontSize: 20, fontStyle: "italic", padding: "18px 12px", opacity: 1 }}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px 40px", cursor: "pointer", width: "100%", maxWidth: 380 }}>
+              {queue.length <= 1 ? "Fullfør" : "Neste →"}
+            </button>
+          </>
+        )}
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+}
+
+export function ConjugationExerciseScreen({ words, setWords, onBack, speak, speaking, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+  const [queue, setQueue] = useState(() => buildConjugationQueue(words));
+  const [card, setCard] = useState(() => queue[0] || null);
+  const [input, setInput] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [result, setResult] = useState("");
+  const [stats, setStats] = useState({ correct: 0, wrong: 0 });
+  const [pointsInfo, setPointsInfo] = useState(null);
+  const [fireworksDone, setFireworksDone] = useState(false);
+  const [tierPopDone, setTierPopDone] = useState(false);
+  const [done, setDone] = useState(false);
+  const inputRef = useRef(null);
+  const total = queue.length + stats.correct + stats.wrong;
+
+  useEffect(() => { if (!checked && inputRef.current) inputRef.current.focus(); }, [card, checked]);
+
+  useEffect(() => {
+    if (autoPlay && card?.word?.fr && !checked) {
+      const t = setTimeout(() => speak(card.word.fr), 400);
+      return () => clearTimeout(t);
+    }
+  }, [card?.word?.fr, checked]);
+
+  const submit = () => {
+    if (!input.trim() || !card || checked) return;
+    const fakeCard = { fr: card.form, no: card.form };
+    const res = checkQuizAnswer(input, fakeCard, true);
+    setChecked(true); setResult(res);
+    setStats(s => ({ correct: s.correct + (res !== "wrong" ? 1 : 0), wrong: s.wrong + (res === "wrong" ? 1 : 0) }));
+    const gc = incrementAnswerCount();
+    const bw = words.find(w => w.fr === card.word.fr);
+    if (bw) {
+      const ptsBefore = bw.points || 0;
+      const updated = updateWordPoints({ ...bw }, res, gc);
+      setPointsInfo({ pts: updated.points || 0, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(updated.points || 0), justMastered: (updated.points || 0) >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
+      setWords(prev => updateBank(prev, setWords, card.word, res, gc));
+    }
+    if (autoPlay) speak(card.form);
+  };
+
+  const next = () => {
+    const remaining = queue.slice(1);
+    if (result === "wrong") {
+      const at = Math.min(3, remaining.length);
+      const recycled = [...remaining.slice(0, at), { ...card }, ...remaining.slice(at)];
+      setQueue(recycled); setCard(recycled[0]);
+      setInput(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+      return;
+    }
+    if (!remaining.length) { touchStreak(); setDone(true); return; }
+    setQueue(remaining); setCard(remaining[0]);
+    setInput(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+  };
+
+  const navBar = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <span style={{ color: "var(--text)", fontSize: 15 }}>⬡ Bøyingstest</span>
+      <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
+    </div>
+  );
+
+  if (!card || done) return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", color: "var(--text)" }}>
+      {navBar}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 16 }}>
+        {done ? (
+          <>
+            <div style={{ fontSize: 36 }}>✓</div>
+            <div style={{ fontSize: 20, color: "var(--cream)", fontFamily: "var(--font-display)" }}>Ferdig! {stats.correct}/{total} riktige</div>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 20, color: "var(--text-subtle)" }}>Ingen verb med bøyingsformer ennå.</div>
+            <div style={{ fontSize: 14, color: "var(--text-subtle)", opacity: 0.7 }}>Lær verb i Dagens øvelse.</div>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+          </>
+        )}
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+
+  const pct = Math.round((stats.correct + stats.wrong) / (total || 1) * 100);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", color: "var(--text)" }}>
+      {navBar}
+      <div style={{ height: 3, background: "var(--bg)" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: "var(--cream)", borderRadius: 99, transition: "width 0.4s" }} />
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 20 }}>
+        {pointsInfo && (
+          <>
+            {pointsInfo.justMastered && !fireworksDone && <Fireworks onDone={() => setFireworksDone(true)} />}
+            {pointsInfo.tierAfter > pointsInfo.tierBefore && !tierPopDone && <TierPop tier={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />}
+            {pointsInfo.justMastered && !fireworksDone && <ConfettiBurst />}
+          </>
+        )}
+
+        <div style={{ fontSize: 13, color: "var(--text-subtle)" }}>{stats.correct + stats.wrong + 1} / {total}</div>
+
+        <div style={{ background: "var(--surface)", borderRadius: 20, padding: "28px 24px", width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "var(--shadow-md)" }}>
+          <div style={{ fontSize: 12, color: "var(--cream-deep)", opacity: 0.8, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{FORM_TYPE_LABELS[card.formType] || card.formType}</div>
+          <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{card.word.fr}</div>
+          {card.word.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.7 }}>({card.word.phonetic})</div>}
+          <div style={{ fontSize: 14, color: "var(--text-subtle)", marginTop: 4 }}>{card.word.no}</div>
+
+          {checked && (
+            <div style={{ marginTop: 14, padding: "10px 16px", borderRadius: 10, background: result === "correct" ? "rgba(100,200,100,0.1)" : "rgba(200,80,80,0.1)", fontSize: 15 }}>
+              <span style={{ color: result === "correct" ? "var(--color-success)" : "var(--color-error)", fontWeight: 600 }}>{result === "correct" ? "Riktig!" : "Riktig svar:"}</span>
+              {result !== "correct" && <span style={{ color: "var(--text)", fontStyle: "italic", marginLeft: 8 }}>{card.form}</span>}
+            </div>
+          )}
+        </div>
+
+        {!checked ? (
+          <div style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 10 }}>
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && submit()}
+              placeholder={`Skriv ${FORM_TYPE_LABELS[card.formType]?.toLowerCase() || "bøyingsform"}…`}
+              style={{ background: "var(--surface)", border: "2px solid var(--border)", borderRadius: 14, color: "var(--text)", fontFamily: "var(--font-display)", fontSize: 18, fontStyle: "italic", padding: "16px 18px", outline: "none", width: "100%", boxSizing: "border-box", textAlign: "center" }}
+            />
+            <button onClick={submit} disabled={!input.trim()} style={{ background: input.trim() ? "var(--cream)" : "var(--bg)", border: "none", borderRadius: 14, color: input.trim() ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s" }}>
+              Sjekk
+            </button>
+          </div>
+        ) : (
+          <div style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 10 }}>
+            {pointsInfo && <PointsBadge info={pointsInfo} />}
+            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: "pointer" }}>
+              {queue.length <= 1 ? "Fullfør" : "Neste →"}
+            </button>
+          </div>
+        )}
+      </div>
+      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+    </div>
+  );
+}

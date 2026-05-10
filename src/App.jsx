@@ -32,6 +32,7 @@ import SentenceTranslationScreen from "./screens/SentenceTranslationScreen.jsx";
 import SaySentenceScreen from "./screens/SaySentenceScreen.jsx";
 import GenerertFlervalgScreen from "./screens/GenerertFlervalgScreen.jsx";
 import DagensRettelseScreen from "./screens/DagensRettelseScreen.jsx";
+import { ArticleExerciseScreen, ConjugationExerciseScreen } from "./screens/FormExerciseScreen.jsx";
 
 function TranslateIcon() {
   return (
@@ -246,6 +247,8 @@ export default function App() {
       else if (rs === "oversett-setningen") setScreen("oversett-setningen");
       else if (rs === "si-setningen") setScreen("si-setningen");
       else if (rs === "generert-flervalg") setScreen("generert-flervalg");
+      else if (rs === "artikkel-ovelse") setScreen("artikkel-ovelse");
+      else if (rs === "bøying-ovelse") setScreen("bøying-ovelse");
       else if (rs === "chat" && s.modeId) startMode(s.modeId);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -310,7 +313,7 @@ export default function App() {
             system: "You are a French vocabulary generator. Respond only with a valid JSON array, no markdown.",
             messages: [{
               role: "user",
-              content: `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${[...knownFr].join(", ")}. Return a JSON array only: [{"fr":"...","no":"...","phonetic":"..."}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Pick words relevant to the topic and appropriate for A1/A2 level.`,
+              content: `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${[...knownFr].join(", ")}. Return a JSON array only — no markdown. Use BASE FORM without article for nouns (e.g. "maison" not "la maison"). For each word include its inflected forms. Format: [{"fr":"maison","no":"huset","p":"mæzå","forms":[["la maison","n"],["les maisons","np"]]},{"fr":"parler","no":"å snakke","p":"parlæ","forms":[["je parle","pr"],["nous parlons","pr"],["ils parlent","pr"],["j'ai parlé","pc"],["je parlais","imp"],["je parlerai","f"],["parle","impv"],["parlé","pp"]]}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Adjectives: include adj-f/adj-mp/adj-fp forms. Fixed phrases or adverbs: forms:[].`,
             }],
           }),
         });
@@ -322,7 +325,7 @@ export default function App() {
           if (Array.isArray(generated) && generated.length) {
             const fresh = generated
               .filter(v => v.fr && v.no && !knownFr.has(v.fr))
-              .map(v => ({ ...v, goal: goalId }));
+              .map(v => ({ fr: v.fr, no: v.no, p: v.p || v.phonetic || "", forms: v.forms || [], goal: goalId }));
             const updated = [...currentGenVocab, ...fresh];
             saveGeneratedVocab(updated);
             return updated;
@@ -430,6 +433,8 @@ export default function App() {
     else if (id === "si-setningen") setScreen("si-setningen");
     else if (id === "generert-flervalg") setScreen("generert-flervalg");
     else if (id === "dagens-rettelse") setScreen("dagens-rettelse");
+    else if (id === "artikkel-ovelse") setScreen("artikkel-ovelse");
+    else if (id === "bøying-ovelse") setScreen("bøying-ovelse");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -468,7 +473,7 @@ export default function App() {
       logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, 1, result);
       setDagensPointsInfo({ pts: 1, ptsBefore: 0, tierBefore: 0, tierAfter: getWordTier(1), justMastered: false });
       const currentGoalId = getActiveGoal(words, loadGoalOrder()).id;
-      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.phonetic, level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1, goal: currentGoalId };
+      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.p || dagensCard.phonetic || "", forms: dagensCard.forms || [], level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1, goal: currentGoalId };
       setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
@@ -808,6 +813,20 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <DagensRettelseScreen words={words} setWords={setWords} worstWords={loadWorstWords(5, 10)} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+    </>
+  );
+
+  if (screen === "artikkel-ovelse") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <ArticleExerciseScreen words={words} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+    </>
+  );
+
+  if (screen === "bøying-ovelse") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <ConjugationExerciseScreen words={words} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 

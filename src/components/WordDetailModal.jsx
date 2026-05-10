@@ -10,6 +10,36 @@ function speakFr(text) {
   window.speechSynthesis?.speak(utt);
 }
 
+const FORM_LABELS = {
+  n: "Entall", np: "Flertall",
+  v: "Infinitiv", pr: "Presens", pc: "Passé composé", imp: "Imperfekt",
+  f: "Futur", c: "Kondisjonalis", impv: "Imperativ", pp: "Partisipp",
+  "adj-f": "Fem. entall", "adj-mp": "Han. flertall", "adj-fp": "Fem. flertall",
+};
+
+function FormsSection({ forms }) {
+  const groups = {};
+  for (const [form, type] of forms) {
+    if (!groups[type]) groups[type] = [];
+    groups[type].push(form);
+  }
+  return (
+    <div style={{ background: "var(--bg)", borderRadius: 14, padding: "12px 16px", marginBottom: 16 }}>
+      <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Bøyingsformer</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 12px" }}>
+        {Object.entries(groups).map(([type, entries]) =>
+          entries.map((form, i) => (
+            <div key={`${type}-${i}`} style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ fontSize: 10, color: "var(--text-subtle)", opacity: 0.7 }}>{FORM_LABELS[type] || type}</span>
+              <span style={{ fontSize: 13, color: "var(--text)", fontStyle: "italic", fontFamily: "var(--font-display)" }}>{form}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function getCatForWord(w) {
   return w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
 }
@@ -169,7 +199,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
           ) : (
             <div style={{ textAlign: "center", position: "relative" }}>
               <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{word.fr}</div>
-              {word.phonetic && <div style={{ fontSize: 14, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 6 }}>({word.phonetic})</div>}
+              {(word.phonetic || word.p) && <div style={{ fontSize: 14, color: "var(--cream-deep)", opacity: 0.8, marginBottom: 6 }}>({word.phonetic || word.p})</div>}
               <div style={{ fontSize: 18, color: "var(--text-subtle)" }}>{word.no}</div>
               {(word.frAccepted?.length > 0 || word.noAccepted?.length > 0) && (
                 <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-subtle)" }}>
@@ -190,6 +220,8 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
             </div>
           )}
         </div>
+
+        {word.forms?.length > 0 && <FormsSection forms={word.forms} />}
 
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
           <div style={{ flex: 1, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", textAlign: "center" }}>
