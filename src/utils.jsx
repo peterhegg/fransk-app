@@ -153,8 +153,8 @@ function migrateWord(w) {
       phonetic: stripPhoneticArticle(result.phonetic || ""),
     };
   }
-  // add forms if missing
-  if (!result.forms) {
+  // add forms if missing or empty (re-lookup so stale [] entries get corrected)
+  if (!result.forms?.length) {
     result = { ...result, forms: lookupForms(result.fr) };
   }
   return result;
@@ -603,11 +603,15 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
   try {
     const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
     if (saved.date === todayStr() && saved.goal === goalId) {
-      // Return cache only if exercise is in progress or still has new words
-      if (saved.phase1done || saved.phase2done) return saved;
-      const hasNew = (saved.words || []).some(w => !learnedFr.has(w.fr));
-      if (hasNew) return saved;
-      // Cache has only known words — fall through and rebuild
+      const cachedWords = saved.words || [];
+      // Invalidate if cache has article-prefixed words (stale from old format)
+      if (cachedWords.some(w => /^(le |la |les |l')/i.test(w.fr || ""))) {
+        localStorage.removeItem(DAGENS_GLOSE_KEY);
+      } else {
+        if (saved.phase1done || saved.phase2done) return saved;
+        const hasNew = cachedWords.some(w => !learnedFr.has(w.fr));
+        if (hasNew) return saved;
+      }
     }
   } catch {}
   const staticBase = goalId === "core"
