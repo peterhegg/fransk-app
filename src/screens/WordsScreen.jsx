@@ -183,65 +183,99 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
   };
 
   const importWords = () => {
-    const lines = importText.split("\n").map(l => l.trim()).filter(Boolean);
+    const text = importText.trim();
     let added = 0, updated_count = 0;
-    setWords(prev => {
-      let updated = [...prev];
-      for (const line of lines) {
-        const clean = line.replace(/^[✓✗•\-*]\s*/, "").trim();
-        const eqIdx = clean.indexOf(" = ");
-        if (eqIdx === -1) continue;
-        const fr = clean.slice(0, eqIdx).trim();
-        if (!fr) continue;
-        let rest = clean.slice(eqIdx + 3).trim();
-        const catMatch = rest.match(/\[cat:([^\]]+)\]\s*$/);
-        const importedCat = catMatch ? catMatch[1].trim() : null;
-        if (catMatch) rest = rest.slice(0, catMatch.index).trim();
-        const goalMatch = rest.match(/\[goal:([^\]]+)\]\s*$/);
-        const importedGoal = goalMatch ? goalMatch[1].trim() : "core";
-        if (goalMatch) rest = rest.slice(0, goalMatch.index).trim();
-        const ptsMatch = rest.match(/\[pts:([\d.]+)\]\s*$/);
-        const importedPoints = ptsMatch ? parseFloat(ptsMatch[1]) : null;
-        if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
-        const pm = rest.match(/\(([^)]+)\)\s*$/);
-        const phonetic = pm ? pm[1].trim() : "";
-        const no = pm ? rest.slice(0, pm.index).trim() : rest;
-        const existing = updated.find(w => w.fr === fr);
-        if (existing) {
-          if (importedPoints !== null || importedCat !== null) {
-            updated = updated.map(w => {
-              if (w.fr !== fr) return w;
-              const patch = {};
-              if (importedPoints !== null) patch.points = importedPoints;
-              if (importedCat !== null) patch.cat = importedCat;
-              return { ...w, ...patch };
+
+    // JSON format (produced by copyWords)
+    if (text.startsWith("[")) {
+      let parsed;
+      try { parsed = JSON.parse(text); } catch { setImportResult({ error: "Ugyldig JSON" }); return; }
+      if (!Array.isArray(parsed)) { setImportResult({ error: "Forventet JSON-array" }); return; }
+      setWords(prev => {
+        let updated = [...prev];
+        for (const w of parsed) {
+          if (!w.fr) continue;
+          const existing = updated.find(e => e.fr === w.fr);
+          if (existing) {
+            updated = updated.map(e => e.fr !== w.fr ? e : {
+              ...e,
+              no: w.no ?? e.no, phonetic: w.phonetic ?? e.phonetic,
+              forms: w.forms?.length ? w.forms : e.forms,
+              level: w.level ?? e.level, nextReview: w.nextReview ?? e.nextReview,
+              points: w.points ?? e.points, goal: w.goal ?? e.goal,
+              ...(w.cat ? { cat: w.cat } : {}),
             });
             updated_count++;
+          } else {
+            updated.push({
+              id: Date.now() + Math.random(),
+              fr: w.fr, no: w.no || "", phonetic: w.phonetic || "",
+              forms: w.forms || [], level: w.level ?? 0,
+              nextReview: w.nextReview ?? Date.now() + SR_INTERVALS[0] * 86400000,
+              added: w.added ?? Date.now(), points: w.points || 0,
+              goal: w.goal || "core", ...(w.cat ? { cat: w.cat } : {}),
+            });
+            added++;
           }
-          continue;
         }
-        const pts = importedPoints ?? 0;
-        const catProp = importedCat ? { cat: importedCat } : {};
-        updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: pts, goal: importedGoal, ...catProp });
-        added++;
-      }
-      return updated;
-    });
-    const total = added + updated_count;
+        return updated;
+      });
+    } else {
+      // Legacy text format: ✓ fr = no (phonetic) [pts:x] [goal:x] [cat:x]
+      const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+      setWords(prev => {
+        let updated = [...prev];
+        for (const line of lines) {
+          const clean = line.replace(/^[✓✗•\-*]\s*/, "").trim();
+          const eqIdx = clean.indexOf(" = ");
+          if (eqIdx === -1) continue;
+          const fr = clean.slice(0, eqIdx).trim();
+          if (!fr) continue;
+          let rest = clean.slice(eqIdx + 3).trim();
+          const catMatch = rest.match(/\[cat:([^\]]+)\]\s*$/);
+          const importedCat = catMatch ? catMatch[1].trim() : null;
+          if (catMatch) rest = rest.slice(0, catMatch.index).trim();
+          const goalMatch = rest.match(/\[goal:([^\]]+)\]\s*$/);
+          const importedGoal = goalMatch ? goalMatch[1].trim() : "core";
+          if (goalMatch) rest = rest.slice(0, goalMatch.index).trim();
+          const ptsMatch = rest.match(/\[pts:([\d.]+)\]\s*$/);
+          const importedPoints = ptsMatch ? parseFloat(ptsMatch[1]) : null;
+          if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
+          const pm = rest.match(/\(([^)]+)\)\s*$/);
+          const phonetic = pm ? pm[1].trim() : "";
+          const no = pm ? rest.slice(0, pm.index).trim() : rest;
+          const existing = updated.find(w => w.fr === fr);
+          if (existing) {
+            if (importedPoints !== null || importedCat !== null) {
+              updated = updated.map(w => {
+                if (w.fr !== fr) return w;
+                return { ...w, ...(importedPoints !== null ? { points: importedPoints } : {}), ...(importedCat ? { cat: importedCat } : {}) };
+              });
+              updated_count++;
+            }
+            continue;
+          }
+          updated.push({ id: Date.now() + Math.random(), fr, no, phonetic, forms: [], level: 0, nextReview: Date.now() + SR_INTERVALS[0] * 86400000, added: Date.now(), points: importedPoints ?? 0, goal: importedGoal, ...(importedCat ? { cat: importedCat } : {}) });
+          added++;
+        }
+        return updated;
+      });
+    }
+
     setImportResult({ added, updated: updated_count });
-    if (total > 0) { setImportText(""); setTimeout(() => { setImportOpen(false); setImportResult(null); }, 1800); }
+    if (added + updated_count > 0) { setImportText(""); setTimeout(() => { setImportOpen(false); setImportResult(null); }, 1800); }
   };
 
   const copyWords = () => {
     if (!words.length) return;
-    navigator.clipboard.writeText(
-      "Mine franske ord:\n" +
-      words.map(w => {
-        const pts = w.points || 0;
-        const cat = getCatForWord(w);
-        return `✓ ${w.fr}${w.no ? ` = ${w.no}` : ""}${w.phonetic ? ` (${w.phonetic})` : ""} [pts:${pts}] [goal:${w.goal || "core"}] [cat:${cat}]`;
-      }).join("\n")
-    ).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+    const data = words.map(w => ({
+      fr: w.fr, no: w.no, phonetic: w.phonetic || "", forms: w.forms || [],
+      level: w.level ?? 0, nextReview: w.nextReview ?? Date.now(),
+      added: w.added ?? Date.now(), points: w.points || 0,
+      goal: w.goal || "core", cat: getCatForWord(w),
+    }));
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
 
   const clearWords = () => {
