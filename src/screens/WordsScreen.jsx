@@ -595,6 +595,9 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
             setWords(prev => prev.map(w => w.id === updated.id ? updated : w));
             setSelectedWord(null);
           }}
+          onDelete={toDelete => {
+            setWords(prev => prev.filter(w => w.id !== toDelete.id));
+          }}
         />
       )}
 

@@ -44,7 +44,7 @@ export function getCatForWord(w) {
   return w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
 }
 
-export default function WordDetailModal({ word, onClose, onSave, extraCats = [] }) {
+export default function WordDetailModal({ word, onClose, onSave, onDelete, extraCats = [] }) {
   const pts = word.points || 0;
   const tier = getWordTier(pts);
   const isGrammar = !!word.topicId;
@@ -60,6 +60,7 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
   const [noAccepted, setNoAccepted] = useState(word.noAccepted || []);
   const [newFrAccepted, setNewFrAccepted] = useState("");
   const [newNoAccepted, setNewNoAccepted] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [dragY, setDragY] = useState(0);
   const [animated, setAnimated] = useState(false);
   const dragStartY = useRef(null);
@@ -268,7 +269,27 @@ export default function WordDetailModal({ word, onClose, onSave, extraCats = [] 
               </button>
             </>
           )}
-        </div>
+        {onDelete && (
+          <div style={{ padding: "0 20px 20px" }}>
+            {confirmDelete ? (
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setConfirmDelete(false)}
+                  style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "12px", cursor: "pointer" }}>
+                  Avbryt
+                </button>
+                <button onClick={() => { onDelete(word); onClose(); }}
+                  style={{ flex: 1, background: "rgba(200,80,80,0.15)", border: "1px solid rgba(200,80,80,0.4)", borderRadius: 12, color: "var(--color-error)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "12px", cursor: "pointer" }}>
+                  Slett ord
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmDelete(true)}
+                style={{ width: "100%", background: "none", border: "1px solid rgba(200,80,80,0.3)", borderRadius: 12, color: "var(--color-error)", fontFamily: "var(--font-body)", fontSize: 14, padding: "11px", cursor: "pointer", opacity: 0.7 }}>
+                Fjern fra ordbanken
+              </button>
+            )}
+          </div>
+        )}
       </div>
       <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
     </div>
