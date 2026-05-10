@@ -826,7 +826,7 @@ export default function App() {
   if (screen === "bøying-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <ConjugationExerciseScreen words={words} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <ConjugationExerciseScreen words={words} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 

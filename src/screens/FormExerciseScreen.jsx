@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { touchStreak, shuffle, checkQuizAnswer } from "../utils.jsx";
+import { touchStreak, shuffle, checkQuizAnswer, updateWordPoints, logWordAnswer, loadAnswerCount, saveWords } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { AutoPlayToggle } from "../components/AudioControls.jsx";
 
@@ -166,7 +166,7 @@ export function ArticleExerciseScreen({ words, onBack, speak, autoPlay, onToggle
   );
 }
 
-export function ConjugationExerciseScreen({ words, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+export function ConjugationExerciseScreen({ words, setWords, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
   const [queue, setQueue] = useState(() => buildConjugationQueue(words));
   const [card, setCard] = useState(() => queue[0] || null);
   const [input, setInput] = useState("");
@@ -193,6 +193,19 @@ export function ConjugationExerciseScreen({ words, onBack, speak, autoPlay, onTo
     setChecked(true); setResult(res);
     setStats(s => ({ correct: s.correct + (res !== "wrong" ? 1 : 0), wrong: s.wrong + (res === "wrong" ? 1 : 0) }));
     if (autoPlay) speak(card.form);
+    if (res !== "close" && setWords) {
+      const gc = loadAnswerCount();
+      setWords(prev => {
+        const updated = prev.map(w => {
+          if (w.fr !== card.word.fr) return w;
+          const u = updateWordPoints(w, res, gc);
+          logWordAnswer(w.fr, w.no, w.phonetic || "", w.points || 0, u.points || 0, res);
+          return u;
+        });
+        saveWords(updated);
+        return updated;
+      });
+    }
   };
 
   const next = () => {
