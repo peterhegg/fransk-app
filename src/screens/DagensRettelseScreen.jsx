@@ -97,34 +97,6 @@ export default function DagensRettelseScreen({
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     logDailyAnswer("rettelse");
-
-    // Find matching word in bank to update SRS
-    const gc = incrementAnswerCount();
-    const bankWord = words.find(w => w.fr === card.fr);
-    if (bankWord) {
-      const ptsBefore = bankWord.points || 0;
-      const updated = updateWordPoints({ ...bankWord }, res, gc);
-      const ptsAfter = updated.points || 0;
-      setPointsInfo({
-        pts: ptsAfter, ptsBefore,
-        tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(ptsAfter),
-        justMastered: ptsAfter >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS,
-      });
-      setWords(prev => prev.map(w => {
-        if (w.fr !== card.fr) return w;
-        const pb = w.points || 0;
-        const upd = updateWordPoints(w, res, gc);
-        logWordAnswer(w.fr, w.no, w.phonetic, pb, upd.points, res);
-        const srOverride = upd._srOverride;
-        const { _srOverride: _, ...clean } = upd;
-        if (srOverride) return { ...clean, ...srOverride };
-        if ((clean.points || 0) < MASTERY_POINTS) {
-          const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
-          return { ...clean, level: nl, nextReview: nr };
-        }
-        return clean;
-      }));
-    }
   };
 
   const next = () => {

@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { updateWordPoints, incrementAnswerCount, scheduleNext, touchStreak, getWordTier, shuffle, checkQuizAnswer } from "../utils.jsx";
-import { MASTERY_POINTS } from "../constants.js";
+import { touchStreak, shuffle, checkQuizAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
-import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "../components/PointsBadge.jsx";
 import { AutoPlayToggle } from "../components/AudioControls.jsx";
 
 const ARTICLE_OPTIONS = ["le", "la", "les", "l'"];
@@ -43,32 +41,13 @@ function buildConjugationQueue(words) {
   return shuffle(cards).slice(0, 15);
 }
 
-function updateBank(words, setWords, cardWord, result, gc) {
-  return words.map(w => {
-    if (w.fr !== cardWord.fr) return w;
-    const updated = updateWordPoints(w, result, gc);
-    const srOverride = updated._srOverride;
-    const { _srOverride: _, ...clean } = updated;
-    if (srOverride) return { ...clean, ...srOverride };
-    if ((clean.points || 0) < MASTERY_POINTS) {
-      const passed = result !== "wrong";
-      const { level: nl, nextReview: nr } = scheduleNext(w.level, passed);
-      return { ...clean, level: nl, nextReview: nr };
-    }
-    return clean;
-  });
-}
-
-export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+export function ArticleExerciseScreen({ words, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
   const [queue, setQueue] = useState(() => buildArticleQueue(words));
   const [card, setCard] = useState(() => queue[0] || null);
   const [checked, setChecked] = useState(false);
   const [chosen, setChosen] = useState(null);
   const [result, setResult] = useState("");
   const [stats, setStats] = useState({ correct: 0, wrong: 0 });
-  const [pointsInfo, setPointsInfo] = useState(null);
-  const [fireworksDone, setFireworksDone] = useState(false);
-  const [tierPopDone, setTierPopDone] = useState(false);
   const [done, setDone] = useState(false);
   const total = queue.length + stats.correct + stats.wrong;
 
@@ -85,14 +64,6 @@ export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking
     const res = pick === card.answer ? "correct" : "wrong";
     setChecked(true); setResult(res);
     setStats(s => ({ correct: s.correct + (res !== "wrong" ? 1 : 0), wrong: s.wrong + (res === "wrong" ? 1 : 0) }));
-    const gc = incrementAnswerCount();
-    const bw = words.find(w => w.fr === card.word.fr);
-    if (bw) {
-      const ptsBefore = bw.points || 0;
-      const updated = updateWordPoints({ ...bw }, res, gc);
-      setPointsInfo({ pts: updated.points || 0, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(updated.points || 0), justMastered: (updated.points || 0) >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
-      setWords(prev => updateBank(prev, setWords, card.word, res, gc));
-    }
     if (autoPlay) speak(card.noun);
   };
 
@@ -102,12 +73,12 @@ export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking
       const at = Math.min(3, remaining.length);
       const recycled = [...remaining.slice(0, at), { ...card }, ...remaining.slice(at)];
       setQueue(recycled); setCard(recycled[0]);
-      setChecked(false); setChosen(null); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+      setChecked(false); setChosen(null); setResult("");
       return;
     }
     if (!remaining.length) { touchStreak(); setDone(true); return; }
     setQueue(remaining); setCard(remaining[0]);
-    setChecked(false); setChosen(null); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+    setChecked(false); setChosen(null); setResult("");
   };
 
   const navBar = (
@@ -150,14 +121,6 @@ export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 24 }}>
-        {pointsInfo && (
-          <>
-            {pointsInfo.justMastered && !fireworksDone && <Fireworks onDone={() => setFireworksDone(true)} />}
-            {pointsInfo.tierAfter > pointsInfo.tierBefore && !tierPopDone && <TierPop tier={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />}
-            {pointsInfo.justMastered && !fireworksDone && <ConfettiBurst />}
-          </>
-        )}
-
         <div style={{ fontSize: 13, color: "var(--text-subtle)" }}>{stats.correct + stats.wrong + 1} / {total}</div>
 
         <div style={{ background: "var(--surface)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "var(--shadow-md)" }}>
@@ -185,7 +148,6 @@ export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking
           </div>
         ) : (
           <>
-            {pointsInfo && <PointsBadge info={pointsInfo} />}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%", maxWidth: 380, opacity: 0.4 }}>
               {ARTICLE_OPTIONS.map(opt => (
                 <button key={opt} disabled style={{ background: chosen === opt ? (result === "correct" ? "rgba(100,200,100,0.2)" : "rgba(200,80,80,0.2)") : (opt === card.answer && result === "wrong" ? "rgba(100,200,100,0.2)" : "var(--surface)"), border: `2px solid ${chosen === opt ? (result === "correct" ? "var(--color-success)" : "var(--color-error)") : (opt === card.answer && result === "wrong" ? "var(--color-success)" : "var(--border)")}`, borderRadius: 14, color: "var(--cream)", fontFamily: "var(--font-display)", fontSize: 20, fontStyle: "italic", padding: "18px 12px", opacity: 1 }}>
@@ -204,16 +166,13 @@ export function ArticleExerciseScreen({ words, setWords, onBack, speak, speaking
   );
 }
 
-export function ConjugationExerciseScreen({ words, setWords, onBack, speak, speaking, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+export function ConjugationExerciseScreen({ words, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
   const [queue, setQueue] = useState(() => buildConjugationQueue(words));
   const [card, setCard] = useState(() => queue[0] || null);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState("");
   const [stats, setStats] = useState({ correct: 0, wrong: 0 });
-  const [pointsInfo, setPointsInfo] = useState(null);
-  const [fireworksDone, setFireworksDone] = useState(false);
-  const [tierPopDone, setTierPopDone] = useState(false);
   const [done, setDone] = useState(false);
   const inputRef = useRef(null);
   const total = queue.length + stats.correct + stats.wrong;
@@ -233,14 +192,6 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, spea
     const res = checkQuizAnswer(input, fakeCard, true);
     setChecked(true); setResult(res);
     setStats(s => ({ correct: s.correct + (res !== "wrong" ? 1 : 0), wrong: s.wrong + (res === "wrong" ? 1 : 0) }));
-    const gc = incrementAnswerCount();
-    const bw = words.find(w => w.fr === card.word.fr);
-    if (bw) {
-      const ptsBefore = bw.points || 0;
-      const updated = updateWordPoints({ ...bw }, res, gc);
-      setPointsInfo({ pts: updated.points || 0, ptsBefore, tierBefore: getWordTier(ptsBefore), tierAfter: getWordTier(updated.points || 0), justMastered: (updated.points || 0) >= MASTERY_POINTS && ptsBefore < MASTERY_POINTS });
-      setWords(prev => updateBank(prev, setWords, card.word, res, gc));
-    }
     if (autoPlay) speak(card.form);
   };
 
@@ -250,12 +201,12 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, spea
       const at = Math.min(3, remaining.length);
       const recycled = [...remaining.slice(0, at), { ...card }, ...remaining.slice(at)];
       setQueue(recycled); setCard(recycled[0]);
-      setInput(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+      setInput(""); setChecked(false); setResult("");
       return;
     }
     if (!remaining.length) { touchStreak(); setDone(true); return; }
     setQueue(remaining); setCard(remaining[0]);
-    setInput(""); setChecked(false); setResult(""); setPointsInfo(null); setFireworksDone(false); setTierPopDone(false);
+    setInput(""); setChecked(false); setResult("");
   };
 
   const navBar = (
@@ -298,14 +249,6 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, spea
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", gap: 20 }}>
-        {pointsInfo && (
-          <>
-            {pointsInfo.justMastered && !fireworksDone && <Fireworks onDone={() => setFireworksDone(true)} />}
-            {pointsInfo.tierAfter > pointsInfo.tierBefore && !tierPopDone && <TierPop tier={pointsInfo.tierAfter} onDone={() => setTierPopDone(true)} />}
-            {pointsInfo.justMastered && !fireworksDone && <ConfettiBurst />}
-          </>
-        )}
-
         <div style={{ fontSize: 13, color: "var(--text-subtle)" }}>{stats.correct + stats.wrong + 1} / {total}</div>
 
         <div style={{ background: "var(--surface)", borderRadius: 20, padding: "28px 24px", width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "var(--shadow-md)" }}>
@@ -337,9 +280,8 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, spea
             </button>
           </div>
         ) : (
-          <div style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 10 }}>
-            {pointsInfo && <PointsBadge info={pointsInfo} />}
-            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: "pointer" }}>
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: "pointer", width: "100%" }}>
               {queue.length <= 1 ? "Fullfør" : "Neste →"}
             </button>
           </div>

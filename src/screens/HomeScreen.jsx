@@ -599,9 +599,9 @@ const GLOSE_ITEMS = [
 ];
 
 const GRAMMATIKK_ITEMS = [
+  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
   { id: "artikkel-ovelse",       label: "Artikkeltest",          sub: "Øv på le / la / les / l'",         Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
   { id: "bøying-ovelse",         label: "Bøyingstest",           sub: "Skriv riktig bøyingsform",         Icon: IcoPen,      img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
-  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
   { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoSwap,     img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
   { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoList,     img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
   { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSwap,     img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
