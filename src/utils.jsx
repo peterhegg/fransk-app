@@ -618,7 +618,11 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
     ? [...VOCAB_LIST, ...(STATIC_VOCAB.core || [])]
     : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
-  const normalize = v => v.phonetic ? v : { ...v, phonetic: v.p || "" };
+  const normalize = v => ({
+    ...v,
+    fr: (v.fr || "").replace(/^(le |la |les |l')/i, "").trim(),
+    phonetic: v.phonetic || v.p || "",
+  });
   const allVocab = [...staticBase, ...goalGenerated].map(normalize);
   const newVocab = allVocab.filter(v => !learnedFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
   const selected = newVocab.slice(0, 5);

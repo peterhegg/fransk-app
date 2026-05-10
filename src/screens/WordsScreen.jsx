@@ -268,13 +268,14 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
 
   const copyWords = () => {
     if (!words.length) return;
-    const data = words.map(w => ({
-      fr: w.fr, no: w.no, phonetic: w.phonetic || "", forms: w.forms || [],
-      level: w.level ?? 0, nextReview: w.nextReview ?? Date.now(),
-      added: w.added ?? Date.now(), points: w.points || 0,
-      goal: w.goal || "core", cat: getCatForWord(w),
-    }));
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+    const lines = words.map(w => {
+      const pts = w.points || 0;
+      const ph = w.phonetic || w.p || "";
+      const goal = w.goal || "core";
+      const cat = getCatForWord(w);
+      return `✓ ${w.fr} = ${w.no}${ph ? ` (${ph})` : ""} [pts:${pts}] [goal:${goal}] [cat:${cat}]`;
+    });
+    navigator.clipboard.writeText(lines.join("\n"))
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
 
