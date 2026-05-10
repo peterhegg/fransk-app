@@ -269,8 +269,10 @@ export default function WordDetailModal({ word, onClose, onSave, onDelete, extra
               </button>
             </>
           )}
+        </div>
+
         {onDelete && (
-          <div style={{ padding: "0 20px 20px" }}>
+          <div style={{ marginTop: 16 }}>
             {confirmDelete ? (
               <div style={{ display: "flex", gap: 10 }}>
                 <button onClick={() => setConfirmDelete(false)}
