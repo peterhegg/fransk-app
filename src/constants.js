@@ -73,7 +73,7 @@ export const VOCAB_LIST = [
   { fr: "hôtel", no: "hotell", phonetic: "otæl" },
   { fr: "restaurant", no: "restaurant", phonetic: "rEstorån" },
   { fr: "bibliothèque", no: "bibliotek", phonetic: "biblijotæk" },
-  { fr: "la Seine", no: "Seinen (elven)", phonetic: "la sæn" },
+  { fr: "Seine", no: "Seinen (elven)", phonetic: "sæn" },
   // Tid
   { fr: "aujourd'hui", no: "i dag", phonetic: "osjurdwi" },
   { fr: "demain", no: "i morgen", phonetic: "dəmæn" },
