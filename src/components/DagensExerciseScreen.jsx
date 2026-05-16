@@ -4,8 +4,8 @@ import { checkQuizAnswer, shuffle } from "../utils.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 
-function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay, onToggleAutoPlay }) {
-  const [allCards] = useState(() =>
+function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay, onToggleAutoPlay, onSkipWord }) {
+  const [allCards, setAllCards] = useState(() =>
     Array.from({ length: exerciseRounds }, () => shuffle([...words])).flat()
   );
   const [idx, setIdx] = useState(0);
@@ -24,6 +24,14 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
   const reset = () => { setNoInput(""); setFrInput(""); setChecked(false); setNoResult(""); setFrResult(""); };
   const next = () => { reset(); if (isLast) onDone(); else setIdx(i => i + 1); };
+
+  const skip = () => {
+    const skipFr = card.fr;
+    onSkipWord?.(skipFr);
+    const remaining = allCards.slice(idx + 1).filter(c => c.fr !== skipFr);
+    if (remaining.length === 0) { onDone(); return; }
+    setAllCards(prev => [...prev.slice(0, idx), ...remaining]);
+  };
 
   useEffect(() => {
     if (autoPlay && card?.fr) {
@@ -104,6 +112,13 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
 
         <div style={{ fontSize: 11, color: "var(--text-subtle)", textAlign: "center", width: "100%" }}>Runde {round} av {exerciseRounds}</div>
 
+        {!checked && (
+          <button onClick={skip}
+            style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)", opacity: 0.6, textDecoration: "underline", padding: "2px 8px" }}>
+            Hopp over — kan dette allerede
+          </button>
+        )}
+
         {checked && (
           <button onClick={next} className="btn-shine"
             style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 48px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
@@ -147,6 +162,7 @@ export default function DagensExerciseScreen({
   pointsInfo,
   autoPlay,
   onToggleAutoPlay,
+  onSkipWord,
 }) {
   const [fireworksDone, setFireworksDone] = useState(false);
   const [tierPopDone, setTierPopDone] = useState(false);
@@ -181,7 +197,7 @@ export default function DagensExerciseScreen({
   );
 
   if (phase === 0 && !topic) return (
-    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} autoPlay={autoPlay} onToggleAutoPlay={onToggleAutoPlay} />
+    <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} autoPlay={autoPlay} onToggleAutoPlay={onToggleAutoPlay} onSkipWord={onSkipWord} />
   );
 
   if (phase === 0 && topic) return (

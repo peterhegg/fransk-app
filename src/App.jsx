@@ -391,6 +391,17 @@ export default function App() {
     setDagensPhase(1);
   };
 
+  const skipDagensWord = (fr) => {
+    setDagensWords(prev => prev.filter(w => w.fr !== fr));
+    try {
+      const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
+      if (saved.words) {
+        const updated = { ...saved, words: saved.words.filter(w => w.fr !== fr) };
+        localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(updated));
+      }
+    } catch {}
+  };
+
   const startGlose = () => {
     if (!words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
     const q = selectExerciseWords(words).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
@@ -712,7 +723,7 @@ export default function App() {
   if (screen === "dagens-glose") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} exerciseRounds={exerciseRounds} pointsInfo={dagensPointsInfo} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <DagensExerciseScreen title="Dagens fem gloser" icon="◆" phase={dagensPhase} topic={null} dailyWords={dagensWords} queue={dagensQueue} card={dagensCard} input={dagensInput} setInput={setDagensInput} checked={dagensChecked} result={dagensResult} stats={dagensStats} history={dagensHistory} onStartExercise={startDagensTestPhase1} onSubmit={submitDagens} onNext={nextDagens} onBack={() => setScreen("home")} speak={speak} speaking={speaking} exerciseRounds={exerciseRounds} pointsInfo={dagensPointsInfo} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} onSkipWord={skipDagensWord} {...navProps} />
     </>
   );
 
