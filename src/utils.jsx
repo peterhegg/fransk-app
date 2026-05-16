@@ -599,7 +599,9 @@ export function saveGeneratedVocab(words) {
 
 // --- Today's exercise ---
 export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core") {
-  const learnedFr = new Set(words.map(w => w.fr));
+  // Normalize learnedFr the same way static vocab is normalized (strip articles)
+  const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim();
+  const learnedFr = new Set(words.map(w => normFr(w.fr)));
   try {
     const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
     if (saved.date === todayStr() && saved.goal === goalId) {
@@ -608,9 +610,20 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
       if (cachedWords.some(w => /^(le |la |les |l')/i.test(w.fr || ""))) {
         localStorage.removeItem(DAGENS_GLOSE_KEY);
       } else {
-        if (saved.phase1done || saved.phase2done) return saved;
-        const hasNew = cachedWords.some(w => !learnedFr.has(w.fr));
-        if (hasNew) return saved;
+        // Always re-filter cached words against current word bank — fixes "already learned word reappears"
+        const stillNew = cachedWords.filter(w => !learnedFr.has(normFr(w.fr)));
+        if (stillNew.length > 0) {
+          if (stillNew.length < cachedWords.length) {
+            // Some words were added to bank since cache was written — update cache
+            const updated = { ...saved, words: stillNew };
+            localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(updated));
+            return updated;
+          }
+          if (saved.phase1done || saved.phase2done) return saved;
+          return saved;
+        }
+        // All cached words learned — fall through to generate fresh ones
+        localStorage.removeItem(DAGENS_GLOSE_KEY);
       }
     }
   } catch {}
