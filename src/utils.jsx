@@ -644,6 +644,25 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
   return exercise;
 }
 
+export function getReplacementGloseWord(words, currentDailyFr = [], generatedVocab = [], goalId = "core") {
+  const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim();
+  const learnedFr = new Set(words.map(w => normFr(w.fr)));
+  const excludeFr = new Set([...learnedFr, ...currentDailyFr.map(normFr)]);
+  const staticBase = goalId === "core"
+    ? [...VOCAB_LIST, ...(STATIC_VOCAB.core || [])]
+    : (STATIC_VOCAB[goalId] || []);
+  const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
+  const normalize = v => ({
+    ...v,
+    fr: (v.fr || "").replace(/^(le |la |les |l')/i, "").trim(),
+    phonetic: v.phonetic || v.p || "",
+  });
+  const pool = [...staticBase, ...goalGenerated]
+    .map(normalize)
+    .filter(v => !excludeFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+}
+
 export function needsNewVocab(words, generatedVocab = [], goalId = "core") {
   const learnedFr = new Set(words.map(w => w.fr));
   const staticBase = goalId === "core"
