@@ -28,14 +28,14 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
   const skip = () => {
     const skipFr = card.fr;
     const replacement = onSkipWord?.(skipFr) ?? null;
+    // Remove all future occurrences of the skipped word
     const remaining = allCards.slice(idx + 1).filter(c => c.fr !== skipFr);
-    const extra = replacement ? [replacement] : [];
-    if (remaining.length === 0 && extra.length === 0) { onDone(); return; }
-    if (remaining.length === 0 && extra.length > 0) {
-      setAllCards(prev => [...prev.slice(0, idx), ...extra]);
-    } else {
-      setAllCards(prev => [...prev.slice(0, idx), ...remaining, ...extra]);
-    }
+    // Insert replacement immediately as next card (index 0 of remaining), not at end
+    const next = replacement
+      ? [replacement, ...remaining]
+      : remaining;
+    if (next.length === 0) { onDone(); return; }
+    setAllCards(prev => [...prev.slice(0, idx), ...next]);
   };
 
   useEffect(() => {

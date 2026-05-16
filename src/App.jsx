@@ -391,22 +391,21 @@ export default function App() {
   };
 
   const skipDagensWord = (fr) => {
-    const activeGoal = getActiveGoal(words, loadGoalOrder());
-    const genVocab = loadGeneratedVocab();
-    const remainingFr = dagensWords.filter(w => w.fr !== fr).map(w => w.fr);
-    const replacement = getReplacementGloseWord(words, remainingFr, genVocab, activeGoal.id);
+    let replacement = null;
+    try {
+      const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
+      const goalId = saved.goal || "core";
+      const genVocab = loadGeneratedVocab();
+      const remainingFr = (saved.words || dagensWords).filter(w => w.fr !== fr).map(w => w.fr);
+      replacement = getReplacementGloseWord(words, remainingFr, genVocab, goalId);
+      const filtered = (saved.words || []).filter(w => w.fr !== fr);
+      const newWords = replacement ? [...filtered, replacement] : filtered;
+      localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, words: newWords }));
+    } catch {}
     setDagensWords(prev => {
       const filtered = prev.filter(w => w.fr !== fr);
       return replacement ? [...filtered, replacement] : filtered;
     });
-    try {
-      const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
-      if (saved.words) {
-        const filtered = saved.words.filter(w => w.fr !== fr);
-        const newWords = replacement ? [...filtered, replacement] : filtered;
-        localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify({ ...saved, words: newWords }));
-      }
-    } catch {}
     return replacement;
   };
 
