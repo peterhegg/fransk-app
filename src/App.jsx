@@ -3,7 +3,6 @@ import {
   MODES, EXIT_PHRASES,
   DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS, MASTERY_LABELS,
   PROXY_URL, APP_TOKEN,
-  gold, cream, card, brd,
 } from "./constants.js";
 import {
   loadWords, saveWords, loadGrammarWords, saveGrammarWords,
@@ -716,7 +715,7 @@ export default function App() {
   const navProps = { screen, showWords, onNav: handleNav };
 
   const offlineBanner = !isOnline ? (
-    <div style={{ background: "#3a2a10", borderBottom: `1px solid ${gold}44`, padding: "8px 16px", fontSize: 13, color: gold, textAlign: "center", letterSpacing: 1 }}>
+    <div style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)", padding: "8px 16px", fontSize: 13, color: "var(--cream)", textAlign: "center", letterSpacing: 1 }}>
       Ingen internettforbindelse — Claude er ikke tilgjengelig
     </div>
   ) : null;
@@ -749,16 +748,16 @@ export default function App() {
       {grammarTopic ? (
         <DagensExerciseScreen title="Daglig grammatikk" icon="◑" phase={grammarPhase} topic={grammarTopic} dailyWords={grammarTopic?.pairs || []} queue={grammarQueue} card={grammarCard} input={grammarInput} setInput={setGrammarInput} checked={grammarChecked} result={grammarResult} stats={grammarStats} history={grammarHistory} onStartExercise={startGrammarExercise} onSubmit={submitGrammar} onNext={nextGrammar} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f5f0e6", fontFamily: "'DM Sans', sans-serif", color: cream, paddingBottom: 66 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${brd}`, background: card }}>
-            <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: gold, fontSize: 14, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>← Tilbake</button>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 }}><span style={{ color: gold }}>◑</span> Daglig grammatikk</div>
+        <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-solid)" }}>
+            <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "var(--cream)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, letterSpacing: 2 }}><span style={{ color: "var(--cream)" }}>◑</span> Daglig grammatikk</div>
             <div style={{ width: 60 }} />
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center", gap: 16 }}>
             <div style={{ fontSize: 40 }}>🎓</div>
-            <div style={{ fontSize: 20, color: gold, fontStyle: "italic" }}>Alle grammatikktemaer fullført!</div>
-            <div style={{ fontSize: 14, color: `${cream}88`, lineHeight: 1.8 }}>Du har lært all grammatikken som er tilgjengelig nå.<br />Bruk Grammatikkøvelse for å repetere.</div>
+            <div style={{ fontSize: 20, color: "var(--cream)", fontStyle: "italic" }}>Alle grammatikktemaer fullført!</div>
+            <div style={{ fontSize: 14, color: "var(--text-subtle)", lineHeight: 1.8 }}>Du har lært all grammatikken som er tilgjengelig nå.<br />Bruk Grammatikkøvelse for å repetere.</div>
           </div>
           <BottomNav {...navProps} />
         </div>
