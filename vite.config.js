@@ -8,10 +8,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      workbox: {
-        skipWaiting: true,
-        navigateFallback: "/fransk-app/index.html",
-      },
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.js",
       manifest: {
         name: "L'Atelier",
         short_name: "L'Atelier",

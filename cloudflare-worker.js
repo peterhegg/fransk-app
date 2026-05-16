@@ -152,7 +152,137 @@ async function handleVoice(body, env, corsHeaders) {
   });
 }
 
+// ── Web Push helpers ─────────────────────────────────────────────────────
+
+function b64urlDecode(s) {
+  const pad = "=".repeat((4 - (s.length % 4)) % 4);
+  return Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad), c => c.charCodeAt(0));
+}
+
+function b64urlEncode(bytes) {
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+function concat(...arrays) {
+  const total = arrays.reduce((n, a) => n + a.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const a of arrays) { out.set(a, offset); offset += a.length; }
+  return out;
+}
+
+async function hkdf(ikm, salt, info, length) {
+  const saltKey = await crypto.subtle.importKey("raw", salt, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", saltKey, ikm));
+  const prkKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const infoBytes = typeof info === "string" ? new TextEncoder().encode(info) : info;
+  const T = concat(infoBytes, new Uint8Array([1]));
+  const okm = new Uint8Array(await crypto.subtle.sign("HMAC", prkKey, T));
+  return okm.slice(0, length);
+}
+
+async function makeVapidJwt(endpoint, env) {
+  const audience = new URL(endpoint).origin;
+  const exp = Math.floor(Date.now() / 1000) + 43200;
+  const toB64 = obj => btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+  const unsignedToken = `${toB64({ typ: "JWT", alg: "ES256" })}.${toB64({ aud: audience, exp, sub: "mailto:peter@subjekt.no" })}`;
+  const pubBytes = b64urlDecode(env.VAPID_PUBLIC_KEY);
+  const privateKey = await crypto.subtle.importKey(
+    "jwk",
+    { kty: "EC", crv: "P-256", d: env.VAPID_PRIVATE_KEY, x: b64urlEncode(pubBytes.slice(1, 33)), y: b64urlEncode(pubBytes.slice(33, 65)) },
+    { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]
+  );
+  const sig = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: { name: "SHA-256" } }, privateKey, new TextEncoder().encode(unsignedToken)));
+  return `vapid t=${unsignedToken}.${b64urlEncode(sig)},k=${env.VAPID_PUBLIC_KEY}`;
+}
+
+async function encryptPushPayload(payloadObj, sub) {
+  const uaPub = b64urlDecode(sub.keys.p256dh);
+  const authSecret = b64urlDecode(sub.keys.auth);
+  const payloadBytes = new TextEncoder().encode(JSON.stringify(payloadObj));
+
+  const ephemeralPair = await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
+  const rawEphPub = new Uint8Array(await crypto.subtle.exportKey("raw", ephemeralPair.publicKey));
+  const uaPubKey = await crypto.subtle.importKey("raw", uaPub, { name: "ECDH", namedCurve: "P-256" }, false, []);
+  const sharedBits = new Uint8Array(await crypto.subtle.deriveBits({ name: "ECDH", public: uaPubKey }, ephemeralPair.privateKey, 256));
+
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const keyInfo = concat(new TextEncoder().encode("WebPush: info\x00"), uaPub, rawEphPub);
+  const prkKey = await hkdf(sharedBits, authSecret, keyInfo, 32);
+  const cek = await hkdf(prkKey, salt, "Content-Encoding: aes128gcm\x00", 16);
+  const nonce = await hkdf(prkKey, salt, "Content-Encoding: nonce\x00", 12);
+
+  const record = concat(new Uint8Array([0, 0]), payloadBytes, new Uint8Array([2]));
+  const aesKey = await crypto.subtle.importKey("raw", cek, { name: "AES-GCM" }, false, ["encrypt"]);
+  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, record));
+
+  const hdr = new Uint8Array(21 + rawEphPub.length);
+  hdr.set(salt, 0);
+  new DataView(hdr.buffer).setUint32(16, 4096, false);
+  hdr[20] = rawEphPub.length;
+  hdr.set(rawEphPub, 21);
+
+  return concat(hdr, ciphertext);
+}
+
+async function sendPush(sub, payload, env) {
+  const body = await encryptPushPayload(payload, sub);
+  const auth = await makeVapidJwt(sub.endpoint, env);
+  return fetch(sub.endpoint, {
+    method: "POST",
+    headers: {
+      "Authorization": auth,
+      "Content-Type": "application/octet-stream",
+      "Content-Encoding": "aes128gcm",
+      "TTL": "86400",
+    },
+    body,
+  });
+}
+
+async function handlePushSubscribe(body, env, corsHeaders) {
+  if (!body?.endpoint || !body?.keys?.p256dh || !body?.keys?.auth) {
+    return new Response("Bad subscription", { status: 400, headers: corsHeaders });
+  }
+  const key = `push:sub:${b64urlEncode(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(body.endpoint))))}`;
+  await env.RATE_LIMIT_KV.put(key, JSON.stringify(body), { expirationTtl: 60 * 60 * 24 * 90 });
+  return new Response("OK", { status: 200, headers: corsHeaders });
+}
+
+async function handlePushUnsubscribe(body, env, corsHeaders) {
+  if (!body?.endpoint) return new Response("Bad request", { status: 400, headers: corsHeaders });
+  const key = `push:sub:${b64urlEncode(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(body.endpoint))))}`;
+  await env.RATE_LIMIT_KV.delete(key);
+  return new Response("OK", { status: 200, headers: corsHeaders });
+}
+
+// ── Scheduled handler (runs at 20:00 UTC = 22:00 Norway) ─────────────────
+
+async function sendStreakReminders(env) {
+  if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) return;
+  const list = await env.RATE_LIMIT_KV.list({ prefix: "push:sub:" });
+  const payload = {
+    title: "L'Atelier",
+    body: "Dagens øvelse venter — quelques minutes suffit.",
+    icon: "/fransk-app/icon-192.png",
+  };
+  for (const key of list.keys) {
+    const raw = await env.RATE_LIMIT_KV.get(key.name);
+    if (!raw) continue;
+    try {
+      const sub = JSON.parse(raw);
+      await sendPush(sub, payload, env);
+    } catch (e) {
+      console.error("Push failed for", key.name, e);
+    }
+  }
+}
+
 export default {
+  async scheduled(event, env) {
+    await sendStreakReminders(env);
+  },
+
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
 
@@ -208,6 +338,8 @@ export default {
 
     // Route: /voice for real-time voice conversation
     const pathname = new URL(request.url).pathname;
+    if (pathname === "/push/subscribe") return handlePushSubscribe(body, env, corsHeaders);
+    if (pathname === "/push/unsubscribe") return handlePushUnsubscribe(body, env, corsHeaders);
     if (pathname === "/voice") {
       return handleVoice(body, env, corsHeaders);
     }

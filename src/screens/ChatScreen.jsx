@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN, BOOK_EXCERPTS, SESSION_KEY } from "../constants.js";
 import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine, buildSystemPrompt, loadUserProfile, getActiveGoal, loadGoalOrder } from "../utils.jsx";
+import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
+import { tutorVisible } from "../hooks/useTutorPrefs.js";
 
 const SYSTEM_PROMPT = buildSystemPrompt(loadUserProfile());
 import BottomNav from "../components/BottomNav.jsx";
 
-export default function ChatScreen({ mode, words, setWords, isOnline, speak, speaking, sessionMsgs, setSessionMsgs, onBack, onShowWords, screen, showWords, onNav }) {
+export default function ChatScreen({ mode, words, setWords, isOnline, speak, speaking, sessionMsgs, setSessionMsgs, onBack, onShowWords, screen, showWords, onNav, tutorPrefs }) {
   const [messages, setMessages] = useState(() => {
     const starter = mode?.id === "teksthjelp"
       ? "Lim inn fransk tekst, still spørsmål om ord, eller be meg oversette noe.\n\nDu kan også velge en setning fra bøkene dine nedenfor."
@@ -183,9 +185,34 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
           </div>
         ))}
         {loading && (
-          <div style={{ alignSelf: "flex-start", maxWidth: "88%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "4px 18px 18px 18px", padding: "12px 16px" }}>
-            <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 6, textTransform: "uppercase" }}>Claude ✦</div>
-            <div style={{ display: "flex", gap: 6, fontSize: 28, color: "var(--cream)", opacity: 0.5 }}><span>·</span><span>·</span><span>·</span></div>
+          <div style={{
+            background: "var(--surface)", border: "1px solid var(--border)",
+            borderRadius: 22, padding: "24px 22px",
+            display: "flex", flexDirection: "column", alignItems: "center",
+            textAlign: "center", gap: 14, margin: "8px 16px",
+          }}>
+            {tutorPrefs && tutorVisible(tutorPrefs) ? (
+              <>
+                <div style={{ color: "var(--accent, #5a9af0)" }}>
+                  <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="thinking" accessory="pen" crop="bust" size={120} title={`${tutorPrefs.tutorName} tenker`} />
+                </div>
+                <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, color: "rgba(232,237,245,0.78)", lineHeight: 1.4 }}>
+                  {tutorPrefs.tutorName} tenker.
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(232,237,245,0.5)", letterSpacing: 0.5, fontStyle: "italic" }}>
+                  slår opp i sine egne notater
+                </div>
+              </>
+            ) : (
+              <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 16, color: "var(--text-subtle)", padding: "8px 0" }}>
+                Tenker…
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+              {[0, 1, 2].map(i => (
+                <span key={i} style={{ width: 5, height: 5, borderRadius: 99, background: "var(--accent, #5a9af0)", opacity: 0.3 + i * 0.2 }} />
+              ))}
+            </div>
           </div>
         )}
         <div ref={bottomRef} />

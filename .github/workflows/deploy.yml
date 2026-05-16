@@ -43,6 +43,7 @@ jobs:
         env:
           VITE_PROXY_URL: ${{ secrets.VITE_PROXY_URL }}
           VITE_APP_TOKEN: ${{ secrets.VITE_APP_TOKEN }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

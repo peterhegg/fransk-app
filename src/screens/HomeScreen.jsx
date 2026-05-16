@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
+import { tutorVisible } from "../hooks/useTutorPrefs.js";
+import { usePushSubscription } from "../hooks/usePushSubscription.js";
+import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
 import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
@@ -493,9 +497,10 @@ function TodaysAnswersModal({ onClose }) {
 
 const LEVELS = ["A1", "A1/A2", "A2", "A2/B1", "B1", "B1/B2", "B2", "C1", "C2"];
 
-function UserProfileModal({ onClose, onSave }) {
+function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggleTutorVisibility }) {
   const [profile, setProfile] = useState(() => loadUserProfile());
   const set = (k, v) => setProfile(p => ({ ...p, [k]: v }));
+  const { enabled: pushEnabled, loading: pushLoading, supported: pushSupported, toggle: togglePush } = usePushSubscription();
 
   return (
     <SheetModal onClose={onClose}>
@@ -505,6 +510,37 @@ function UserProfileModal({ onClose, onSave }) {
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px", scrollbarWidth: "none" }}>
+        {/* Lærer-seksjon */}
+        {tutorPrefs && (
+          <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: 14, display: "flex", gap: 12, alignItems: "center" }}>
+            <div style={{ color: "var(--accent, #5a9af0)", flexShrink: 0 }}>
+              <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="dignified" accessory={tutorPrefs.tutorPersona === "henri" ? "pipe" : "book"} crop="bust" size={72} title={tutorPrefs.tutorName} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>LÆREREN DIN</div>
+              <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 18, margin: "2px 0" }}>{tutorPrefs.tutorName}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                <button onClick={onChangeTutor} style={{ background: "none", border: "none", color: "#5a9af0", fontSize: 11, cursor: "pointer", padding: 0 }}>Endre →</button>
+                <button onClick={onToggleTutorVisibility} style={{ width: 44, height: 26, borderRadius: 13, background: tutorPrefs.tutorVisibility !== "hidden" ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", flexShrink: 0 }}>
+                  <div style={{ position: "absolute", top: 3, left: tutorPrefs.tutorVisibility !== "hidden" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {pushSupported && (
+          <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>PÅMINNELSER</div>
+              <div style={{ fontSize: 13, color: "var(--text)", marginTop: 2 }}>Daglig øvelsespåminnelse kl. 22</div>
+            </div>
+            <button onClick={togglePush} disabled={pushLoading}
+              style={{ width: 44, height: 26, borderRadius: 13, background: pushEnabled ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: pushLoading ? "default" : "pointer", position: "relative", flexShrink: 0, opacity: pushLoading ? 0.6 : 1 }}>
+              <div style={{ position: "absolute", top: 3, left: pushEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
+            </button>
+          </div>
+        )}
+
         {[
           { label: "Navn", key: "name", type: "text", placeholder: "Ditt fornavn" },
           { label: "Lærernavn", key: "teacherName", type: "text", placeholder: "F.eks. Pierre" },
@@ -653,7 +689,7 @@ function TaskCard({ item, onStart }) {
   );
 }
 
-export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave }) {
+export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -665,7 +701,22 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const [svarOpen, setSvarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profile, setProfile] = useState(() => loadUserProfile());
+  const [showTutorOnboarding, setShowTutorOnboarding] = useState(false);
   const searchRef = useRef(null);
+
+  const hour = new Date().getHours();
+  const isNight = hour >= 0 && hour < 5;
+  const tp = tutorPrefs || { tutorPersona: "henri", tutorName: "Henri", tutorVisibility: "all" };
+
+  // Placement 08 — long absence (2+ weeks since last activity)
+  const absenceDays = (() => {
+    const log = loadActivityLog();
+    const lastActive = log.filter(e => e.answers > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (!lastActive) return 0;
+    const diff = (Date.now() - new Date(lastActive.date + "T12:00:00").getTime()) / 86400000;
+    return Math.floor(diff);
+  })();
+  const showAbsenceBanner = absenceDays >= 14 && tutorVisible(tp);
 
   const searchResults = searchQuery.trim().length > 0
     ? words.filter(w => {
@@ -797,6 +848,25 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     });
   })();
 
+  if (isNight && tutorVisible(tp)) {
+    return (
+      <div style={{ height: "100dvh", background: "var(--app-bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 30px", position: "relative" }}>
+        <div style={{ position: "absolute", top: 70, fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(232,237,245,0.4)" }}>
+          L'ATELIER · {String(hour).padStart(2, "0")}:{String(new Date().getMinutes()).padStart(2, "0")}
+        </div>
+        <div style={{ color: "rgba(232,237,245,0.55)", marginBottom: 18 }}>
+          <TutorAnimated persona={tp.tutorPersona} emotion="sleeping" crop="bust" size={120} title={`${tp.tutorName}, sover`} />
+        </div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400, fontSize: 26, margin: "0 0 8px", color: "var(--text)" }}>
+          Bonne nuit, {profile.name}.
+        </h2>
+        <div style={{ fontSize: 13, color: "rgba(232,237,245,0.5)", lineHeight: 1.6, maxWidth: 280 }}>
+          I morgen tidlig er det ord som venter. {tp.tutorName} har lagt seg.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ height: "100dvh", background: "var(--app-bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
@@ -821,21 +891,67 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
         </div>
 
-        {/* Pierre card */}
+        {/* Tutor greeting */}
         <div style={{ padding: "0 22px 14px" }}>
           <button
             onClick={() => onStart(pierreRecommend.id)}
-            style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center", cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "var(--bg)", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
-            <div>
-              <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
-              <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
-                «{frenchGreeting()} {profile.name} — {pierreRecommend.msg}»
+            style={{
+              width: "100%", background: "var(--surface)", border: "1px solid var(--border)",
+              borderRadius: 16, padding: "14px 16px",
+              display: "flex", alignItems: "center", gap: 14,
+              cursor: "pointer", textAlign: "left",
+            }}>
+            {tutorVisible(tp) ? (
+              <div style={{ color: "var(--accent, #5a9af0)", flexShrink: 0, marginTop: -4 }}>
+                <TutorAnimated
+                  persona={tp.tutorPersona}
+                  emotion={hour >= 22 ? "sleeping" : "encouraging"}
+                  accessory="espresso"
+                  crop="bust"
+                  size={72}
+                  title={tp.tutorName}
+                  nodOnMount
+                />
+              </div>
+            ) : (
+              <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "var(--bg)", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center", flexShrink: 0 }}>
+                {tp.tutorName.charAt(0)}
+              </div>
+            )}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>
+                {tp.tutorName} · læreren din
+              </div>
+              <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
+                «{frenchGreeting()}, {profile.name} — {pierreRecommend.msg}»
               </div>
             </div>
             <IcoArrow size={18} stroke="var(--cream-deep)" sw={1.5} />
           </button>
         </div>
+
+        {/* Placement 08 — long absence banner */}
+        {showAbsenceBanner && (
+          <div style={{ padding: "0 22px 14px" }}>
+            <div style={{
+              background: "rgba(90,154,240,0.08)", border: "1px solid rgba(90,154,240,0.25)",
+              borderRadius: 18, padding: 16,
+              display: "flex", alignItems: "flex-start", gap: 14,
+            }}>
+              <div style={{ color: "var(--accent, #5a9af0)", flexShrink: 0 }}>
+                <TutorAnimated persona={tp.tutorPersona} emotion="amused" crop="bust" size={72} title={tp.tutorName} />
+              </div>
+              <div style={{ flex: 1, paddingTop: 8 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.3, color: "var(--text)", marginBottom: 4 }}>
+                  Bonsoir, igjen.
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(232,237,245,0.55)", lineHeight: 1.5 }}>
+                  Det er {absenceDays} dager siden sist. Vi tar en mild start.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Search + profile */}
         <div style={{ padding: "0 22px 14px", display: "flex", gap: 10, position: "relative" }}>
@@ -1070,7 +1186,18 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         <UserProfileModal
           onClose={() => setProfileOpen(false)}
           onSave={(p) => { setProfile(p); setProfileOpen(false); onProfileSave?.(p); }}
+          tutorPrefs={tp}
+          onChangeTutor={() => { setProfileOpen(false); setShowTutorOnboarding(true); }}
+          onToggleTutorVisibility={() => { if (onTutorPrefsChange) onTutorPrefsChange({ tutorVisibility: tp.tutorVisibility === "hidden" ? "all" : "hidden" }); }}
         />
+      )}
+      {showTutorOnboarding && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 600 }}>
+          <OnboardingScreen onDone={(newPrefs) => {
+            if (newPrefs && onTutorPrefsChange) onTutorPrefsChange(newPrefs);
+            setShowTutorOnboarding(false);
+          }} />
+        </div>
       )}
 
       <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>

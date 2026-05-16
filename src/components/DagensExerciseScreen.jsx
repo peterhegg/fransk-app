@@ -3,6 +3,8 @@ import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
+import Tutor, { TutorAnimated } from "./Tutor/Tutor.jsx";
+import { tutorVisible } from "../hooks/useTutorPrefs.js";
 
 function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack, screen, showWords, onNav, exerciseRounds = 5, autoPlay, onToggleAutoPlay, onSkipWord }) {
   const [allCards, setAllCards] = useState(() =>
@@ -168,10 +170,12 @@ export default function DagensExerciseScreen({
   autoPlay,
   onToggleAutoPlay,
   onSkipWord,
+  tutorPrefs,
 }) {
   const [fireworksDone, setFireworksDone] = useState(false);
   const [tierPopDone, setTierPopDone] = useState(false);
-  useEffect(() => { setFireworksDone(false); setTierPopDone(false); }, [card?.fr, card?.reverse]);
+  const [mestretDone, setMestretDone] = useState(false);
+  useEffect(() => { setFireworksDone(false); setTierPopDone(false); setMestretDone(false); }, [card?.fr, card?.reverse]);
 
   useEffect(() => {
     if (autoPlay && card?.fr && !card.reverse) {
@@ -316,6 +320,25 @@ export default function DagensExerciseScreen({
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 340, alignItems: "center" }}>
+            {/* Placement 04 — milestone: 5-i-rad */}
+            {checked && result !== "wrong" && tutorPrefs && tutorVisible(tutorPrefs) &&
+              history.length >= 5 && history.slice(-5).every(r => r === "correct") && (
+              <div style={{
+                background: "rgba(0,200,150,0.12)", border: "1px solid rgba(0,200,150,0.30)",
+                borderRadius: 18, padding: 16, width: "100%",
+                display: "flex", alignItems: "flex-start", gap: 14,
+              }}>
+                <div style={{ color: "#00c896", flexShrink: 0 }}>
+                  <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="encouraging" crop="bust" size={76} title={tutorPrefs.tutorName} nodOnMount />
+                </div>
+                <div style={{ flex: 1, paddingTop: 4 }}>
+                  <div style={{ fontSize: 11, color: "#00c896", letterSpacing: 1, marginBottom: 4 }}>FEM PÅ RAD</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.45, color: "var(--text)" }}>
+                    Du er inne i en rytme nå.
+                  </div>
+                </div>
+              </div>
+            )}
             {result === "correct" && (
               <div style={{ background: "rgba(0,184,148,0.10)", border: "1px solid rgba(0,184,148,0.35)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
                 <div style={{ fontSize: 16, color: "var(--color-success)", fontWeight: "bold", marginBottom: isReverse ? 8 : 0 }}>✓ Riktig!</div>
@@ -343,16 +366,33 @@ export default function DagensExerciseScreen({
             )}
             {result === "wrong" && (
               <>
-                <div style={{ background: "rgba(225,112,85,0.08)", border: "1px solid rgba(225,112,85,0.3)", borderRadius: 12, padding: "14px 20px", textAlign: "center", width: "100%" }}>
-                  <div style={{ fontSize: 14, color: "var(--color-error)", marginBottom: 6 }}>Prøv igjen — riktig svar:</div>
-                  <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
-                  <div style={{ fontSize: 18, color: "var(--text)", fontWeight: "bold" }}>{isReverse ? card.fr : card.no}</div>
-                  {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", marginTop: 4 }}>({card.phonetic})</div>}
-                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-                    <SpeakButton onClick={() => speak(card.fr)} />
-                    <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
+                {/* Placement 05 — wrong answer with tutor */}
+                <div style={{
+                  background: tutorPrefs && tutorVisible(tutorPrefs)
+                    ? "linear-gradient(135deg, rgba(240,138,117,0.10), rgba(15,31,52,0.6))"
+                    : "rgba(225,112,85,0.08)",
+                  border: "1px solid rgba(240,138,117,0.30)",
+                  borderRadius: 20, padding: 16, width: "100%",
+                  display: "flex", gap: 14, alignItems: "flex-start",
+                }}>
+                  {tutorPrefs && tutorVisible(tutorPrefs) && (
+                    <div style={{ color: "#f08a75", flexShrink: 0 }}>
+                      <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="wrong" crop="bust" size={76} title={tutorPrefs.tutorName} />
+                    </div>
+                  )}
+                  <div style={{ flex: 1, paddingTop: tutorPrefs && tutorVisible(tutorPrefs) ? 4 : 0 }}>
+                    <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 15, lineHeight: 1.45, marginBottom: 6, color: "var(--text)" }}>
+                      Vanlig feil.
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
+                    <div style={{ fontSize: 16, color: "var(--text)", fontWeight: 500 }}>{isReverse ? card.fr : card.no}</div>
+                    {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", marginTop: 4 }}>({card.phonetic})</div>}
+                    <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                      <SpeakButton onClick={() => speak(card.fr)} />
+                      <SpeakButton onClick={() => speak(card.fr, 0.4)} slow />
+                    </div>
+                    <PointsBadge pointsInfo={pointsInfo} />
                   </div>
-                  <PointsBadge pointsInfo={pointsInfo} />
                 </div>
                 {topic && (
                   <div style={{ background: "rgba(230,211,168,0.04)", border: "1px solid rgba(230,211,168,0.14)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
@@ -378,6 +418,32 @@ export default function DagensExerciseScreen({
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
       {pointsInfo?.justMastered && !fireworksDone && (
         <Fireworks onDone={() => setFireworksDone(true)} />
+      )}
+      {/* Placement 06 — mestret hero overlay */}
+      {pointsInfo?.justMastered && tutorPrefs && tutorVisible(tutorPrefs) && !mestretDone && (
+        <div
+          onClick={() => setMestretDone(true)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 200,
+            background: "rgba(9,21,38,0.92)",
+            display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", textAlign: "center", padding: "0 24px",
+          }}>
+          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(232,237,245,0.4)", marginBottom: 18 }}>MESTRET</div>
+          <div style={{ color: "#ffd700", position: "relative", marginBottom: 22 }}>
+            <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="proud" crop="full" size={130} title={tutorPrefs.tutorName} heroMode />
+            <span style={{ position: "absolute", top: 10, left: -18, color: "#ffd700", fontSize: 16, opacity: 0.7 }}>✦</span>
+            <span style={{ position: "absolute", top: -8, right: -14, color: "#ffd700", fontSize: 22, opacity: 0.85 }}>✦</span>
+            <span style={{ position: "absolute", top: 40, right: -28, color: "#ffd700", fontSize: 12, opacity: 0.6 }}>✦</span>
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 22, lineHeight: 1.2, marginBottom: 8, color: "var(--text)" }}>
+            <em style={{ color: "#ffd700" }}>{card?.fr}</em> er mestret.
+          </div>
+          <div style={{ fontSize: 13, color: "rgba(232,237,245,0.55)", letterSpacing: 0.3, marginBottom: 28 }}>
+            Stille framgang.
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(232,237,245,0.35)", letterSpacing: 1 }}>trykk for å fortsette</div>
+        </div>
       )}
       {pointsInfo?.tierAfter > pointsInfo?.tierBefore && !pointsInfo?.justMastered && !tierPopDone && (
         <>
