@@ -213,7 +213,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
           style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "10px 14px", resize: "none", outline: "none", lineHeight: 1.5 }}
           rows={2} />
         <button onClick={() => send()} disabled={loading || !input.trim()}
-          style={{ background: loading || !input.trim() ? "rgba(230,211,168,0.08)" : "var(--cream)", border: "none", borderRadius: 14, color: loading || !input.trim() ? "var(--text-subtle)" : "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: loading || !input.trim() ? "default" : "pointer", whiteSpace: "nowrap" }}>
+          style={{ background: loading || !input.trim() ? "rgba(230,211,168,0.08)" : "var(--cream)", border: "none", borderRadius: 14, color: loading || !input.trim() ? "var(--text-subtle)" : "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px 18px", cursor: loading || !input.trim() ? "default" : "pointer", whiteSpace: "nowrap" }}>
           Send
         </button>
       </div>

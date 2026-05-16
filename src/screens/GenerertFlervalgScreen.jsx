@@ -177,7 +177,7 @@ export default function GenerertFlervalgScreen({
         <div style={{ display: "flex", gap: 10 }}>
           {(error === "parse" || error === "network") && (
             <button onClick={() => { setError(""); setLoading(true); fetchQuestions(); }}
-              style={{ background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+              style={{ background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           )}
           <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         </div>
@@ -208,7 +208,7 @@ export default function GenerertFlervalgScreen({
           ))}
         </div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -255,7 +255,7 @@ export default function GenerertFlervalgScreen({
 
         {!checked ? (
           <button onClick={submit} disabled={!selected} className={selected ? "btn-shine" : ""}
-            style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: selected ? "pointer" : "default", width: "100%", maxWidth: 360 }}>
+            style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: selected ? "pointer" : "default", width: "100%", maxWidth: 360 }}>
             Bekreft svar
           </button>
         ) : (
@@ -290,7 +290,7 @@ export default function GenerertFlervalgScreen({
               )}
             </div>
             <button onClick={next} className="btn-shine"
-              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+              style={{ background: selected ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: selected ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
               {idx >= questions.length - 1 ? "Se resultat" : "Neste →"}
             </button>
           </div>

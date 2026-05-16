@@ -111,7 +111,7 @@ function CatManageModal({ onClose, customCats, onSave, words, setWords }) {
                 {renamingCat === cat ? (
                   <>
                     <input value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => e.key === "Enter" && confirmRename(cat)} autoFocus style={inputStyle} />
-                    <button onClick={() => confirmRename(cat)} style={{ background: "var(--cream)", border: "none", borderRadius: 8, color: "#1a1410", fontSize: 12, padding: "8px 12px", cursor: "pointer", fontFamily: "var(--font-body)", whiteSpace: "nowrap" }}>OK</button>
+                    <button onClick={() => confirmRename(cat)} style={{ background: "var(--cream)", border: "none", borderRadius: 8, color: "var(--bg)", fontSize: 12, padding: "8px 12px", cursor: "pointer", fontFamily: "var(--font-body)", whiteSpace: "nowrap" }}>OK</button>
                     <button onClick={() => setRenamingCat(null)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-subtle)", fontSize: 12, padding: "8px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>✕</button>
                   </>
                 ) : (
@@ -134,12 +134,12 @@ function CatManageModal({ onClose, customCats, onSave, words, setWords }) {
             <div style={{ fontSize: 12, color: "var(--text-subtle)", marginBottom: 8 }}>Legg til ny kategori</div>
             <div style={{ display: "flex", gap: 8 }}>
               <input value={newCatName} onChange={e => setNewCatName(e.target.value)} onKeyDown={e => e.key === "Enter" && addCat()} placeholder="Kategorinavn…" style={inputStyle} />
-              <button onClick={addCat} disabled={!newCatName.trim()} style={{ background: newCatName.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 8, color: newCatName.trim() ? "#1a1410" : "var(--text-subtle)", fontSize: 13, padding: "8px 14px", cursor: newCatName.trim() ? "pointer" : "default", fontFamily: "var(--font-body)", whiteSpace: "nowrap" }}>+ Legg til</button>
+              <button onClick={addCat} disabled={!newCatName.trim()} style={{ background: newCatName.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 8, color: newCatName.trim() ? "var(--bg)" : "var(--text-subtle)", fontSize: 13, padding: "8px 14px", cursor: newCatName.trim() ? "pointer" : "default", fontFamily: "var(--font-body)", whiteSpace: "nowrap" }}>+ Legg til</button>
             </div>
           </div>
         </div>
 
-        <button onClick={save} style={{ marginTop: 16, width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "12px", cursor: "pointer" }}>
+        <button onClick={save} style={{ marginTop: 16, width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "12px", cursor: "pointer" }}>
           Lagre
         </button>
       </div>
@@ -419,7 +419,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
             </div>
           )}
           <button onClick={importWords} disabled={!importText.trim()} className={importText.trim() ? "btn-shine" : ""}
-            style={{ background: importText.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: importText.trim() ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
+            style={{ background: importText.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: importText.trim() ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
             Importer ord
           </button>
         </div>
@@ -432,7 +432,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
           <input placeholder="Uttale (f.eks. bånsjur)" value={addPhonetic} onChange={e => setAddPhonetic(e.target.value)} onKeyDown={e => e.key === "Enter" && addWord()}
             style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 14, padding: "8px 12px", outline: "none" }} />
           <button onClick={addWord} disabled={!addFr.trim()} className={addFr.trim() ? "btn-shine" : ""}
-            style={{ background: addFr.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: addFr.trim() ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: addFr.trim() ? "pointer" : "default" }}>
+            style={{ background: addFr.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: addFr.trim() ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: addFr.trim() ? "pointer" : "default" }}>
             Lagre ord
           </button>
         </div>
@@ -458,7 +458,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
                   </div>
                 )}
                 <button onClick={importGrammarWords}
-                  style={{ marginTop: 8, width: "100%", background: "var(--cream)", border: "none", borderRadius: 8, color: "#1a1410", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px", cursor: "pointer" }}>
+                  style={{ marginTop: 8, width: "100%", background: "var(--cream)", border: "none", borderRadius: 8, color: "var(--bg)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px", cursor: "pointer" }}>
                   Importer grammatikk
                 </button>
               </div>

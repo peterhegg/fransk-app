@@ -192,7 +192,7 @@ export default function WordDetailModal({ word, onClose, onSave, onDelete, extra
                   Avbryt
                 </button>
                 <button onClick={saveWord}
-                  style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "11px", cursor: "pointer" }}>
+                  style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "11px", cursor: "pointer" }}>
                   Lagre
                 </button>
               </div>
@@ -264,7 +264,7 @@ export default function WordDetailModal({ word, onClose, onSave, onDelete, extra
                 ))}
               </div>
               <button onClick={save}
-                style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "12px", cursor: "pointer" }}>
+                style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14, padding: "12px", cursor: "pointer" }}>
                 Lagre kategori
               </button>
             </>

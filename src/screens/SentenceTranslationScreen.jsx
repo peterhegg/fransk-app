@@ -254,7 +254,7 @@ export default function SentenceTranslationScreen({
           ))}
         </div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -298,7 +298,7 @@ export default function SentenceTranslationScreen({
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "14px 16px", outline: "none", textAlign: "center" }}
             />
             <button onClick={submit} disabled={!input.trim()} className="btn-shine"
-              style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
+              style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
               Sjekk svar
             </button>
           </div>
@@ -338,7 +338,7 @@ export default function SentenceTranslationScreen({
               </div>
             )}
             <button onClick={next} className="btn-shine"
-              style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
+              style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer" }}>
               {idx >= sentences.length - 1 ? "Se resultat" : "Neste setning →"}
             </button>
           </div>

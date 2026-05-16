@@ -247,7 +247,7 @@ function VocabGoalOrderModal({ onClose, onSave, words }) {
           Tilbakestill
         </button>
         <button onClick={() => { saveGoalOrder(order); onSave(order); }}
-          style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre rekkefølge
         </button>
       </div>
@@ -319,7 +319,7 @@ function OrdmesterEditModal({ onClose, onSave }) {
           Tilbakestill
         </button>
         <button onClick={handleSave}
-          style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          style={{ flex: 2, background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre mål
         </button>
       </div>
@@ -582,7 +582,7 @@ function UserProfileModal({ onClose, onSave }) {
 
       <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)" }}>
         <button onClick={() => { saveUserProfile(profile); onSave(profile); }}
-          style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "#1a1410", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre profil
         </button>
       </div>
@@ -826,7 +826,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           <button
             onClick={() => onStart(pierreRecommend.id)}
             style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center", cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "#1a1410", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
+            <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "var(--bg)", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
               <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
@@ -947,7 +947,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
                     : "linear-gradient(to top, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.04) 100%)"
                   }} />
                   {card.done && (
-                    <div style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#1a1410", boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>✓</div>
+                    <div style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--bg)", boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>✓</div>
                   )}
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px 18px", textAlign: "left" }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 4, letterSpacing: "-0.2px" }}>

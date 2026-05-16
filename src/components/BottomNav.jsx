@@ -63,11 +63,11 @@ export default function BottomNav({ screen, showWords, onNav }) {
             gap: active ? 7 : 0,
             fontFamily: "var(--font-body)",
             fontWeight: 600,
-            color: active ? "#1a1410" : "var(--text-subtle)",
+            color: active ? "var(--bg)" : "var(--text-subtle)",
             transition: "all 0.22s ease",
             flexDirection: active ? "row" : "column",
           }}>
-            <Ico size={active ? 18 : 20} stroke={active ? "#1a1410" : "var(--text-subtle)"} sw={1.6} />
+            <Ico size={active ? 18 : 20} stroke={active ? "var(--bg)" : "var(--text-subtle)"} sw={1.6} />
             {active
               ? <span style={{ fontSize: 14, fontWeight: 600 }}>{label}</span>
               : <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.3px", marginTop: 2 }}>{label}</span>

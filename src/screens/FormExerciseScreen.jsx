@@ -97,13 +97,13 @@ export function ArticleExerciseScreen({ words, onBack, speak, autoPlay, onToggle
           <>
             <div style={{ fontSize: 36 }}>✓</div>
             <div style={{ fontSize: 20, color: "var(--cream)", fontFamily: "var(--font-display)" }}>Ferdig! {stats.correct}/{total} riktige</div>
-            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
           </>
         ) : (
           <>
             <div style={{ fontSize: 20, color: "var(--text-subtle)" }}>Ingen ord med artikkelformer ennå.</div>
             <div style={{ fontSize: 14, color: "var(--text-subtle)", opacity: 0.7 }}>Lær substantiver i Dagens øvelse.</div>
-            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
           </>
         )}
       </div>
@@ -155,7 +155,7 @@ export function ArticleExerciseScreen({ words, onBack, speak, autoPlay, onToggle
                 </button>
               ))}
             </div>
-            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px 40px", cursor: "pointer", width: "100%", maxWidth: 380 }}>
+            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px 40px", cursor: "pointer", width: "100%", maxWidth: 380 }}>
               {queue.length <= 1 ? "Fullfør" : "Neste →"}
             </button>
           </>
@@ -238,13 +238,13 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, auto
           <>
             <div style={{ fontSize: 36 }}>✓</div>
             <div style={{ fontSize: 20, color: "var(--cream)", fontFamily: "var(--font-display)" }}>Ferdig! {stats.correct}/{total} riktige</div>
-            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
           </>
         ) : (
           <>
             <div style={{ fontSize: 20, color: "var(--text-subtle)" }}>Ingen verb med bøyingsformer ennå.</div>
             <div style={{ fontSize: 14, color: "var(--text-subtle)", opacity: 0.7 }}>Lær verb i Dagens øvelse.</div>
-            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
+            <button onClick={onBack} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "13px 28px", cursor: "pointer", marginTop: 8 }}>Tilbake</button>
           </>
         )}
       </div>
@@ -288,13 +288,13 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, auto
               placeholder={`Skriv ${FORM_TYPE_LABELS[card.formType]?.toLowerCase() || "bøyingsform"}…`}
               style={{ background: "var(--surface)", border: "2px solid var(--border)", borderRadius: 14, color: "var(--text)", fontFamily: "var(--font-display)", fontSize: 18, fontStyle: "italic", padding: "16px 18px", outline: "none", width: "100%", boxSizing: "border-box", textAlign: "center" }}
             />
-            <button onClick={submit} disabled={!input.trim()} style={{ background: input.trim() ? "var(--cream)" : "var(--bg)", border: "none", borderRadius: 14, color: input.trim() ? "#1a1410" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s" }}>
+            <button onClick={submit} disabled={!input.trim()} style={{ background: input.trim() ? "var(--cream)" : "var(--bg)", border: "none", borderRadius: 14, color: input.trim() ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s" }}>
               Sjekk
             </button>
           </div>
         ) : (
           <div style={{ width: "100%", maxWidth: 380 }}>
-            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: "pointer", width: "100%" }}>
+            <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: "pointer", width: "100%" }}>
               {queue.length <= 1 ? "Fullfør" : "Neste →"}
             </button>
           </div>

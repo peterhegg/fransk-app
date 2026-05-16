@@ -149,7 +149,7 @@ export default function DagensRettelseScreen({
           {stats.correct} riktige · {stats.wrong} feil<br />
           <span style={{ fontSize: 13 }}>Fortsett å øve, så blir disse lettere.</span>
         </div>
-        <button onClick={onBack} style={{ marginTop: 8, padding: "12px 28px", background: "var(--cream)", color: "#1a1410", border: "none", borderRadius: 12, fontSize: 15, fontFamily: "var(--font-body)", fontWeight: 600, cursor: "pointer" }}>
+        <button onClick={onBack} style={{ marginTop: 8, padding: "12px 28px", background: "var(--cream)", color: "var(--bg)", border: "none", borderRadius: 12, fontSize: 15, fontFamily: "var(--font-body)", fontWeight: 600, cursor: "pointer" }}>
           Tilbake
         </button>
       </div>
@@ -224,7 +224,7 @@ export default function DagensRettelseScreen({
             }}
           />
           {!checked && (
-            <button onClick={submit} style={{ padding: "0 18px", background: "var(--cream)", color: "#1a1410", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={submit} style={{ padding: "0 18px", background: "var(--cream)", color: "var(--bg)", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               Sjekk
             </button>
           )}
@@ -283,7 +283,7 @@ export default function DagensRettelseScreen({
 
         {checked && (
           <div style={{ padding: "12px 0 108px" }}>
-            <button onClick={next} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "#1a1410", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={next} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--bg)", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               {queue.length <= 1 ? "Ferdig" : result === "wrong" ? "Prøv igjen" : "Neste →"}
             </button>
           </div>

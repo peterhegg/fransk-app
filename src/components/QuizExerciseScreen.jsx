@@ -134,7 +134,7 @@ export default function QuizExerciseScreen({
                 ))}
               </div>
               <button onClick={onSubmit} disabled={!input.trim()} className="btn-shine"
-                style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "16px", cursor: input.trim() ? "pointer" : "default", width: "100%", maxWidth: 340 }}>
+                style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "16px", cursor: input.trim() ? "pointer" : "default", width: "100%", maxWidth: 340 }}>
                 Bekreft svar
               </button>
             </>
@@ -148,7 +148,7 @@ export default function QuizExerciseScreen({
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
                 autoFocus />
               <button onClick={onSubmit} disabled={!input.trim()} className="btn-shine"
-                style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
+                style={{ background: "var(--cream)", opacity: input.trim() ? 1 : 0.4, border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default" }}>
                 Sjekk svar
               </button>
             </div>
@@ -228,7 +228,7 @@ export default function QuizExerciseScreen({
               </>
             )}
             <button onClick={onNext} className="btn-shine"
-              style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
+              style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
               {queue.length <= 1 ? "Ferdig!" : "Neste ord →"}
             </button>
           </div>

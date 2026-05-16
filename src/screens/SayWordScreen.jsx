@@ -131,7 +131,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
         <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text)" }}>Bra jobba!</div>
         <div style={{ fontSize: 14, color: "var(--text-subtle)" }}>Du har øvd på {queue.length} ord.</div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -225,7 +225,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
                 : "var(--cream)",
               border: isListening ? "2px solid var(--accent)" : "none",
               borderRadius: 14,
-              color: isListening ? "var(--accent)" : "#1a1410",
+              color: isListening ? "var(--accent)" : "var(--bg)",
               fontFamily: "var(--font-body)",
               fontWeight: "600",
               fontSize: 16,

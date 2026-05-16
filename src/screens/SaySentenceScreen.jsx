@@ -243,7 +243,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
           ))}
         </div>
         <button onClick={onBack} className="btn-shine"
-          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "#1a1410", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
+          style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 15, padding: "14px 40px", cursor: "pointer", marginTop: 8 }}>
           Tilbake til hjem
         </button>
       </div>
@@ -328,7 +328,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
                 : "var(--cream)",
               border: isListening ? "2px solid var(--accent)" : "none",
               borderRadius: 14,
-              color: isListening ? "var(--accent)" : "#1a1410",
+              color: isListening ? "var(--accent)" : "var(--bg)",
               fontFamily: "var(--font-body)",
               fontWeight: "600",
               fontSize: 16,
