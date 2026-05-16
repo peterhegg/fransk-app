@@ -821,6 +821,22 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
         </div>
 
+        {/* Pierre card */}
+        <div style={{ padding: "0 22px 14px" }}>
+          <button
+            onClick={() => onStart(pierreRecommend.id)}
+            style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center", cursor: "pointer", textAlign: "left" }}>
+            <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "#1a1410", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
+            <div>
+              <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
+              <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
+                «{frenchGreeting()} {profile.name} — {pierreRecommend.msg}»
+              </div>
+            </div>
+            <IcoArrow size={18} stroke="var(--cream-deep)" sw={1.5} />
+          </button>
+        </div>
+
         {/* Search + profile */}
         <div style={{ padding: "0 22px 14px", display: "flex", gap: 10, position: "relative" }}>
           <div style={{ flex: 1, height: 46, borderRadius: 14, background: "var(--surface)", border: `1px solid ${searchOpen ? "var(--cream)" : "var(--border)"}`, display: "flex", alignItems: "center", padding: "0 14px", gap: 10, transition: "border-color 0.2s" }}>
@@ -839,22 +855,6 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
           <button onClick={() => setProfileOpen(true)} style={{ width: 46, height: 46, borderRadius: 14, background: "var(--surface)", border: "1px solid var(--border)", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}>
             <IcoUser size={18} stroke="var(--cream)" sw={1.5} />
-          </button>
-        </div>
-
-        {/* Pierre card */}
-        <div style={{ padding: "0 22px 14px" }}>
-          <button
-            onClick={() => onStart(pierreRecommend.id)}
-            style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "grid", gridTemplateColumns: "46px 1fr auto", gap: 14, alignItems: "center", cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 46, height: 46, borderRadius: 99, background: "linear-gradient(135deg, var(--cream), var(--cream-deep))", color: "#1a1410", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 600, fontSize: 22, display: "grid", placeItems: "center" }}>P</div>
-            <div>
-              <div style={{ fontSize: 9, letterSpacing: 2.2, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 3 }}>Pierre · læreren din</div>
-              <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 14, color: "var(--text)", lineHeight: 1.4 }}>
-                «{frenchGreeting()} {profile.name} — {pierreRecommend.msg}»
-              </div>
-            </div>
-            <IcoArrow size={18} stroke="var(--cream-deep)" sw={1.5} />
           </button>
         </div>
 

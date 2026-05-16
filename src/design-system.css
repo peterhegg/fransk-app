@@ -49,44 +49,46 @@
   --duration-slow:   350ms;
   --ease-default: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* ── Light mode colors ─────────────────────────────────────────── */
-  --color-primary:       #2e6be6;
-  --color-primary-light: #5589ee;
-  --color-primary-dark:  #1a4fbf;
-  --color-primary-mid:   #3d76ea;
-  --color-success:       #00b894;
-  --color-error:         #e17055;
+  /* ── Light mode colors (cremepapir palette) ────────────────────── */
+  --color-primary:       #b8302a;
+  --color-primary-light: #d44840;
+  --color-primary-dark:  #8a2420;
+  --color-primary-mid:   #c43830;
+  --color-success:       #2a4d3a;
+  --color-error:         #c83a3a;
 
-  --color-bg:            #0a1628;
-  --color-text:          #eef2fa;
-  --color-card:          #13223b;
-  --color-border:        rgba(255, 255, 255, 0.07);
+  --color-bg:            #f4ecdc;
+  --color-text:          #1c1816;
+  --color-card:          #ffffff;
+  --color-border:        rgba(28, 24, 22, 0.10);
 
   /* Semantic aliases */
-  --accent:         #5a9af0;
-  --accent-light:   #7db0f5;
-  --accent-bg:      rgba(90, 154, 240, 0.15);
-  --surface:        rgba(18, 32, 55, 0.62);
-  --surface-solid:  #13223b;
-  --bg:             #0a1628;
-  --text:           #eef2fa;
-  --text-subtle:    rgba(238, 242, 250, 0.55);
-  --text-muted:     rgba(238, 242, 250, 0.28);
-  --border:         rgba(255, 255, 255, 0.07);
-  --nav-bg:         rgba(10, 18, 32, 0.92);
-  --app-bg:         radial-gradient(900px 600px at 115% -8%, rgba(120,30,45,0.55) 0%, transparent 58%), radial-gradient(800px 600px at -15% 65%, rgba(22,55,110,0.42) 0%, transparent 68%), #0a1628;
-  /* Warm palette (home screen) */
-  --cream:          #e6d3a8;
-  --cream-deep:     #c9b78d;
-  --sage:           #9eb6a4;
-  --terra:          #c47a5a;
+  --accent:         #b8302a;
+  --accent-light:   #d44840;
+  --accent-bg:      rgba(184, 48, 42, 0.08);
+  --surface:        rgba(255, 255, 255, 0.60);
+  --surface-solid:  #ffffff;
+  --bg:             #f4ecdc;
+  --text:           #1c1816;
+  --text-subtle:    #6b5e54;
+  --text-muted:     #a89a8a;
+  --border:         rgba(28, 24, 22, 0.10);
+  --nav-bg:         rgba(244, 236, 220, 0.85);
+  --app-bg:         repeating-linear-gradient(180deg, transparent 0, transparent 27px, rgba(28,24,22,0.05) 27px, rgba(28,24,22,0.05) 28px), #f4ecdc;
+  /* Warm palette */
+  --cream:          #b8302a;
+  --cream-deep:     #8a2420;
+  --sage:           #2a4d3a;
+  --terra:          #c69838;
   --amber:          #d4a574;
+  --forest:         #2a4d3a;
+  --mustard:        #c69838;
 
   /* ── Shadows ───────────────────────────────────────────────────── */
-  --shadow-sm:         0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.06);
-  --shadow-md:         0 2px 4px rgba(0,0,0,0.04), 0 8px 28px rgba(0,0,0,0.10);
-  --shadow-card:       0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.06);
-  --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.06), 0 16px 40px rgba(0,0,0,0.12);
+  --shadow-sm:         0 1px 0 rgba(28,24,22,0.06), 0 6px 14px -8px rgba(28,24,22,0.10);
+  --shadow-md:         0 2px 4px rgba(28,24,22,0.06), 0 10px 24px rgba(28,24,22,0.14);
+  --shadow-card:       0 1px 0 rgba(28,24,22,0.06), 0 6px 14px -8px rgba(28,24,22,0.10);
+  --shadow-card-hover: 0 4px 8px rgba(28,24,22,0.08), 0 16px 32px rgba(28,24,22,0.16);
   --radius-card:      20px;
   --radius-btn:       14px;
 }
@@ -120,6 +122,14 @@
   --shadow-md:         0 6px 28px rgba(0, 0, 0, 0.65);
   --shadow-card:       0 2px 16px rgba(0, 0, 0, 0.55);
   --shadow-card-hover: 0 10px 36px rgba(0, 0, 0, 0.80);
+  /* Restore warm palette overridden by :root light-mode values */
+  --cream:          #e6d3a8;
+  --cream-deep:     #c9b78d;
+  --sage:           #9eb6a4;
+  --terra:          #c47a5a;
+  --amber:          #d4a574;
+  --forest:         #3a6a5a;
+  --mustard:        #c8783a;
 }
 
 /* ── Base ────────────────────────────────────────────────────────── */
