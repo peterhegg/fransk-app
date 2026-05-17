@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { PROXY_URL } from "../constants.js";
+import { PROXY_URL, APP_TOKEN } from "../constants.js";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 const STORAGE_KEY = "fransk-push-enabled";
@@ -27,7 +27,7 @@ export function usePushSubscription() {
       });
       await fetch(`${PROXY_URL}/push/subscribe`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
         body: JSON.stringify(sub.toJSON()),
       });
       localStorage.setItem(STORAGE_KEY, "true");
@@ -47,7 +47,7 @@ export function usePushSubscription() {
       if (sub) {
         await fetch(`${PROXY_URL}/push/unsubscribe`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
           body: JSON.stringify({ endpoint: sub.endpoint }),
         });
         await sub.unsubscribe();

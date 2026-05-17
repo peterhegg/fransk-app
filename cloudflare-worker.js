@@ -1,4 +1,4 @@
-const ALLOWED_ORIGINS = ["https://peterhegg.github.io", "http://localhost:5173"];
+const PROD_ORIGIN = "https://peterhegg.github.io";
 const LOCKED_MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS_LIMIT = 1000;
 const MAX_MESSAGES = 20;
@@ -110,7 +110,7 @@ async function handleVoice(body, env, corsHeaders) {
   if (!response.ok) {
     const errBody = await response.text().catch(() => "");
     console.error(`Anthropic error ${response.status}:`, errBody.slice(0, 500));
-    return new Response(JSON.stringify({ error: "Upstream error", detail: errBody.slice(0, 200) }), {
+    return new Response(JSON.stringify({ error: "Upstream error" }), {
       status: 502,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -284,9 +284,11 @@ export default {
   },
 
   async fetch(request, env) {
+    const allowedOrigins = [PROD_ORIGIN];
+    if (env.DEV_ORIGIN) allowedOrigins.push(env.DEV_ORIGIN);
     const origin = request.headers.get("Origin") || "";
 
-    if (!ALLOWED_ORIGINS.includes(origin)) {
+    if (!allowedOrigins.includes(origin)) {
       return new Response("Forbidden", { status: 403 });
     }
 
@@ -305,6 +307,11 @@ export default {
 
     if (request.method !== "POST") {
       return new Response("Method not allowed", { status: 405 });
+    }
+
+    const token = request.headers.get("X-App-Token");
+    if (!env.CLIENT_TOKEN || token !== env.CLIENT_TOKEN) {
+      return new Response("Forbidden", { status: 403 });
     }
 
     if (!await checkBudget(env)) {
