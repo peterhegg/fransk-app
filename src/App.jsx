@@ -294,9 +294,25 @@ export default function App() {
     try {
       const s = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
       if (s.date === todayStr() && s.goal === goalId) {
-        const learnedFr = new Set(words.map(w => w.fr));
-        const hasNew = (s.words || []).some(w => !learnedFr.has(w.fr));
-        if (s.phase1done || s.phase2done || hasNew) cached = s;
+        if (s.phase1done || s.phase2done) {
+          // Mid-exercise or done — resume as-is
+          cached = s;
+        } else {
+          // Not started — filter out words added to bank since cache was written
+          const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim();
+          const learnedFr = new Set(words.map(w => normFr(w.fr)));
+          const stillNew = (s.words || []).filter(w => !learnedFr.has(normFr(w.fr)));
+          if (stillNew.length > 0) {
+            if (stillNew.length < (s.words || []).length) {
+              const updated = { ...s, words: stillNew };
+              localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(updated));
+              cached = updated;
+            } else {
+              cached = s;
+            }
+          }
+          // stillNew.length === 0 → cached stays null → generate fresh words
+        }
       }
     } catch {}
 
