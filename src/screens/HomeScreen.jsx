@@ -848,24 +848,6 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     });
   })();
 
-  if (isNight && tutorVisible(tp)) {
-    return (
-      <div style={{ height: "100dvh", background: "var(--app-bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 30px", position: "relative" }}>
-        <div style={{ position: "absolute", top: 70, fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(232,237,245,0.4)" }}>
-          L'ATELIER · {String(hour).padStart(2, "0")}:{String(new Date().getMinutes()).padStart(2, "0")}
-        </div>
-        <div style={{ color: "rgba(232,237,245,0.55)", marginBottom: 18 }}>
-          <TutorAnimated persona={tp.tutorPersona} emotion="sleeping" crop="bust" size={120} title={`${tp.tutorName}, sover`} />
-        </div>
-        <h2 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400, fontSize: 26, margin: "0 0 8px", color: "var(--text)" }}>
-          Bonne nuit, {profile.name}.
-        </h2>
-        <div style={{ fontSize: 13, color: "rgba(232,237,245,0.5)", lineHeight: 1.6, maxWidth: 280 }}>
-          I morgen tidlig er det ord som venter. {tp.tutorName} har lagt seg.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ height: "100dvh", background: "var(--app-bg)", color: "var(--text)", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
