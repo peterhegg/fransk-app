@@ -634,9 +634,9 @@ export const STATIC_VOCAB = {
     { fr:"brancher",no:"å koble til / å plugge inn",p:"bråsjæ",forms:[["je branche","pr","jeg kobler"],["nous branchons","pr","vi kobler"],["ils branchent","pr","de kobler"],["j'ai branché","pc","jeg har koble til"],["je branchais","imp","jeg koble (fortid)"],["je brancherai","f","jeg vil koble"],["je brancherais","c","jeg ville koble"],["branche","impv","koble! (imperativ)"],["branché","pp","koble (partisipp)"]] },
     { fr:"débrancher",no:"å koble fra / å trekke ut",p:"debråsjæ",forms:[["je débranche","pr","jeg kobler"],["nous débranchers","pr","vi kobler"],["ils débranchent","pr","de kobler"],["j'ai débranché","pc","jeg har koble fra"],["je débranchais","imp","jeg koble (fortid)"],["je débrancherai","f","jeg vil koble"],["je débrancherais","c","jeg ville koble"],["débranche","impv","koble! (imperativ)"],["débranché","pp","koble (partisipp)"]] },
 
-    { fr:"déménager",no:"å flytte (bolig)",p:"demenasje",forms:[["je déménage","pr","jeg flytter"],["nous déménageons","pr","vi flytter"],["ils déménagent","pr","de flytter"],["j'ai déménagé","pc","jeg har flyttet"],["je déménageais","imp","jeg flyttet (fortid)"],["je déménagerai","f","jeg vil flytte"],["je déménagerais","c","jeg ville flytte"],["déménage","impv","flytt! (imperativ)"],["déménagé","pp","flyttet (partisipp)"]] },
-    { fr:"loyer",no:"husleien",p:"lwajæ",forms:[["le loyer","n","husleien"],["les loyers","np","husleiene (flertall)"]] },
-    { fr:"propriétaire",no:"eieren / utleieren",p:"proprijeter",forms:[["le propriétaire","n","eieren"],["les propriétaires","np","eierne (flertall)"],["la propriétaire","n","eieren (hun.)"]] },
+    { fr:"se dépêcher",no:"å skynde seg",p:"sə depesjæ",forms:[["je me dépêche","pr","jeg skynder meg"],["nous nous dépêchons","pr","vi skynder oss"],["dépêche-toi","impv","skynd deg!"]] },
+    { fr:"déranger",no:"å forstyrre / å bry",p:"derårje",forms:[["je dérange","pr","jeg forstyrrer"],["nous dérangeons","pr","vi forstyrrer"],["j'ai dérangé","pc","jeg forstyrret"],["dérange","impv","forstyrr!"]] },
+    { fr:"s'ennuyer",no:"å kjede seg",p:"sånjwije",forms:[["je m'ennuie","pr","jeg kjeder meg"],["nous nous ennuyons","pr","vi kjeder oss"],["je me suis ennuyé","pc","jeg kjedet meg"]] },
   ],
   tdf: [
     // RIDERS & ROLES
@@ -1276,8 +1276,6 @@ export const STATIC_VOCAB = {
     { fr:"ongle",     no:"neglene",         p:"ågl",      forms:[["l'ongle","n","neglene"],["les ongles","np","neglene (flertall)"]] },
     { fr:"cuisse",    no:"låret",           p:"kwis",     forms:[["la cuisse","n","låret"],["les cuisses","np","låret (flertall)"]] },
     { fr:"mollet",    no:"leggmuskelen",    p:"molæ",     forms:[["le mollet","n","leggmuskelen"],["les mollets","np","leggmuskelen (flertall)"]] },
-    { fr:"genou",     no:"kneet",           p:"sjənu",    forms:[["le genou","n","kneet"],["les genoux","np","kneet (flertall)"]] },
-    { fr:"sein",      no:"brystet",         p:"sæn",      forms:[["le sein","n","brystet"],["les seins","np","brystet (flertall)"]] },
     { fr:"fesse",     no:"rumpeballen",     p:"fæs",      forms:[["la fesse","n","rumpeballen"],["les fesses","np","rumpeballen (flertall)"]] },
     { fr:"sang",      no:"blodet",          p:"så",       forms:[["le sang","n","blodet"]] },
     { fr:"os",        no:"beinet",          p:"O",        forms:[["l'os","n","beinet"],["les os","np","beinet (flertall)"]] },
@@ -1327,15 +1325,12 @@ export const STATIC_VOCAB = {
     { fr:"courbaturé", no:"støl / øm i kroppen", p:"kurbatyræ", forms:[["courbaturée","adj-f","støl / øm i kroppen (hun.)"],["courbaturés","adj-mp","støl / øm i kroppen (fl.)"],["courbaturées","adj-fp","støl / øm i kroppen (fl., hun.)"]] },
     // Helse og sykehus (utfylling)
     { fr:"traitement",  no:"behandlingen",     p:"trætmå",   forms:[["le traitement","n","behandlingen"],["les traitements","np","behandlingen (flertall)"]] },
-    { fr:"opération",   no:"operasjonen",      p:"operasjå", forms:[["l'opération","n","operasjonen"],["les opérations","np","operasjonen (flertall)"]] },
     { fr:"consultation",no:"konsultasjonen",   p:"kåsyltasjå",forms:[["la consultation","n","konsultasjonen"],["les consultations","np","konsultasjonen (flertall)"]] },
-    { fr:"ordonnance",  no:"resepten",         p:"ordonås",  forms:[["l'ordonnance","n","resepten"],["les ordonnances","np","resepten (flertall)"]] },
     { fr:"bande",       no:"bandasjen",        p:"båd",      forms:[["la bande","n","bandasjen"],["les bandes","np","bandasjen (flertall)"]] },
     { fr:"pansement",   no:"plasteret",        p:"påsmå",    forms:[["le pansement","n","plasteret"],["les pansements","np","plasteret (flertall)"]] },
     { fr:"seringue",    no:"sprøyten",         p:"særæng",   forms:[["la seringue","n","sprøyten"],["les seringues","np","sprøyten (flertall)"]] },
     { fr:"vaccin",      no:"vaksinen",         p:"vaksæn",   forms:[["le vaccin","n","vaksinen"],["les vaccins","np","vaksinen (flertall)"]] },
     { fr:"prise de sang",no:"blodprøven",      p:"priz də så",forms:[["la prise de sang","n","blodprøven"]] },
-    { fr:"tension",     no:"blodtrykket",      p:"tåsjå",    forms:[["la tension","n","blodtrykket"]] },
     { fr:"béquille",    no:"krykken",          p:"bekij",    forms:[["la béquille","n","krykken"],["les béquilles","np","krykken (flertall)"]] },
     { fr:"plâtre",      no:"gipsen",           p:"platrə",   forms:[["le plâtre","n","gipsen"],["les plâtres","np","gipsen (flertall)"]] },
     { fr:"opticien",    no:"optikeren",        p:"optisjæn", forms:[["l'opticien","n","optikeren"],["les opticiens","np","optikeren (flertall)"]] },
@@ -1358,6 +1353,11 @@ export const STATIC_VOCAB = {
     { fr:"tomber malade",no:"å bli syk",      p:"tåbæ malad",forms:[["je tombe malade","pr","jeg blir"],["nous tombons malades","pr","vi blir"],["ils tombent malades","pr","de blir"],["je suis tombé malade","pc","jeg har bli syk"],["je tombais malade","imp","jeg bli (fortid)"],["je tomberai malade","f","jeg vil bli"],["je tomberais malade","c","jeg ville bli"],["tombe malade","impv","bli! (imperativ)"]] },
     { fr:"prendre rendez-vous",no:"å bestille time", p:"pråndr råndævu",forms:[["je prends rendez-vous","pr","jeg bestiller"],["nous prenons rendez-vous","pr","vi bestiller"],["ils prennent rendez-vous","pr","de bestiller"],["j'ai pris rendez-vous","pc","jeg har bestille time"],["je prenais rendez-vous","imp","jeg bestille (fortid)"]] },
     { fr:"artère",      no:"arterien / pulsåren",  p:"artær",    forms:[["l'artère","n","arterien / pulsåren"],["les artères","np","arterien / pulsåren (flertall)"]] },
+    { fr:"pouce",no:"tommelen",p:"pus",forms:[["le pouce","n","tommelen"],["les pouces","np","tommelfingrene"]] },
+    { fr:"index",no:"pekefingeren",p:"ændeks",forms:[["l'index","n","pekefingeren"],["les index","np","pekefingrene"]] },
+    { fr:"foie",no:"leveren",p:"fwa",forms:[["le foie","n","leveren"]] },
+    { fr:"reins",no:"nyrene / korsryggen",p:"rær",forms:[["les reins","np","nyrene / korsryggen"]] },
+    { fr:"rate",no:"milten",p:"rat",forms:[["la rate","n","milten"]] },
   ],
 
   family: [
@@ -1496,7 +1496,6 @@ export const STATIC_VOCAB = {
     // Livshendelser (utfylling)
     { fr:"baptême",        no:"dåpen",                   p:"batæm",     forms:[["le baptême","n","dåpen"],["les baptêmes","np","dåpen (flertall)"]] },
     { fr:"communion",      no:"konfirmasjonen / communionen", p:"komynjå",forms:[["la communion","n","konfirmasjonen / communionen"]] },
-    { fr:"retraite",       no:"pensjonstiden",           p:"rətrAt",    forms:[["la retraite","n","pensjonstiden"]] },
     { fr:"héritage",       no:"arven",                   p:"eritasj",   forms:[["l'héritage","n","arven"],["les héritages","np","arven (flertall)"]] },
     { fr:"deuil",          no:"sorgen / sørgetiden",     p:"døj",       forms:[["le deuil","n","sorgen / sørgetiden"],["les deuils","np","sorgen / sørgetiden (flertall)"]] },
     { fr:"cérémonie",      no:"seremonien",              p:"seremoni",  forms:[["la cérémonie","n","seremonien"],["les cérémonies","np","seremonien (flertall)"]] },
@@ -1513,7 +1512,6 @@ export const STATIC_VOCAB = {
     { fr:"lâche",         no:"feig",                     p:"lasj",      forms:[["lâche","adj-f","feig (hun.)"],["lâches","adj-mp","feig (fl.)"],["lâches","adj-fp","feig (fl., hun.)"]] },
     { fr:"orgueilleux",   no:"stolt / hovmodig",         p:"orgjøjø",   forms:[["orgueilleuse","adj-f","stolt / hovmodig (hun.)"],["orgueilleux","adj-mp","stolt / hovmodig (fl.)"],["orgueilleuses","adj-fp","stolt / hovmodig (fl., hun.)"]] },
     { fr:"humble",        no:"ydmyk",                    p:"æmbl",      forms:[["humble","adj-f","ydmyk (hun.)"],["humbles","adj-mp","ydmyk (fl.)"],["humbles","adj-fp","ydmyk (fl., hun.)"]] },
-    { fr:"jaloux",        no:"sjalu",                    p:"sjalu",     forms:[["jalouse","adj-f","sjalu (hun.)"],["jaloux","adj-mp","sjalu (fl.)"],["jalouses","adj-fp","sjalu (fl., hun.)"]] },
     // Verb (utfylling)
     { fr:"se souvenir",   no:"å huske / å minnes",       p:"sə suvənir",forms:[["je me souviens","pr","jeg husker"],["nous nous souvenons","pr","vi husker"],["ils se souviennent","pr","de husker"],["je me suis souvenu","pc","jeg har huske"],["je me souvenais","imp","jeg huske (fortid)"],["je me souviendrai","f","jeg vil huske"],["je me souviendrais","c","jeg ville huske"],["souviens-toi","impv","huske! (imperativ)"],["souvenu","pp","huske (partisipp)"]] },
     { fr:"se confier",    no:"å betro seg",               p:"sə kåfjæ",  forms:[["je me confie","pr","jeg betror"],["nous nous confions","pr","vi betror"],["ils se confient","pr","de betror"],["je me suis confié","pc","jeg har betro seg"],["je me confiais","imp","jeg betro (fortid)"],["je me confierai","f","jeg vil betro"],["je me confierais","c","jeg ville betro"],["confie-toi","impv","betro! (imperativ)"],["confié","pp","betro (partisipp)"]] },
@@ -1525,6 +1523,8 @@ export const STATIC_VOCAB = {
     { fr:"aîné",          no:"eldstemann / eldstebarnet",p:"enæ",       forms:[["l'aîné","n","eldstemann / eldstebarnet"],["les aînés","np","eldstemann / eldstebarnet (flertall)"]] },
     { fr:"cadet",         no:"yngstemann / yngstebarnet",p:"kadæ",      forms:[["le cadet","n","yngstemann / yngstebarnet"],["les cadets","np","yngstemann / yngstebarnet (flertall)"]] },
     { fr:"lien",          no:"båndet / forbindelsen",    p:"ljæn",      forms:[["le lien","n","båndet / forbindelsen"],["les liens","np","båndet / forbindelsen (flertall)"]] },
+    { fr:"beau-fils",no:"svigersønnen / stesønnen",p:"bo fis",forms:[["le beau-fils","n","svigersønnen / stesønnen"]] },
+    { fr:"belle-fille",no:"svigerdatteren / stedatteren",p:"bEl fij",forms:[["la belle-fille","n","svigerdatteren / stedatteren"]] },
   ],
 
   travel: [
@@ -1691,7 +1691,6 @@ export const STATIC_VOCAB = {
     // Penger (utfylling)
     { fr:"budget",        no:"budsjettet",           p:"bydshjæ",      forms:[["le budget","n","budsjettet"],["les budgets","np","budsjettet (flertall)"]] },
     { fr:"assurance",     no:"forsikringen",         p:"asyrås",       forms:[["l'assurance","n","forsikringen"],["les assurances","np","forsikringen (flertall)"]] },
-    { fr:"annulation",    no:"avlysningen",          p:"anylasyå",     forms:[["l'annulation","n","avlysningen"],["les annulations","np","avlysningen (flertall)"]] },
     { fr:"remboursement", no:"tilbakebetalingen",    p:"råbursəmå",    forms:[["le remboursement","n","tilbakebetalingen"],["les remboursements","np","tilbakebetalingen (flertall)"]] },
     // Adjektiver (utfylling)
     { fr:"confortable",   no:"komfortabel",          p:"kåfortabl",    forms:[["confortable","adj-f","komfortabel (hun.)"],["confortables","adj-mp","komfortabel (fl.)"],["confortables","adj-fp","komfortabel (fl., hun.)"]] },
@@ -1714,7 +1713,6 @@ export const STATIC_VOCAB = {
     { fr:"consulat",      no:"konsulatet",          p:"kåsyla",      forms:[["le consulat","n","konsulatet"],["les consulats","np","konsulatet (flertall)"]] },
     { fr:"destination",   no:"destinasjonen",       p:"desтinasjå",  forms:[["la destination","n","destinasjonen"],["les destinations","np","destinasjonen (flertall)"]] },
     { fr:"trajet",        no:"turen / strekningen", p:"trasjæ",      forms:[["le trajet","n","turen / strekningen"],["les trajets","np","turen / strekningen (flertall)"]] },
-    { fr:"correspondance",no:"forbindelsen (tog/bus)",p:"koræspådås", forms:[["la correspondance","n","forbindelsen (tog/bus)"],["les correspondances","np","forbindelsen (tog/bus) (flertall)"]] },
     { fr:"navette",       no:"shuttlebussen",       p:"navæt",       forms:[["la navette","n","shuttlebussen"],["les navettes","np","shuttlebussen (flertall)"]] },
     { fr:"véhicule",      no:"kjøretøyet",          p:"veikyl",      forms:[["le véhicule","n","kjøretøyet"],["les véhicules","np","kjøretøyet (flertall)"]] },
     { fr:"permis de conduire",no:"førerkortet",     p:"pærmi də kådwir",forms:[["le permis de conduire","n","førerkortet"]] },
@@ -1729,6 +1727,8 @@ export const STATIC_VOCAB = {
     { fr:"faire la queue",no:"å stå i kø",          p:"fær la kø",   forms:[["je fais la queue","pr","jeg står"],["nous faisons la queue","pr","vi står"],["ils font la queue","pr","de står"],["j'ai fait la queue","pc","jeg har stå i kø"],["je faisais la queue","imp","jeg stå (fortid)"]] },
     { fr:"se tromper de chemin",no:"å ta feil vei", p:"sə tråpæ də sjəmæn",forms:[["je me trompe de chemin","pr","jeg tar"],["nous nous trompons de chemin","pr","vi tar"],["ils se trompent de chemin","pr","de tar"]] },
     { fr:"vue",           no:"utsikten",             p:"vy",          forms:[["la vue","n","utsikten"],["les vues","np","utsikten (flertall)"]] },
+    { fr:"sac à dos",no:"ryggsekken",p:"sak a do",forms:[["le sac à dos","n","ryggsekken"],["les sacs à dos","np","ryggsekkene"]] },
+    { fr:"adaptateur",no:"adapteren / reiseadapteren",p:"adaptatœr",forms:[["l'adaptateur","n","adapteren"],["les adaptateurs","np","adapterne"]] },
   ],
   core2: [
     // ADVANCED VERBS
@@ -2075,8 +2075,6 @@ export const STATIC_VOCAB = {
     // FRENCH GEO PHRASES
     { fr:"Hexagone",no:"Heksagonen (kallenavn Frankrike)",p:"ægzagon",forms:[] },
     { fr:"Méditerranée",no:"Middelhavet",p:"mediteranæ",forms:[["la Méditerranée","n","Middelhavet"]] },
-    { fr:"Atlantique",no:"Atlanterhavet",p:"atlåtik",forms:[["l'Atlantique","n","Atlanterhavet"]] },
-    { fr:"Manche",no:"Den engelske kanal",p:"måsjə",forms:[["la Manche","n","Den engelske kanal"]] },
     { fr:"Loire",no:"Loire (Frankrikes lengste elv)",p:"lwar",forms:[["la Loire","n","Loire-elven"]] },
     { fr:"Rhône",no:"Rhône (stor elv sørover)",p:"ron",forms:[["le Rhône","n","Rhône-elven"]] },
     { fr:"Garonne",no:"Garonne (elv sørvest)",p:"garon",forms:[["la Garonne","n","Garonne-elven"]] },
@@ -2099,5 +2097,7 @@ export const STATIC_VOCAB = {
     { fr:"il fait froid",no:"det er kaldt",p:"il fæ frwa",forms:[] },
     { fr:"le temps est couvert",no:"himmelen er overskyet",p:"lə tå æ kuvær",forms:[] },
     { fr:"le temps est dégagé",no:"himmelen er klar",p:"lə tå æ degasje",forms:[] },
+    { fr:"Corse",no:"Korsika",p:"kors",forms:[] },
+    { fr:"Monaco",no:"Monaco (fyrstedømme)",p:"monako",forms:[] },
   ],
 };
