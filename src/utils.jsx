@@ -649,7 +649,12 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
     fr: normFr(v.fr),
     phonetic: v.phonetic || v.p || "",
   });
-  const allVocab = [...staticBase, ...goalGenerated].map(normalize);
+  // Deduplicate by normalized fr (keep first occurrence)
+  const seen = new Set();
+  const allVocab = [...staticBase, ...goalGenerated].map(normalize).filter(v => {
+    if (seen.has(v.fr)) return false;
+    seen.add(v.fr); return true;
+  });
   const newVocab = allVocab.filter(v => !learnedFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
   const selected = newVocab.slice(0, 5);
   const exercise = { date: todayStr(), goal: goalId, words: selected, phase1done: false, phase2done: false };
@@ -665,8 +670,13 @@ export function getReplacementGloseWord(words, currentDailyFr = [], generatedVoc
     : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
   const normalize = v => ({ ...v, fr: normFr(v.fr), phonetic: v.phonetic || v.p || "" });
+  const seen = new Set();
   const pool = [...staticBase, ...goalGenerated]
     .map(normalize)
+    .filter(v => {
+      if (seen.has(v.fr)) return false;
+      seen.add(v.fr); return true;
+    })
     .filter(v => !learnedFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
   return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
 }
