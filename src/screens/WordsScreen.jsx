@@ -279,6 +279,23 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
   };
 
+  const downloadWords = () => {
+    if (!words.length) return;
+    const lines = words
+      .slice()
+      .sort((a, b) => (a.fr || "").localeCompare(b.fr || ""))
+      .map(w => {
+        const ph = w.phonetic || w.p || "";
+        return `${w.fr} = ${w.no}${ph ? `  (${ph})` : ""}`;
+      });
+    const text = `Ordbank — ${words.length} ord\n${"=".repeat(40)}\n\n` + lines.join("\n");
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "ordbank.txt"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const clearWords = () => {
     setWords([]);
     onClearGrammar?.();
@@ -573,6 +590,10 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
 
       {words.length > 0 && (
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <button onClick={downloadWords}
+            style={{ background: "var(--cream)", border: "none", borderRadius: 8, color: "#1a1410", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: "600", padding: "12px 20px", cursor: "pointer", width: "100%" }}>
+            Last ned ordliste (ordbank.txt)
+          </button>
           <button onClick={copyWords}
             style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(230,211,168,0.3)"}`, borderRadius: 8, color: copied ? "white" : "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
             {copied ? "✓ Kopiert!" : "Kopier ordlisten min"}
