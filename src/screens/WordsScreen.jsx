@@ -442,7 +442,7 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
               <button onClick={() => setCatManageOpen(true)}
                 style={{ background: "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Kategorier</button>
               <button onClick={() => { setImportOpen(o => !o); setAddOpen(false); }}
-                style={{ background: importOpen ? "rgba(230,211,168,0.18)" : "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer</button>
+                style={{ background: importOpen ? "rgba(230,211,168,0.18)" : "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>↑ Importer/eksporter</button>
               <button onClick={() => { setAddOpen(o => !o); setImportOpen(false); }}
                 style={{ background: addOpen ? "rgba(230,211,168,0.18)" : "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Legg til</button>
             </>
@@ -469,6 +469,16 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
             style={{ background: importText.trim() ? "var(--cream)" : "rgba(230,211,168,0.08)", border: "none", borderRadius: 14, color: importText.trim() ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 14, padding: "10px", cursor: importText.trim() ? "pointer" : "default" }}>
             Importer ord
           </button>
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+            <button onClick={downloadStaticVocab}
+              style={{ background: "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "8px 14px", cursor: "pointer", textAlign: "left" }}>
+              ↓ Last ned app-vokabular
+            </button>
+            <button onClick={downloadWords}
+              style={{ background: "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "8px 14px", cursor: "pointer", textAlign: "left" }}>
+              ↓ Last ned min ordbank
+            </button>
+          </div>
         </div>
       )}
 
@@ -620,16 +630,8 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
 
       {words.length > 0 && (
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={downloadStaticVocab}
-            style={{ background: "var(--cream)", border: "none", borderRadius: 8, color: "#1a1410", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: "600", padding: "12px 20px", cursor: "pointer", width: "100%" }}>
-            Last ned app-vokabular (app-vokabular.txt)
-          </button>
-          <button onClick={downloadWords}
-            style={{ background: "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%" }}>
-            Last ned min ordbank (ordbank.txt)
-          </button>
           <button onClick={copyWords}
-            style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(230,211,168,0.3)"}`, borderRadius: 8, color: copied ? "white" : "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
+            style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(230,211,168,0.3)"}`, borderRadius: 8, color: copied ? "white" : "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
             {copied ? "✓ Kopiert!" : "Kopier ordlisten min"}
           </button>
           <button onClick={clearWords}
