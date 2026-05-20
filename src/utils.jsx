@@ -597,24 +597,38 @@ export function saveGeneratedVocab(words) {
   try { localStorage.setItem(GENERATED_VOCAB_KEY, JSON.stringify(words)); } catch {}
 }
 
+// Normalize a French word for comparison: strip leading article, lowercase
+// Also expands slash-variants: "grand / grande" → ["grand", "grande"]
+function normFr(fr) {
+  return (fr || "").replace(/^(le |la |les |l')/i, "").trim().toLowerCase();
+}
+function buildLearnedSet(wordBank) {
+  const set = new Set();
+  for (const w of wordBank) {
+    const base = normFr(w.fr);
+    set.add(base);
+    // Expand "grand / grande" → add "grand" and "grande" separately
+    if (base.includes("/")) {
+      for (const part of base.split("/")) {
+        const p = part.trim();
+        if (p) set.add(p);
+      }
+    }
+  }
+  return set;
+}
+
 // --- Today's exercise ---
 export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core") {
-  // Normalize learnedFr the same way static vocab is normalized (strip articles)
-  const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim();
-  const learnedFr = new Set(words.map(w => normFr(w.fr)));
+  const learnedFr = buildLearnedSet(words);
   try {
     const saved = JSON.parse(localStorage.getItem(DAGENS_GLOSE_KEY) || "{}");
     if (saved.date === todayStr() && saved.goal === goalId) {
       const cachedWords = saved.words || [];
-      // Invalidate if cache has article-prefixed words (stale from old format)
-      if (cachedWords.some(w => /^(le |la |les |l')/i.test(w.fr || ""))) {
-        localStorage.removeItem(DAGENS_GLOSE_KEY);
-      } else {
-        // Always re-filter cached words against current word bank — fixes "already learned word reappears"
+      {
         const stillNew = cachedWords.filter(w => !learnedFr.has(normFr(w.fr)));
         if (stillNew.length > 0) {
           if (stillNew.length < cachedWords.length) {
-            // Some words were added to bank since cache was written — update cache
             const updated = { ...saved, words: stillNew };
             localStorage.setItem(DAGENS_GLOSE_KEY, JSON.stringify(updated));
             return updated;
@@ -622,7 +636,6 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
           if (saved.phase1done || saved.phase2done) return saved;
           return saved;
         }
-        // All cached words learned — fall through to generate fresh ones
         localStorage.removeItem(DAGENS_GLOSE_KEY);
       }
     }
@@ -633,7 +646,7 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
   const normalize = v => ({
     ...v,
-    fr: (v.fr || "").replace(/^(le |la |les |l')/i, "").trim(),
+    fr: normFr(v.fr),
     phonetic: v.phonetic || v.p || "",
   });
   const allVocab = [...staticBase, ...goalGenerated].map(normalize);
@@ -645,21 +658,16 @@ export function getTodaysGloseWords(words, generatedVocab = [], goalId = "core")
 }
 
 export function getReplacementGloseWord(words, currentDailyFr = [], generatedVocab = [], goalId = "core") {
-  const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim();
-  const learnedFr = new Set(words.map(w => normFr(w.fr)));
-  const excludeFr = new Set([...learnedFr, ...currentDailyFr.map(normFr)]);
+  const learnedFr = buildLearnedSet(words);
+  for (const fr of currentDailyFr) learnedFr.add(normFr(fr));
   const staticBase = goalId === "core"
     ? [...VOCAB_LIST, ...(STATIC_VOCAB.core || [])]
     : (STATIC_VOCAB[goalId] || []);
   const goalGenerated = generatedVocab.filter(v => (v.goal || "core") === goalId);
-  const normalize = v => ({
-    ...v,
-    fr: (v.fr || "").replace(/^(le |la |les |l')/i, "").trim(),
-    phonetic: v.phonetic || v.p || "",
-  });
+  const normalize = v => ({ ...v, fr: normFr(v.fr), phonetic: v.phonetic || v.p || "" });
   const pool = [...staticBase, ...goalGenerated]
     .map(normalize)
-    .filter(v => !excludeFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
+    .filter(v => !learnedFr.has(v.fr) && !isSentenceLike(v.fr) && !SENTENCE_ENTRIES.has(v.fr));
   return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
 }
 

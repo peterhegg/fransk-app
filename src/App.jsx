@@ -299,8 +299,13 @@ export default function App() {
           cached = s;
         } else {
           // Not started — filter out words added to bank since cache was written
-          const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim();
-          const learnedFr = new Set(words.map(w => normFr(w.fr)));
+          const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim().toLowerCase();
+          const learnedFr = new Set();
+          for (const w of words) {
+            const base = normFr(w.fr);
+            learnedFr.add(base);
+            if (base.includes("/")) base.split("/").forEach(p => { const t = p.trim(); if (t) learnedFr.add(t); });
+          }
           const stillNew = (s.words || []).filter(w => !learnedFr.has(normFr(w.fr)));
           if (stillNew.length > 0) {
             if (stillNew.length < (s.words || []).length) {
