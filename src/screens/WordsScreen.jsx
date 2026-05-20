@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, GRAMMAR_TOPICS } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, GRAMMAR_TOPICS, VOCAB_LIST } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
+import { STATIC_VOCAB } from "../static_vocab.js";
 import BottomNav from "../components/BottomNav.jsx";
 import WordDetailModal, { getCatForWord } from "../components/WordDetailModal.jsx";
 
@@ -277,6 +278,35 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
     });
     navigator.clipboard.writeText(lines.join("\n"))
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+  };
+
+  const downloadStaticVocab = () => {
+    const normFr = fr => (fr || "").replace(/^(le |la |les |l')/i, "").trim().toLowerCase();
+    const learnedFr = new Set();
+    for (const w of words) {
+      const base = normFr(w.fr);
+      learnedFr.add(base);
+      if (base.includes("/")) base.split("/").forEach(p => { const t = p.trim(); if (t) learnedFr.add(t); });
+    }
+    const all = [...VOCAB_LIST, ...Object.entries(STATIC_VOCAB).flatMap(([section, entries]) =>
+      entries.map(e => ({ ...e, _section: section }))
+    )];
+    const lines = ["STATISK VOKABULAR I APPEN", "=".repeat(50), ""];
+    for (const [section, entries] of [["vocab_list", VOCAB_LIST], ...Object.entries(STATIC_VOCAB)]) {
+      lines.push(`\n[${section.toUpperCase()}] — ${entries.length} ord`);
+      lines.push("-".repeat(40));
+      for (const v of entries) {
+        const fr = normFr(v.fr);
+        const known = learnedFr.has(fr) ? " ✓" : "";
+        const ph = v.phonetic || v.p || "";
+        lines.push(`${v.fr} = ${v.no}${ph ? `  (${ph})` : ""}${known}`);
+      }
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "app-vokabular.txt"; a.click();
+    URL.revokeObjectURL(url);
   };
 
   const downloadWords = () => {
@@ -590,9 +620,13 @@ export default function WordsScreen({ words, setWords, grammarWords = [], setGra
 
       {words.length > 0 && (
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={downloadWords}
+          <button onClick={downloadStaticVocab}
             style={{ background: "var(--cream)", border: "none", borderRadius: 8, color: "#1a1410", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: "600", padding: "12px 20px", cursor: "pointer", width: "100%" }}>
-            Last ned ordliste (ordbank.txt)
+            Last ned app-vokabular (app-vokabular.txt)
+          </button>
+          <button onClick={downloadWords}
+            style={{ background: "none", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 8, color: "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%" }}>
+            Last ned min ordbank (ordbank.txt)
           </button>
           <button onClick={copyWords}
             style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(230,211,168,0.3)"}`, borderRadius: 8, color: copied ? "white" : "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "12px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
