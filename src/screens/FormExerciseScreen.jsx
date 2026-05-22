@@ -10,12 +10,28 @@ const FORM_TYPE_LABELS = {
   f: "Futur", c: "Conditionnel", impv: "Impératif", pp: "Participe passé",
 };
 
+const TOPIC_FORM_TYPE = {
+  etre: "pr", avoir: "pr", "er-verbs": "pr", reflexifs: "pr",
+  "futur-proche": "pr", "passe-compose": "pc", imperatif: "impv",
+  imparfait: "imp", "imparfait-vs-passe": "imp", conditionnel: "c",
+};
+
+const TOPIC_VERB_TITLE = {
+  etre: "être", avoir: "avoir", "er-verbs": "parler (-er verb)",
+  "passe-compose": "passé composé", reflexifs: "se lever (refleksiv)",
+  "futur-proche": "futur proche", imperatif: "impératif",
+  imparfait: "imparfait", "imparfait-vs-passe": "imparfait / p.c.",
+  conditionnel: "conditionnel",
+};
+
+const ARTICLE_TOPIC_IDS = new Set(["articles", "partitifs"]);
+
 function extractArticle(form) {
   const m = form.match(/^(le|la|les|l')\s+(.+)$/i);
   return m ? { article: m[1], noun: m[2] } : null;
 }
 
-function buildArticleQueue(words) {
+function buildArticleQueue(words, grammarWords = []) {
   const cards = [];
   for (const w of words) {
     if (!w.forms?.length) continue;
@@ -25,10 +41,15 @@ function buildArticleQueue(words) {
       if (parsed) cards.push({ word: w, noun: parsed.noun, answer: parsed.article });
     }
   }
+  for (const w of grammarWords) {
+    if (!ARTICLE_TOPIC_IDS.has(w.topicId)) continue;
+    const parsed = extractArticle(w.fr);
+    if (parsed) cards.push({ word: w, noun: parsed.noun, answer: parsed.article });
+  }
   return shuffle(cards).slice(0, 15);
 }
 
-function buildConjugationQueue(words) {
+function buildConjugationQueue(words, grammarWords = []) {
   const verbTypes = new Set(["pr", "pc", "imp", "f", "c", "impv"]);
   const cards = [];
   for (const w of words) {
@@ -38,11 +59,21 @@ function buildConjugationQueue(words) {
       cards.push({ word: w, form, formType: type });
     }
   }
+  for (const w of grammarWords) {
+    const ft = TOPIC_FORM_TYPE[w.topicId];
+    if (!ft) continue;
+    cards.push({
+      word: { fr: TOPIC_VERB_TITLE[w.topicId] || w.topicId, no: w.no },
+      form: w.fr,
+      formType: ft,
+      isGrammarPair: true,
+    });
+  }
   return shuffle(cards).slice(0, 15);
 }
 
-export function ArticleExerciseScreen({ words, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
-  const [queue, setQueue] = useState(() => buildArticleQueue(words));
+export function ArticleExerciseScreen({ words, grammarWords = [], onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+  const [queue, setQueue] = useState(() => buildArticleQueue(words, grammarWords));
   const [card, setCard] = useState(() => queue[0] || null);
   const [checked, setChecked] = useState(false);
   const [chosen, setChosen] = useState(null);
@@ -166,8 +197,8 @@ export function ArticleExerciseScreen({ words, onBack, speak, autoPlay, onToggle
   );
 }
 
-export function ConjugationExerciseScreen({ words, setWords, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
-  const [queue, setQueue] = useState(() => buildConjugationQueue(words));
+export function ConjugationExerciseScreen({ words, grammarWords = [], setWords, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+  const [queue, setQueue] = useState(() => buildConjugationQueue(words, grammarWords));
   const [card, setCard] = useState(() => queue[0] || null);
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
@@ -265,10 +296,22 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, auto
         <div style={{ fontSize: 13, color: "var(--text-subtle)" }}>{stats.correct + stats.wrong + 1} / {total}</div>
 
         <div style={{ background: "var(--surface)", borderRadius: 20, padding: "28px 24px", width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "var(--shadow-md)" }}>
-          <div style={{ fontSize: 12, color: "var(--cream-deep)", opacity: 0.8, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{FORM_TYPE_LABELS[card.formType] || card.formType}</div>
-          <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{card.word.fr}</div>
-          {card.word.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.7 }}>({card.word.phonetic})</div>}
-          <div style={{ fontSize: 14, color: "var(--text-subtle)", marginTop: 4 }}>{card.word.no}</div>
+          <div style={{ fontSize: 12, color: "var(--cream-deep)", opacity: 0.8, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+            {FORM_TYPE_LABELS[card.formType] || card.formType}
+            {card.isGrammarPair && <span style={{ opacity: 0.6 }}> · {card.word.fr}</span>}
+          </div>
+          {card.isGrammarPair ? (
+            <>
+              <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.7, marginBottom: 6 }}>Skriv på fransk:</div>
+              <div style={{ fontSize: 28, color: "var(--text)", fontFamily: "var(--font-display)", marginBottom: 4 }}>{card.word.no}</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 32, fontStyle: "italic", fontFamily: "var(--font-display)", color: "var(--text)", marginBottom: 4 }}>{card.word.fr}</div>
+              {card.word.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.7 }}>({card.word.phonetic})</div>}
+              <div style={{ fontSize: 14, color: "var(--text-subtle)", marginTop: 4 }}>{card.word.no}</div>
+            </>
+          )}
 
           {checked && (
             <div style={{ marginTop: 14, padding: "10px 16px", borderRadius: 10, background: result === "correct" ? "rgba(100,200,100,0.1)" : "rgba(200,80,80,0.1)", fontSize: 15 }}>
