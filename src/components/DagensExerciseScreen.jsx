@@ -310,6 +310,7 @@ export default function DagensExerciseScreen({
             <input value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && onSubmit()}
               placeholder={isReverse ? "Skriv det franske ordet..." : "Skriv norsk oversettelse..."}
+              lang={isReverse ? "fr" : "no"}
               className="input-glow"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
               autoFocus />

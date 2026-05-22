@@ -215,6 +215,7 @@ export default function DagensRettelseScreen({
             onKeyDown={e => { if (e.key === "Enter") { if (!checked) submit(); else next(); } }}
             onFocus={() => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300)}
             placeholder={hint}
+            lang={isReverse ? "fr" : "no"}
             disabled={checked}
             style={{
               flex: 1, padding: "13px 16px", borderRadius: 12,

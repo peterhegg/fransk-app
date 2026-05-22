@@ -286,6 +286,7 @@ export function ConjugationExerciseScreen({ words, setWords, onBack, speak, auto
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && submit()}
               placeholder={`Skriv ${FORM_TYPE_LABELS[card.formType]?.toLowerCase() || "bøyingsform"}…`}
+              lang="fr"
               style={{ background: "var(--surface)", border: "2px solid var(--border)", borderRadius: 14, color: "var(--text)", fontFamily: "var(--font-display)", fontSize: 18, fontStyle: "italic", padding: "16px 18px", outline: "none", width: "100%", boxSizing: "border-box", textAlign: "center" }}
             />
             <button onClick={submit} disabled={!input.trim()} style={{ background: input.trim() ? "var(--cream)" : "var(--bg)", border: "none", borderRadius: 14, color: input.trim() ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s" }}>

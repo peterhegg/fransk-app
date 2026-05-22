@@ -147,6 +147,7 @@ export default function QuizExerciseScreen({
                 onKeyDown={e => e.key === "Enter" && onSubmit()}
                 onFocus={handleInputFocus}
                 placeholder={isReverse ? "Skriv på fransk..." : "Skriv norsk oversettelse..."}
+                lang={isReverse ? "fr" : "no"}
                 className="input-glow"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
                 autoFocus />
