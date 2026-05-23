@@ -705,6 +705,19 @@ export const VOCAB_CAT_MAP = {
   "histoire": "Samfunn og politikk", "révolution": "Samfunn og politikk",
   "démocratie": "Samfunn og politikk", "République": "Samfunn og politikk",
   "parlement": "Samfunn og politikk", "assemblée": "Samfunn og politikk",
+  "armée": "Samfunn og politikk", "soldats": "Samfunn og politikk",
+  "surveillance": "Samfunn og politikk", "trêve": "Samfunn og politikk",
+
+  // ── Fra ordbank: manglende enkeltord ─────────────────────────────────────
+  "à": "Adverb og bindeord", "selon": "Adverb og bindeord",
+  "tout de suite": "Adverb og bindeord",
+  "dixième": "Tallord og mengde", "quatorze": "Tallord og mengde",
+  "porter": "Vanlige verb", "exclut": "Vanlige verb",
+  "impoli": "Adjektiver",
+  "lune": "Natur og vær",
+  "vie": "Følelser og identitet",
+  "problème": "Kommunikasjon og tanker",
+  "attaque": "Tour de France",
 };
 
 export const GRAMMAR_TOPICS = [

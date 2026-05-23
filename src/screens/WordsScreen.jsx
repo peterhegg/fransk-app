@@ -284,8 +284,11 @@ export default function WordsScreen({ words, setWords, onBack, onClearWords, scr
       .slice()
       .sort((a, b) => (a.fr || "").localeCompare(b.fr || ""))
       .map(w => {
+        const pts = w.points || 0;
         const ph = w.phonetic || w.p || "";
-        return `${w.fr} = ${w.no}${ph ? `  (${ph})` : ""}`;
+        const goal = w.goal || "core";
+        const cat = getCatForWord(w);
+        return `✓ ${w.fr} = ${w.no}${ph ? ` (${ph})` : ""} [pts:${pts}] [goal:${goal}] [cat:${cat}]`;
       });
     const text = `Ordbank — ${words.length} ord\n${"=".repeat(40)}\n\n` + lines.join("\n");
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });

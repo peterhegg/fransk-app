@@ -768,15 +768,14 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     if (!grammarDoneToday && hasGrammarTopics)
       return { id: "dagens-grammatikk", msg: "grammatikk venter på deg!" };
 
-    // 3. Correction — words with most errors last 10 days (skip if already done today)
+    // 3. Correction — first priority if not done today
     const worstNow = loadWorstWords(5, 10);
     const rettelseDoneToday = (todayEntry.rettelse || 0) > 0;
     if (worstNow.length > 0 && !rettelseDoneToday)
       return { id: "dagens-rettelse", msg: `du har ${worstNow.length} ord du sliter med — la oss fikse det!` };
 
-    // 4. SRS — overdue items are highest value
+    // 4. SRS — overdue items
     if (dueCount > 0 && grammarOvDue > 0) {
-      // pick whichever side has been practiced less today
       if ((todayEntry.grammar || 0) <= (todayEntry.vocab || 0))
         return { id: "grammatikk-ovelse", msg: `${grammarOvDue} grammatikkord venter på repetisjon!` };
       return { id: "glose", msg: `${dueCount} gloser klar for repetisjon!` };
@@ -786,7 +785,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     if (grammarOvDue > 0)
       return { id: "grammatikk-ovelse", msg: `${grammarOvDue} grammatikkord venter på repetisjon!` };
 
-    // 3. Balance vocab vs grammar practice today
+    // 5. Balance vocab vs grammar
     const vocabToday = todayEntry.vocab || 0;
     const grammarToday = todayEntry.grammar || 0;
     const voiceToday = todayEntry.voice || 0;
@@ -796,17 +795,21 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
     if ((grammarWords || []).length >= 5 && vocabToday > grammarToday)
       return { id: "oversett-grammatikken", msg: "oversett litt grammatikk i dag?" };
 
-    // 4. Voice practice if neglected
+    // 6. Voice practice if neglected
     if (words.length >= 3 && voiceToday === 0)
       return { id: "si-ordet", msg: "øv på uttalen — prøv Si ordet!" };
 
-    // 5. Varied exercise rotation
+    // 7. Revisit rettelse if already done but errors remain
+    if (worstNow.length > 0)
+      return { id: "dagens-rettelse", msg: `${worstNow.length} ord trenger fortsatt øvelse` };
+
+    // 8. Varied rotation
     if (words.length >= 8 && vocabToday === 0)
       return { id: "flervalg", msg: "flervalg er bra for å befeste ord!" };
     if ((grammarWords || []).length >= 5 && grammarToday === 0)
       return { id: "grammatikk-flervalg", msg: "grammatikkflervalg — kjapt og effektivt!" };
 
-    // 6. Fallback
+    // 9. Fallback
     if (words.length > 0)
       return { id: "glose", msg: "bra jobbet i dag — vil du øve mer?" };
     return { id: "dagens-glose", msg: "start med dagens gloser!" };
