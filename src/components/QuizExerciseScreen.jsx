@@ -173,7 +173,7 @@ export default function QuizExerciseScreen({
                 <div style={{ flex: 1, paddingTop: 4 }}>
                   <div style={{ fontSize: 11, color: "#00c896", letterSpacing: 1, marginBottom: 4 }}>FEM PÅ RAD</div>
                   <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.45, color: "var(--text)" }}>
-                    Du er inne i en rytme nå.
+                    {["Fem på rad — det sitter!", "Du er inne i en god rytme.", "Excellent! Fortsett sånn.", "Bra! Disse kan du nå.", "Flott fremgang!"][card.fr.charCodeAt(0) % 5]}
                   </div>
                 </div>
               </div>
@@ -224,9 +224,6 @@ export default function QuizExerciseScreen({
                     </div>
                   )}
                   <div style={{ flex: 1, paddingTop: tutorPrefs && tutorVisible(tutorPrefs) ? 4 : 0 }}>
-                    <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 15, lineHeight: 1.45, marginBottom: 6, color: "var(--text)" }}>
-                      Vanlig feil.
-                    </div>
                     <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                     <div style={{ fontSize: 15, color: "var(--text)", fontWeight: 500 }}>{isReverse ? card.fr : card.no}</div>
                     {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", opacity: 0.8, marginTop: 4 }}>({card.phonetic})</div>}

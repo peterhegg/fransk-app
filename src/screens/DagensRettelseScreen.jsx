@@ -241,7 +241,7 @@ export default function DagensRettelseScreen({
               <div style={{ fontSize: 13, color: colorResult, fontWeight: 600, marginBottom: 4 }}>
                 {result === "correct" ? "Riktig! ✓" : result === "close" ? "Nesten! ~" : "Feil ✗"}
               </div>
-              {result === "wrong" && (
+              {(result === "wrong" || result === "close") && (
                 <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginBottom: 8 }}>
                   Riktig svar: <span style={{ color: "var(--cream)", fontFamily: isReverse ? "var(--font-display)" : "var(--font-body)", fontStyle: isReverse ? "italic" : "normal" }}>
                     {isReverse ? card.fr : card.no}

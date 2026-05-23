@@ -103,11 +103,13 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
                 onKeyDown={e => e.key === "Enter" && frInput.trim() && submit()}
                 onFocus={handleFocus}
                 placeholder="Norsk oversettelse…" className="input-glow"
+                lang="no"
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }}
                 autoFocus />
               <input value={frInput} onChange={e => setFrInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && noInput.trim() && submit()}
                 placeholder="Skriv det franske ordet…" className="input-glow"
+                lang="fr"
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }} />
               <button onClick={submit} disabled={!noInput.trim() || !frInput.trim()} className="btn-shine"
                 style={{ background: "var(--cream)", opacity: noInput.trim() && frInput.trim() ? 1 : 0.4, border: "none", borderRadius: 12, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 14, padding: "12px", cursor: noInput.trim() && frInput.trim() ? "pointer" : "default" }}>
@@ -335,7 +337,7 @@ export default function DagensExerciseScreen({
                 <div style={{ flex: 1, paddingTop: 4 }}>
                   <div style={{ fontSize: 11, color: "#00c896", letterSpacing: 1, marginBottom: 4 }}>FEM PÅ RAD</div>
                   <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.45, color: "var(--text)" }}>
-                    Du er inne i en rytme nå.
+                    {["Fem på rad — det sitter!", "Du er inne i en god rytme.", "Excellent! Fortsett sånn.", "Bra! Disse kan du nå.", "Flott fremgang!"][card.fr.charCodeAt(0) % 5]}
                   </div>
                 </div>
               </div>
@@ -382,9 +384,6 @@ export default function DagensExerciseScreen({
                     </div>
                   )}
                   <div style={{ flex: 1, paddingTop: tutorPrefs && tutorVisible(tutorPrefs) ? 4 : 0 }}>
-                    <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 15, lineHeight: 1.45, marginBottom: 6, color: "var(--text)" }}>
-                      Vanlig feil.
-                    </div>
                     <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 4 }}>Du svarte: <em>{input}</em></div>
                     <div style={{ fontSize: 16, color: "var(--text)", fontWeight: 500 }}>{isReverse ? card.fr : card.no}</div>
                     {card.phonetic && <div style={{ fontSize: 13, color: "var(--cream-deep)", marginTop: 4 }}>({card.phonetic})</div>}
