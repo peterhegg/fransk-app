@@ -627,11 +627,15 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const GLOSE_ITEMS = [
   { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoGrid,    img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
   { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoSwap,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
   { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoList,    img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
   { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMicSvg,  img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
+  { id: "glose-tier-0",   label: `Øv: ${cap(MASTERY_LABELS[0])}`,                                      sub: `Kun ord du ikke har lært ennå`,                                   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
+  { id: "glose-tier-1-2", label: `Øv: ${cap(MASTERY_LABELS[1])} – ${cap(MASTERY_LABELS[2])}`,          sub: `Ord du kjenner litt, men ikke behersker`,                         Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
+  { id: "glose-tier-3-4", label: `Øv: ${cap(MASTERY_LABELS[3])} – ${cap(MASTERY_LABELS[4])}`,          sub: `Ord du kan godt — vedlikehold og mestre`,                         Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [

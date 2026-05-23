@@ -445,6 +445,16 @@ export default function App() {
     setScreen("glose");
   };
 
+  const startGloseTier = (tiers) => {
+    const filtered = words.filter(w => tiers.includes(getWordTier(w.points || 0)));
+    if (!filtered.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
+    const q = selectExerciseWords(filtered).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
+    setGloseQueue(q); setGloseCard(q[0]);
+    setGloseOptions(getQuizOptions(q[0], filtered, !!q[0].reverse)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+    setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
+    setScreen("glose");
+  };
+
   const startDagensGrammatikk = () => {
     const topic = getCurrentGrammarTopic();
     if (!topic) { setScreen("dagens-grammatikk"); setGrammarPhase(0); setGrammarTopic(null); return; }
@@ -467,6 +477,9 @@ export default function App() {
   const startMode = id => {
     if (id === "dagens-glose") startDagensGlose();
     else if (id === "glose") startGlose();
+    else if (id === "glose-tier-0") startGloseTier([0]);
+    else if (id === "glose-tier-1-2") startGloseTier([1, 2]);
+    else if (id === "glose-tier-3-4") startGloseTier([3, 4]);
     else if (id === "dagens-grammatikk") startDagensGrammatikk();
     else if (id === "grammatikk-ovelse") startGramOvelse();
     else if (id === "ordoversettelse") setScreen("ordoversettelse");
