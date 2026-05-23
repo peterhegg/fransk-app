@@ -137,14 +137,14 @@ export default function WordsScreen({ words, setWords, onBack, onClearWords, scr
   const [importResult, setImportResult] = useState(null);
   const [copied, setCopied] = useState(false);
   const [filterTier, setFilterTier] = useState(null);
-  const [closedSections, setClosedSections] = useState(new Set());
+  const [openSections, setOpenSections] = useState(new Set());
   const [selectedWord, setSelectedWord] = useState(null);
   const [customCats, setCustomCats] = useState(loadCustomCats);
   const [catManageOpen, setCatManageOpen] = useState(false);
 
   const allCats = [...VOCAB_CAT_ORDER, ...customCats.filter(c => !VOCAB_CAT_ORDER.includes(c))];
 
-  const toggleSection = (cat) => setClosedSections(prev => {
+  const toggleSection = (cat) => setOpenSections(prev => {
     const next = new Set(prev);
     next.has(cat) ? next.delete(cat) : next.add(cat);
     return next;
@@ -396,15 +396,15 @@ export default function WordsScreen({ words, setWords, onBack, onClearWords, scr
                   .filter(w => getCatForWord(w) === cat && (filterTier === null || getWordTier(w.points || 0) === filterTier))
                   .sort((a, b) => (a.points || 0) - (b.points || 0));
                 if (!catWords.length) return null;
-                const closed = closedSections.has(cat);
+                const open = openSections.has(cat);
                 return (
                   <div key={cat}>
                     <button onClick={() => toggleSection(cat)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "var(--text-subtle)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: closed ? 0 : 8 }}>
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)", padding: "6px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", color: "var(--text-subtle)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: open ? 8 : 0 }}>
                       <span>{cat} <span style={{ color: "var(--text-muted)" }}>({catWords.length})</span></span>
-                      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{closed ? "▸" : "▾"}</span>
+                      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{open ? "▾" : "▸"}</span>
                     </button>
-                    {!closed && (
+                    {open && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {catWords.map((w, i) => (
                           <WordCard key={w.id || i} w={w} onClick={() => setSelectedWord(w)} />
