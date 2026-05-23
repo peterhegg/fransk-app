@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   MODES, EXIT_PHRASES,
-  DAGENS_GLOSE_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS, MASTERY_LABELS,
+  DAGENS_GLOSE_KEY, WORDS_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS, MASTERY_LABELS,
   PROXY_URL, APP_TOKEN,
 } from "./constants.js";
 import {
@@ -24,6 +24,8 @@ import TranslationExerciseScreen from "./components/TranslationExerciseScreen.js
 import MultipleChoiceOnlyScreen from "./components/MultipleChoiceOnlyScreen.jsx";
 import HomeScreen from "./screens/HomeScreen.jsx";
 import WordsScreen from "./screens/WordsScreen.jsx";
+import BankScreen from "./screens/BankScreen.jsx";
+import GrammatikkbankenScreen from "./screens/GrammatikkbankenScreen.jsx";
 import ChatScreen from "./screens/ChatScreen.jsx";
 import VoiceScreen from "./screens/VoiceScreen.jsx";
 import SayWordScreen from "./screens/SayWordScreen.jsx";
@@ -57,7 +59,7 @@ export default function App() {
   // --- Navigation ---
   const [screen, setScreen] = useState("home");
   const [mode, setMode] = useState(null);
-  const [showWords, setShowWords] = useState(false);
+  const [bankScreen, setBankScreen] = useState(null); // null | "bank" | "ordbanken" | "grammatikkbanken"
 
   // --- Shared data ---
   const [words, setWords] = useState(loadWords);
@@ -88,7 +90,7 @@ export default function App() {
   const [exitPhraseIdx, setExitPhraseIdx] = useState(0);
 
   const screenRef = useRef(screen);
-  const showWordsRef = useRef(showWords);
+  const bankScreenRef = useRef(bankScreen);
   const sessionSaveFirstRender = useRef(true);
 
   // --- Dagens Glose state ---
@@ -149,8 +151,6 @@ export default function App() {
   }, []);
 
   // --- Session screen save ---
-  // Restore sentinel when screen/showWords changes AFTER mount (e.g. after Avslutt without closing).
-  // Skip first run to avoid double-push with the back-button effect below.
   const exitIntentRef = useRef(false);
   const sentinelMountedRef = useRef(false);
   useEffect(() => {
@@ -159,14 +159,14 @@ export default function App() {
     const base = window.location.pathname + window.location.search;
     if (window.location.hash) window.history.replaceState(null, "", base);
     window.history.pushState({ fransNav: true }, "", base + "#nav");
-  }, [screen, showWords]);
+  }, [screen, bankScreen]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
-  useEffect(() => { showWordsRef.current = showWords; }, [showWords]);
+  useEffect(() => { bankScreenRef.current = bankScreen; }, [bankScreen]);
   useEffect(() => {
     if (sessionSaveFirstRender.current) { sessionSaveFirstRender.current = false; return; }
-    try { sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null, showWords })); }
+    try { sessionStorage.setItem(SESSION_SCREEN_KEY, JSON.stringify({ screen, modeId: mode?.id || null, bankScreen })); }
     catch {}
-  }, [screen, mode, showWords]);
+  }, [screen, mode, bankScreen]);
 
   // --- Speech synthesis preload ---
   useEffect(() => {
@@ -209,7 +209,8 @@ export default function App() {
       // Avslutt was clicked — ignore the popstate it causes, let PWA close
       if (exitIntentRef.current) { exitIntentRef.current = false; return; }
       if (showExitDialogRef.current) { setShowExitDialog(false); return; }
-      if (showWordsRef.current) { pushSentinel(); setShowWords(false); return; }
+      if (bankScreenRef.current === "ordbanken" || bankScreenRef.current === "grammatikkbanken") { pushSentinel(); setBankScreen("bank"); return; }
+      if (bankScreenRef.current === "bank") { pushSentinel(); setBankScreen(null); return; }
       if (screenRef.current !== "home") { pushSentinel(); setScreen("home"); return; }
       // On home: show dialog (no sentinel push — we stay at base)
       setExitPhraseIdx(i => (i + 1) % EXIT_PHRASES.length);
@@ -235,7 +236,8 @@ export default function App() {
     try {
       const s = JSON.parse(sessionStorage.getItem(SESSION_SCREEN_KEY) || "null");
       if (!s) return;
-      if (s.showWords) { setShowWords(true); return; }
+      if (s.bankScreen) { setBankScreen(s.bankScreen); return; }
+      if (s.showWords) { setBankScreen("bank"); return; }
       const legacyMap = { quiz: "glose", dagens: "dagens-glose" };
       const rs = legacyMap[s.screen] || s.screen;
       if (rs === "glose") startGlose();
@@ -722,20 +724,28 @@ export default function App() {
     });
   };
 
-  // --- Clear all data ---
-  const clearAllData = () => {
+  // --- Clear bank data (separate to avoid cross-deletion) ---
+  const clearVocabBank = () => {
+    setWords([]);
+    localStorage.removeItem(WORDS_KEY);
+    localStorage.removeItem("fransk-laering-ord");
+    localStorage.removeItem(DAGENS_GLOSE_KEY);
+  };
+
+  const clearGrammarBank = () => {
     setGrammarWords([]);
     saveGrammarProgress([]);
   };
 
   // --- Nav helper ---
   const handleNav = id => {
-    if (id === "words") { setShowWords(true); setScreen("home"); }
-    else if (id === "home") { setShowWords(false); setScreen("home"); }
-    else if (id === "glose") { setShowWords(false); startGlose(); }
-    else if (id === "fri") { setShowWords(false); setScreen("voice"); }
+    if (id === "words") { setBankScreen("bank"); setScreen("home"); }
+    else if (id === "home") { setBankScreen(null); setScreen("home"); }
+    else if (id === "glose") { setBankScreen(null); startGlose(); }
+    else if (id === "fri") { setBankScreen(null); setScreen("voice"); }
   };
 
+  const showWords = bankScreen !== null;
   const navProps = { screen, showWords, onNav: handleNav };
 
   const offlineBanner = !isOnline ? (
@@ -749,10 +759,24 @@ export default function App() {
     <OnboardingScreen onDone={() => setShowOnboarding(false)} />
   );
 
-  if (showWords) return (
+  if (bankScreen === "bank") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <WordsScreen words={words} setWords={setWords} grammarWords={grammarWords} setGrammarWords={setGrammarWords} onBack={() => setShowWords(false)} onClearGrammar={clearAllData} {...navProps} />
+      <BankScreen words={words} grammarWords={grammarWords} onGoOrdbanken={() => setBankScreen("ordbanken")} onGoGrammatikk={() => setBankScreen("grammatikkbanken")} onBack={() => setBankScreen(null)} {...navProps} />
+    </>
+  );
+
+  if (bankScreen === "ordbanken") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <WordsScreen words={words} setWords={setWords} onBack={() => setBankScreen("bank")} onClearWords={clearVocabBank} {...navProps} />
+    </>
+  );
+
+  if (bankScreen === "grammatikkbanken") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <GrammatikkbankenScreen grammarWords={grammarWords} setGrammarWords={setGrammarWords} onBack={() => setBankScreen("bank")} onClearGrammar={clearGrammarBank} {...navProps} />
     </>
   );
 
@@ -887,14 +911,14 @@ export default function App() {
   if (screen === "chat") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <ChatScreen mode={mode} words={words} setWords={setWords} isOnline={isOnline} speak={speak} speaking={speaking} sessionMsgs={sessionMsgs} setSessionMsgs={setSessionMsgs} onBack={() => setScreen("home")} onShowWords={() => setShowWords(true)} tutorPrefs={tutorPrefs} {...navProps} />
+      <ChatScreen mode={mode} words={words} setWords={setWords} isOnline={isOnline} speak={speak} speaking={speaking} sessionMsgs={sessionMsgs} setSessionMsgs={setSessionMsgs} onBack={() => setScreen("home")} onShowWords={() => setBankScreen("bank")} tutorPrefs={tutorPrefs} {...navProps} />
     </>
   );
 
   return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setShowWords(true)} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} {...navProps} />
+      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setBankScreen("bank")} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} {...navProps} />
     </>
   );
 }

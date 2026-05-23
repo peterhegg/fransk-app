@@ -37,7 +37,7 @@ export default function BottomNav({ screen, showWords, onNav }) {
     { id: "home",  label: "Hjem",    Ico: IcoHome },
     { id: "glose", label: "Øv",      Ico: IcoPractice },
     { id: "fri",   label: "Snakk",   Ico: IcoChat },
-    { id: "words", label: "Ordbank", Ico: IcoBank },
+    { id: "words", label: "Banken", Ico: IcoBank },
   ];
 
   return (
