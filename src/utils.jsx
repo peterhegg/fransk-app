@@ -2,7 +2,7 @@ import {
   SR_INTERVALS, WORDS_KEY, GRAMMAR_WORDS_KEY, GRAMMAR_PROGRESS_KEY,
   STREAK_KEY, BEST_STREAK_KEY, DAGENS_GLOSE_KEY, VOCAB_LIST, STATIC_VOCAB, GRAMMAR_TOPICS, VOCAB_GOALS,
   MASTERY_POINTS, MASTERY_PAUSE_MIN, MASTERY_PAUSE_MAX, ANSWER_COUNT_KEY,
-  GENERATED_VOCAB_KEY,
+  GENERATED_VOCAB_KEY, VOCAB_CAT_MAP,
   gold, cream, grn, red, card, brd,
 } from "./constants.js";
 
@@ -161,7 +161,11 @@ function migrateWord(w) {
 }
 
 const WB_MIGRATION_KEY = "fransk-wb-migration";
-const WB_MIGRATION_VERSION = 2;
+const WB_MIGRATION_VERSION = 3;
+
+const LEGACY_CATS_MIGRATION = new Set([
+  "Andre ord", "Hilsener", "Tid", "Verden og natur", "Politikk og samfunn",
+]);
 
 const SENTENCE_ENTRIES = new Set([
   "Je suis à Paris", "Tu es au café", "Il est au musée",
@@ -194,6 +198,17 @@ function runWordBankMigrations(words) {
       const pts = Math.max(...removed.map(w => w.points || 0), 0);
       result.push({ id: Date.now() + Math.random(), fr: "à", no: "til / i / på", phonetic: "a", forms: [], level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: pts, goal: "core" });
     }
+    saveWords(result);
+  }
+
+  if (version < 3) {
+    // Fix words with legacy/default category by writing correct cat from VOCAB_CAT_MAP
+    result = result.map(w => {
+      if (!w.cat || !LEGACY_CATS_MIGRATION.has(w.cat)) return w;
+      const correct = VOCAB_CAT_MAP[w.fr];
+      if (!correct) return { ...w, cat: undefined };
+      return { ...w, cat: correct };
+    });
     saveWords(result);
   }
 
