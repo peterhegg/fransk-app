@@ -12,12 +12,9 @@ function getSegment(masteredCount, goals) {
   return { goal: goals[idx], start: idx === 0 ? 0 : goals[idx - 1].target, goalIdx: idx };
 }
 
-function MasteryGraph({ masteredCount, midpoint }) {
+function MasteryGraph({ masteredCount }) {
   const log = loadMasteryLog();
   const today = todayStr();
-  const yMin = midpoint - 10;
-  const yMax = midpoint + 10;
-  const range = 20;
 
   let lastKnown = null;
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -34,12 +31,26 @@ function MasteryGraph({ masteredCount, midpoint }) {
     if (count !== null) lastKnown = count;
     const dl = new Date(date + "T12:00:00");
     const label = date === today ? "i dag" : dl.toLocaleDateString("nb", { weekday: "short" }).slice(0, 2);
-    // y: 0 = top, 1 = bottom in SVG coords
-    const yFrac = count !== null
-      ? 1 - Math.min(1, Math.max(0, (count - yMin) / range))
-      : null;
-    return { date, count, label, isToday: date === today, yFrac };
+    return { date, count, label, isToday: date === today };
   });
+
+  // Dynamic Y-axis — fits all actual data points
+  const validCounts = days.map(d => d.count).filter(c => c !== null);
+  const dataMin = validCounts.length ? Math.min(...validCounts) : 0;
+  const dataMax = validCounts.length ? Math.max(...validCounts) : 10;
+  const spread = dataMax - dataMin;
+  const pad = Math.max(5, Math.ceil(spread * 0.2));
+  const yMin = Math.max(0, dataMin - pad);
+  const yMax = dataMax + pad;
+  const range = yMax - yMin || 1;
+  const midpoint = Math.round((yMin + yMax) / 2);
+
+  const daysWithFrac = days.map(d => ({
+    ...d,
+    yFrac: d.count !== null
+      ? 1 - (d.count - yMin) / range
+      : null,
+  }));
 
   // SVG dimensions
   const W = 280, H = 56, PAD = 8;
@@ -48,7 +59,7 @@ function MasteryGraph({ masteredCount, midpoint }) {
   const xOf = (i) => PAD + (i / 6) * plotW;
   const yOf = (frac) => 2 + frac * plotH;
 
-  const points = days.map((d, i) => d.yFrac !== null ? { x: xOf(i), y: yOf(d.yFrac) } : null);
+  const points = daysWithFrac.map((d, i) => d.yFrac !== null ? { x: xOf(i), y: yOf(d.yFrac) } : null);
   const validPoints = points.filter(Boolean);
 
   // Smooth line using cubic bezier through points
@@ -80,7 +91,7 @@ function MasteryGraph({ masteredCount, midpoint }) {
 
   // Area fill — only for contiguous segments
   const areaD = (() => {
-    const pts = points.map((p, i) => p ?? null);
+    const pts = [...points];
     const segs = [];
     let i = 0;
     while (i < pts.length) {
@@ -132,7 +143,7 @@ function MasteryGraph({ masteredCount, midpoint }) {
               <path d={pathD} fill="none" stroke="var(--cream)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             )}
             {/* Dots */}
-            {days.map((day, i) => day.yFrac !== null && (
+            {daysWithFrac.map((day, i) => day.yFrac !== null && (
               <g key={day.date}>
                 <circle cx={xOf(i)} cy={yOf(day.yFrac)} r={day.isToday ? 4 : 2.5}
                   fill={day.isToday ? "var(--cream)" : "var(--surface)"}
@@ -147,7 +158,7 @@ function MasteryGraph({ masteredCount, midpoint }) {
               </g>
             ))}
             {/* Day labels */}
-            {days.map((day, i) => (
+            {daysWithFrac.map((day, i) => (
               <text key={day.date + "l"} x={xOf(i)} y={H + 12}
                 textAnchor="middle" fontSize="7.5"
                 fill={day.isToday ? "var(--cream)" : "var(--text-subtle)"}
@@ -171,7 +182,6 @@ function MasteryGraph({ masteredCount, midpoint }) {
 export default function OrdmesterTeller({ masteredCount, onEdit }) {
   const [displayed, setDisplayed] = useState(0);
   const [barWidth, setBarWidth] = useState(0);
-  const [midpoint] = useState(() => getMasteryMidpoint(masteredCount));
 
   const goals = getGoals();
   const { goal, start } = getSegment(masteredCount, goals);
@@ -265,7 +275,7 @@ export default function OrdmesterTeller({ masteredCount, onEdit }) {
         })}
       </div>
 
-      <MasteryGraph masteredCount={masteredCount} midpoint={midpoint} />
+      <MasteryGraph masteredCount={masteredCount} />
     </div>
   );
 }
