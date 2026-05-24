@@ -28,7 +28,7 @@ export default function QuizExerciseScreen({
   useEffect(() => { setFireworksDone(false); setTierPopDone(false); setMestretDone(false); setAiHint(null); setAiHintLoading(false); }, [card?.fr, card?.reverse]);
 
   const requestHint = () => {
-    if (!card || !isOnline || !card.topicId || aiHintLoading || aiHint) return;
+    if (!card || !isOnline || aiHintLoading || aiHint) return;
     hintAbortRef.current?.abort();
     const controller = new AbortController();
     hintAbortRef.current = controller;
@@ -37,7 +37,10 @@ export default function QuizExerciseScreen({
     const lvl = (loadUserProfile().level) || "A1/A2";
     const question = card.reverse ? `"${card.no}" (norsk → fransk)` : `"${card.fr}" (oversett til norsk)`;
     const correct = card.reverse ? card.fr : card.no;
-    const prompt = `Norsk ${lvl}-elev svarte galt på et franskkort.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — for akkurat disse ordene. Ikke generelle regler. Gi én huskeregel knyttet direkte til akkurat dette ordet/disse ordene.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+    const context = card.topicId
+      ? `grammatikkøvelse (tema: ${card.topicId})`
+      : `gloseøvelse (ord: ${card.fr} = ${card.no})`;
+    const prompt = `Norsk ${lvl}-elev svarte ${result === "close" ? "nesten riktig" : "galt"} på en ${context}.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — for akkurat disse ordene. Gi én huskeregel knyttet direkte til akkurat dette ordet.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
     fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
@@ -234,28 +237,6 @@ export default function QuizExerciseScreen({
                     <PointsBadge pointsInfo={pointsInfo} />
                   </div>
                 </div>
-                {checked && result === "wrong" && card?.topicId && !aiHint && !aiHintLoading && (
-                  <button onClick={requestHint} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 14px", fontSize: 12, color: "var(--text-subtle)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
-                    💡 Få tilbakemelding
-                  </button>
-                )}
-                {(aiHintLoading || aiHint) && (
-                  <div style={{ background: "rgba(230,211,168,0.04)", border: "1px solid rgba(230,211,168,0.14)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
-                    {aiHintLoading ? (
-                      <div style={{ fontSize: 12, color: "var(--text-subtle)", opacity: 0.7, textAlign: "center" }}>🤔 Analyserer…</div>
-                    ) : aiHint ? (
-                      <>
-                        {aiHint.forklaring && <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, marginBottom: aiHint.huskeregel ? 8 : 0 }}>{aiHint.forklaring}</div>}
-                        {aiHint.huskeregel && (
-                          <>
-                            <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 4 }}>Huskeregel</div>
-                            <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{aiHint.huskeregel}</div>
-                          </>
-                        )}
-                      </>
-                    ) : null}
-                  </div>
-                )}
                 {grammarTip && !aiHint && !aiHintLoading && (
                   <div style={{ background: "rgba(230,211,168,0.04)", border: "1px solid rgba(230,211,168,0.14)", borderRadius: 12, padding: "12px 16px", width: "100%" }}>
                     <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 6 }}>Huskeregel — {grammarTip.title}</div>
@@ -263,6 +244,28 @@ export default function QuizExerciseScreen({
                   </div>
                 )}
               </>
+            )}
+            {checked && (result === "wrong" || result === "close") && !aiHint && !aiHintLoading && isOnline && (
+              <button onClick={requestHint} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "7px 14px", fontSize: 12, color: "var(--text-subtle)", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                💡 Få tilbakemelding
+              </button>
+            )}
+            {(aiHintLoading || aiHint) && (
+              <div style={{ background: "rgba(230,211,168,0.04)", border: "1px solid rgba(230,211,168,0.14)", borderRadius: 12, padding: "12px 16px", width: "100%", maxWidth: 340 }}>
+                {aiHintLoading ? (
+                  <div style={{ fontSize: 12, color: "var(--text-subtle)", opacity: 0.7, textAlign: "center" }}>🤔 Analyserer…</div>
+                ) : aiHint ? (
+                  <>
+                    {aiHint.forklaring && <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, marginBottom: aiHint.huskeregel ? 8 : 0 }}>{aiHint.forklaring}</div>}
+                    {aiHint.huskeregel && (
+                      <>
+                        <div style={{ fontSize: 10, color: "var(--cream-deep)", letterSpacing: 2, marginBottom: 4 }}>Huskeregel</div>
+                        <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, fontStyle: "italic" }}>{aiHint.huskeregel}</div>
+                      </>
+                    )}
+                  </>
+                ) : null}
+              </div>
             )}
             <button onClick={onNext} className="btn-shine"
               style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 15, padding: "14px 40px", cursor: "pointer", boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>

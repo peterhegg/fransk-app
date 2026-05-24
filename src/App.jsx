@@ -153,6 +153,14 @@ export default function App() {
   // --- Session screen save ---
   const exitIntentRef = useRef(false);
   const sentinelMountedRef = useRef(false);
+  const gloseChoiceCountRef = useRef(0);
+  const gramOvChoiceCountRef = useRef(0);
+  const pickMode = (countRef) => {
+    if (countRef.current >= 6) return "input";
+    const m = Math.random() < 0.5 ? "input" : "choice";
+    if (m === "choice") countRef.current++;
+    return m;
+  };
   useEffect(() => {
     if (!sentinelMountedRef.current) { sentinelMountedRef.current = true; return; }
     if (history.state?.fransNav) return;
@@ -438,9 +446,10 @@ export default function App() {
 
   const startGlose = () => {
     if (!words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
+    gloseChoiceCountRef.current = 0;
     const q = selectExerciseWords(words).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGloseQueue(q); setGloseCard(q[0]);
-    setGloseOptions(getQuizOptions(q[0], words, !!q[0].reverse)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+    setGloseOptions(getQuizOptions(q[0], words, !!q[0].reverse)); setGloseMode(pickMode(gloseChoiceCountRef));
     setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
     setScreen("glose");
   };
@@ -448,9 +457,10 @@ export default function App() {
   const startGloseTier = (tiers) => {
     const filtered = words.filter(w => tiers.includes(getWordTier(w.points || 0)));
     if (!filtered.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
+    gloseChoiceCountRef.current = 0;
     const q = selectExerciseWords(filtered).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGloseQueue(q); setGloseCard(q[0]);
-    setGloseOptions(getQuizOptions(q[0], filtered, !!q[0].reverse)); setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+    setGloseOptions(getQuizOptions(q[0], filtered, !!q[0].reverse)); setGloseMode(pickMode(gloseChoiceCountRef));
     setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
     setScreen("glose");
   };
@@ -467,9 +477,10 @@ export default function App() {
 
   const startGramOvelse = () => {
     if (!grammarWords.length) { setGramOvCard(null); setScreen("grammatikk-ovelse"); return; }
+    gramOvChoiceCountRef.current = 0;
     const q = selectExerciseWords(grammarWords).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGramOvQueue(q); setGramOvCard(q[0]);
-    setGramOvOptions(getQuizOptions(q[0], grammarWords, !!q[0].reverse)); setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
+    setGramOvOptions(getQuizOptions(q[0], grammarWords, !!q[0].reverse)); setGramOvMode(pickMode(gramOvChoiceCountRef));
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult(""); setGramOvStats({ correct: 0, wrong: 0 }); setGramOvHistory([]);
     setScreen("grammatikk-ovelse");
   };
@@ -613,14 +624,14 @@ export default function App() {
       const recycled = [...remaining.slice(0, at), { ...gloseCard }, ...remaining.slice(at)];
       setGloseQueue(recycled); setGloseCard(recycled[0]);
       setGloseOptions(getQuizOptions(recycled[0], words, !!recycled[0].reverse));
-      setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+      setGloseMode(pickMode(gloseChoiceCountRef));
       setGloseInput(""); setGloseChecked(false); setGloseResult("");
       return;
     }
     if (!remaining.length) { logVocabSession(); maybeTouchStreak(); setScreen("home"); return; }
     setGloseQueue(remaining); setGloseCard(remaining[0]);
     setGloseOptions(getQuizOptions(remaining[0], words, !!remaining[0].reverse));
-    setGloseMode(Math.random() < 0.5 ? "input" : "choice");
+    setGloseMode(pickMode(gloseChoiceCountRef));
     setGloseInput(""); setGloseChecked(false); setGloseResult("");
   };
 
@@ -717,7 +728,7 @@ export default function App() {
     if (!remaining.length) { logGrammarSession(); maybeTouchStreak(); setScreen("home"); return; }
     setGramOvQueue(remaining); setGramOvCard(remaining[0]);
     setGramOvOptions(getQuizOptions(remaining[0], grammarWords, !!remaining[0].reverse));
-    setGramOvMode(Math.random() < 0.5 ? "input" : "choice");
+    setGramOvMode(pickMode(gramOvChoiceCountRef));
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult("");
   };
 
