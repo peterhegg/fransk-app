@@ -38,6 +38,8 @@ import MemoryMatchScreen from "./screens/MemoryMatchScreen.jsx";
 import TidspressScreen from "./screens/TidspressScreen.jsx";
 import LyttedetektivScreen from "./screens/LyttedetektivScreen.jsx";
 import ByggSetningenScreen from "./screens/ByggSetningenScreen.jsx";
+import KategorisorteringScreen from "./screens/KategorisorteringScreen.jsx";
+import OrdstokkenScreen from "./screens/OrdstokkenScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 
@@ -512,6 +514,8 @@ export default function App() {
     else if (id === "tidspress") setScreen("tidspress");
     else if (id === "lyttedetektiv") setScreen("lyttedetektiv");
     else if (id === "bygg-setningen") setScreen("bygg-setningen");
+    else if (id === "kategorisortering") setScreen("kategorisortering");
+    else if (id === "ordstokken") setScreen("ordstokken");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -947,6 +951,14 @@ export default function App() {
 
   if (screen === "bygg-setningen") return (
     <ByggSetningenScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
+  );
+
+  if (screen === "kategorisortering") return (
+    <KategorisorteringScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+  );
+
+  if (screen === "ordstokken") return (
+    <OrdstokkenScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
   );
 
   if (screen === "voice") return (

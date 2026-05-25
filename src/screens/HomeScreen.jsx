@@ -644,10 +644,12 @@ const GLOSE_ITEMS = [
 ];
 
 const SPILL_ITEMS = [
-  { id: "memory-match", label: "Memory",        sub: "Match norsk og fransk — 8 par",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
-  { id: "tidspress",    label: "Tidspress",      sub: "Oversett flest mulig på 60 sek",  Icon: IcoFlame,  img: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&q=70&auto=format&fit=crop" },
-  { id: "lyttedetektiv",label: "Lyttedetektiv",  sub: "Hør og velg riktig svar",         Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&q=70&auto=format&fit=crop" },
-  { id: "bygg-setningen",label: "Bygg setningen",sub: "Sett ordene i riktig rekkefølge", Icon: IcoPen,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
+  { id: "memory-match",       label: "Memory",           sub: "Match norsk og fransk — 8 par",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
+  { id: "tidspress",          label: "Tidspress",        sub: "Oversett flest mulig på 60 sek",  Icon: IcoFlame,  img: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&q=70&auto=format&fit=crop" },
+  { id: "lyttedetektiv",      label: "Lyttedetektiv",    sub: "Hør og velg riktig svar",         Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&q=70&auto=format&fit=crop" },
+  { id: "bygg-setningen",     label: "Bygg setningen",   sub: "Sett ordene i riktig rekkefølge", Icon: IcoPen,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
+  { id: "kategorisortering",  label: "Kategorisortering",sub: "Sorter ord i riktig kategori",    Icon: IcoList,   img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
+  { id: "ordstokken",         label: "Ordstokken",       sub: "Stav det franske ordet",          Icon: IcoSwap,   img: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [
