@@ -37,6 +37,7 @@ import { ArticleExerciseScreen, ConjugationExerciseScreen } from "./screens/Form
 import MemoryMatchScreen from "./screens/MemoryMatchScreen.jsx";
 import TidspressScreen from "./screens/TidspressScreen.jsx";
 import LyttedetektivScreen from "./screens/LyttedetektivScreen.jsx";
+import ByggSetningenScreen from "./screens/ByggSetningenScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 
@@ -942,6 +943,10 @@ export default function App() {
 
   if (screen === "lyttedetektiv") return (
     <LyttedetektivScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
+  );
+
+  if (screen === "bygg-setningen") return (
+    <ByggSetningenScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
   );
 
   if (screen === "voice") return (
