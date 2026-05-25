@@ -488,6 +488,9 @@ export function logDagligGrammatikk() {
   touchDay(e => ({ ...e, dagligGrammatikk: (e.dagligGrammatikk || 0) + 1 }));
 }
 export function logVoiceSession() { touchDay(e => ({ ...e, voice: (e.voice || 0) + 1 })); }
+export function logGameSession(count = 1) {
+  touchDay(e => ({ ...e, games: (e.games || 0) + count }));
+}
 
 // ─── Today's word answers ────────────────────────────────────────────────────
 const TODAYS_ANSWERS_KEY = "fransk-todays-answers";

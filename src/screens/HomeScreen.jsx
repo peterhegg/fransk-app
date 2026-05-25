@@ -350,6 +350,7 @@ function ActivityModal({ streak, onClose }) {
   const weekGrammar = last7.reduce((s, d) => s + d.grammar, 0);
   const weekVoice = last7.reduce((s, d) => s + d.voice, 0);
   const weekRettelse = last7.reduce((s, d) => s + (d.rettelse || 0), 0);
+  const weekGames = last7.reduce((s, d) => s + (d.games || 0), 0);
 
   return (
     <SheetModal onClose={onClose}>
@@ -365,6 +366,7 @@ function ActivityModal({ streak, onClose }) {
           { label: "Gram.", val: weekGrammar, color: "#818cf8" },
           { label: "Snakk", val: weekVoice, color: "#f87171" },
           { label: "Rettelse", val: weekRettelse, color: "var(--color-error)" },
+          { label: "Spill", val: weekGames, color: "#34d399" },
         ].map(s => (
           <div key={s.label} style={{ flex: 1, background: "var(--bg)", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: s.color }}>{s.val}</div>
@@ -381,12 +383,13 @@ function ActivityModal({ streak, onClose }) {
             const d = new Date(day.date + "T12:00:00");
             const dayN = d.getDate();
             const monthAbbr = d.toLocaleDateString("nb", { month: "short" });
-            const total = day.vocab + day.grammar + day.voice + (day.rettelse || 0);
+            const total = day.vocab + day.grammar + day.voice + (day.rettelse || 0) + (day.games || 0);
             const vH = total > 0 && day.answers > 0 ? Math.round((day.vocab / total) * barH) : 0;
             const gH = total > 0 && day.answers > 0 ? Math.round((day.grammar / total) * barH) : 0;
             const sH = total > 0 && day.answers > 0 ? Math.round((day.voice / total) * barH) : 0;
             const rH = total > 0 && day.answers > 0 ? Math.round(((day.rettelse || 0) / total) * barH) : 0;
-            const restH = barH - vH - gH - sH - rH;
+            const gmH = total > 0 && day.answers > 0 ? Math.round(((day.games || 0) / total) * barH) : 0;
+            const restH = barH - vH - gH - sH - rH - gmH;
             return (
               <div key={day.date} style={{ flexShrink: 0, width: 30, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
                 <div style={{ fontSize: 9, color: isToday ? "var(--cream)" : "var(--text-subtle)", fontWeight: isToday ? 700 : 400 }}>
@@ -397,6 +400,7 @@ function ActivityModal({ streak, onClose }) {
                   {gH > 0 && <div style={{ width: "100%", height: gH, background: "#818cf8", flexShrink: 0 }} />}
                   {sH > 0 && <div style={{ width: "100%", height: sH, background: "#f87171", flexShrink: 0 }} />}
                   {rH > 0 && <div style={{ width: "100%", height: rH, background: "var(--color-error)", flexShrink: 0 }} />}
+                  {gmH > 0 && <div style={{ width: "100%", height: gmH, background: "#34d399", flexShrink: 0 }} />}
                   {restH > 0 && <div style={{ width: "100%", height: restH, background: isToday ? "var(--cream)" : day.answers > 0 ? "rgba(230,211,168,0.28)" : "rgba(230,211,168,0.08)", flexShrink: 0 }} />}
                   {day.answers === 0 && <div style={{ width: "100%", height: 4, background: "rgba(230,211,168,0.08)", flexShrink: 0 }} />}
                 </div>
@@ -417,6 +421,7 @@ function ActivityModal({ streak, onClose }) {
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fbbf24", display: "inline-block" }} />Gloser</span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#818cf8", display: "inline-block" }} />Grammatikk</span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f87171", display: "inline-block" }} />Samtale</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#34d399", display: "inline-block" }} />Spill</span>
         </div>
 
         <div style={{ marginTop: 16, background: "var(--bg)", borderRadius: 14, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -636,6 +641,13 @@ const GLOSE_ITEMS = [
   { id: "glose-tier-0",   label: `Øv: ${cap(MASTERY_LABELS[0])}`,                                      sub: `Kun ord du ikke har lært ennå`,                                   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
   { id: "glose-tier-1-2", label: `Øv: ${cap(MASTERY_LABELS[1])} – ${cap(MASTERY_LABELS[2])}`,          sub: `Ord du kjenner litt, men ikke behersker`,                         Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
   { id: "glose-tier-3-4", label: `Øv: ${cap(MASTERY_LABELS[3])} – ${cap(MASTERY_LABELS[4])}`,          sub: `Ord du kan godt — vedlikehold og mestre`,                         Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
+];
+
+const SPILL_ITEMS = [
+  { id: "memory-match", label: "Memory",        sub: "Match norsk og fransk — 8 par",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
+  { id: "tidspress",    label: "Tidspress",      sub: "Oversett flest mulig på 60 sek",  Icon: IcoFlame,  img: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&q=70&auto=format&fit=crop" },
+  { id: "lyttedetektiv",label: "Lyttedetektiv",  sub: "Hør og velg riktig svar",         Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&q=70&auto=format&fit=crop" },
+  { id: "bygg-setningen",label: "Bygg setningen",sub: "Sett ordene i riktig rekkefølge", Icon: IcoPen,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [
@@ -1110,6 +1122,9 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
 
         {/* Gloser */}
         <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
+
+        {/* Spill */}
+        <TaskSection title="Spillarena" items={SPILL_ITEMS} onStart={onStart} />
 
         {/* Grammatikk */}
         <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />

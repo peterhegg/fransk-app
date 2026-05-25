@@ -34,6 +34,7 @@ import SaySentenceScreen from "./screens/SaySentenceScreen.jsx";
 import GenerertFlervalgScreen from "./screens/GenerertFlervalgScreen.jsx";
 import DagensRettelseScreen from "./screens/DagensRettelseScreen.jsx";
 import { ArticleExerciseScreen, ConjugationExerciseScreen } from "./screens/FormExerciseScreen.jsx";
+import MemoryMatchScreen from "./screens/MemoryMatchScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 
@@ -504,6 +505,10 @@ export default function App() {
     else if (id === "dagens-rettelse") setScreen("dagens-rettelse");
     else if (id === "artikkel-ovelse") setScreen("artikkel-ovelse");
     else if (id === "bøying-ovelse") setScreen("bøying-ovelse");
+    else if (id === "memory-match") setScreen("memory-match");
+    else if (id === "tidspress") setScreen("tidspress");
+    else if (id === "lyttedetektiv") setScreen("lyttedetektiv");
+    else if (id === "bygg-setningen") setScreen("bygg-setningen");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -923,6 +928,10 @@ export default function App() {
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <ConjugationExerciseScreen words={words} grammarWords={grammarWords} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
+  );
+
+  if (screen === "memory-match") return (
+    <MemoryMatchScreen words={[...words, ...grammarWords]} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
   );
 
   if (screen === "voice") return (
