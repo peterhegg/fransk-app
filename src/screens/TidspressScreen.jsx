@@ -37,7 +37,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
 
   const buildOptions = useCallback((c) => {
     if (!c) return [];
-    return getQuizOptions(c, allWords, false);
+    return getQuizOptions(c, allWords, true);
   }, [allWords.length]);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
     lockedRef.current = true;
     setSelected(opt);
 
-    const correct = card.no.split(/\s*\/\s*/)[0].trim();
+    const correct = card.fr.split(/\s*\/\s*/)[0].trim();
     const isCorrect = opt === correct;
 
     if (isCorrect) {
@@ -181,7 +181,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
     );
   }
 
-  const correct = card ? card.no.split(/\s*\/\s*/)[0].trim() : "";
+  const correct = card ? card.fr.split(/\s*\/\s*/)[0].trim() : "";
 
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>

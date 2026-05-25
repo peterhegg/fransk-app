@@ -1123,11 +1123,11 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         {/* Gloser */}
         <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
 
-        {/* Spill */}
-        <TaskSection title="Spillarena" items={SPILL_ITEMS} onStart={onStart} />
-
         {/* Grammatikk */}
         <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />
+
+        {/* Spill */}
+        <TaskSection title="Spillarena" items={SPILL_ITEMS} onStart={onStart} />
 
         {/* Læringsmål */}
         <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "0 22px 16px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "16px 18px", cursor: "pointer" }}>

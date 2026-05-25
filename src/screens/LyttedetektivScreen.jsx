@@ -238,8 +238,10 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
   const showFeedback = selected !== null;
   const isCorrect = selected === current?.correct;
 
+  const isSentenceMode = gameMode === "setning";
+
   return (
-    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", paddingBottom: 188 }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "56px 20px 12px" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>
@@ -250,7 +252,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
             {score}/{rounds.length}
           </span>
           <span style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
-            {gameMode === "ord" ? "🎵 Ord" : "🎙️ Setning"}
+            {gameMode === "ord" ? "♪ Ord" : "🎙 Setning"}
           </span>
         </div>
       </div>
@@ -264,18 +266,28 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
 
       {/* Audio card */}
       <div style={{ padding: "0 20px 20px" }}>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "28px 20px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "20px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
           <div style={{ fontSize: 12, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "var(--font-body)" }}>
             Hva sier de?
           </div>
-          <button
-            onClick={playAudio}
-            style={{ width: 72, height: 72, borderRadius: "50%", background: speaking ? "rgba(129,140,248,0.2)" : "rgba(230,211,168,0.12)", border: `2px solid ${speaking ? "#818cf8" : "var(--cream)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, transition: "all 0.2s ease" }}
-          >
-            {speaking ? "⏸" : "▶"}
-          </button>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button
+              onClick={playAudio}
+              style={{ width: 64, height: 64, borderRadius: "50%", background: speaking ? "rgba(129,140,248,0.2)" : "rgba(230,211,168,0.12)", border: `2px solid ${speaking ? "#818cf8" : "var(--cream)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, transition: "all 0.2s ease", flexShrink: 0 }}
+            >
+              {speaking ? "⏸" : "▶"}
+            </button>
+            <button
+              onClick={() => current && speak(current.fr, 0.45)}
+              title="Spill sakte"
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, background: "none", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 12px", cursor: "pointer", color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}
+            >
+              <span style={{ fontSize: 16 }}>🐢</span>
+              <span style={{ fontSize: 10 }}>Sakte</span>
+            </button>
+          </div>
           {showFeedback && (
-            <div style={{ fontSize: 14, color: isCorrect ? "#34d399" : "#f87171", fontFamily: "var(--font-body)", fontWeight: 500 }}>
+            <div style={{ fontSize: 13, color: isCorrect ? "#34d399" : "#f87171", fontFamily: "var(--font-body)", fontWeight: 500, textAlign: "center" }}>
               {current.fr}
             </div>
           )}
@@ -283,7 +295,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
       </div>
 
       {/* Options */}
-      <div style={{ flex: 1, padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ padding: "0 20px", display: isSentenceMode ? "flex" : "grid", flexDirection: "column", gridTemplateColumns: isSentenceMode ? undefined : "1fr 1fr", gap: 10 }}>
         {current?.options.map(opt => {
           const isSelected = selected === opt;
           const isCorrectOpt = opt === current.correct;
@@ -294,7 +306,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
               key={opt}
               onClick={() => !showFeedback && handleAnswer(opt)}
               style={{
-                padding: "15px 18px",
+                padding: isSentenceMode ? "14px 18px" : "18px 10px",
                 borderRadius: 16,
                 border: showGreen
                   ? "2px solid #34d399"
@@ -307,10 +319,10 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
                   ? "rgba(248,113,113,0.13)"
                   : "var(--surface)",
                 color: showGreen ? "#34d399" : showRed ? "#f87171" : "var(--text)",
-                fontSize: opt.length > 30 ? 12 : 14,
+                fontSize: opt.length > 30 ? 12 : opt.length > 15 ? 13 : 15,
                 fontFamily: "var(--font-body)",
                 cursor: showFeedback ? "default" : "pointer",
-                textAlign: "left",
+                textAlign: isSentenceMode ? "left" : "center",
                 lineHeight: 1.4,
                 transition: "all 0.15s ease",
               }}
@@ -321,9 +333,10 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
         })}
       </div>
 
+      {/* Neste-knapp: fixed over BottomNav */}
       {showFeedback && (
-        <div style={{ padding: "20px 20px 8px" }}>
-          <button onClick={handleNext} style={{ width: "100%", padding: "16px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+        <div style={{ position: "fixed", bottom: 92, left: 0, right: 0, padding: "0 20px", zIndex: 190 }}>
+          <button onClick={handleNext} style={{ width: "100%", padding: "16px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
             {idx + 1 >= rounds.length ? "Se resultat" : "Neste →"}
           </button>
         </div>

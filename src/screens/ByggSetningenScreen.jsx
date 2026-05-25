@@ -279,7 +279,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
         {checked && (
           <div style={{ marginTop: 10, padding: "10px 14px", background: isCorrect ? "rgba(52,211,153,0.08)" : "rgba(248,113,113,0.08)", borderRadius: 12 }}>
             <div style={{ fontSize: 13, color: isCorrect ? "#34d399" : "#f87171", fontFamily: "var(--font-body)", fontWeight: 600 }}>
-              {isCorrect ? "��� Riktig!" : "✗ Feil"}
+              {isCorrect ? "✓ Riktig!" : "✗ Feil"}
             </div>
             {!isCorrect && (
               <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginTop: 4 }}>
@@ -291,7 +291,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
       </div>
 
       {/* Word tiles */}
-      <div style={{ flex: 1, padding: "0 20px 8px" }}>
+      <div style={{ padding: "0 20px 100px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {unplacedTiles.map(tile => (
             <button
@@ -316,26 +316,26 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div style={{ padding: "8px 20px 8px", display: "flex", gap: 10 }}>
+      {/* Action buttons: fixed over BottomNav */}
+      <div style={{ position: "fixed", bottom: 92, left: 0, right: 0, padding: "0 20px", zIndex: 190, display: "flex", gap: 10 }}>
         {!checked ? (
           <>
             <button
               onClick={handleCheck}
               disabled={placed.length === 0}
-              style={{ flex: 1, padding: "15px", background: placed.length ? "var(--cream)" : "var(--surface)", color: placed.length ? "#1a1209" : "var(--text-subtle)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: placed.length ? "pointer" : "not-allowed", fontFamily: "var(--font-body)", transition: "all 0.2s" }}
+              style={{ flex: 1, padding: "15px", background: placed.length ? "var(--cream)" : "var(--surface)", color: placed.length ? "#1a1209" : "var(--text-subtle)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: placed.length ? "pointer" : "not-allowed", fontFamily: "var(--font-body)", transition: "all 0.2s", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}
             >
               Sjekk
             </button>
             <button
               onClick={handleSkip}
-              style={{ padding: "15px 18px", background: "var(--surface)", color: "var(--text-subtle)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}
+              style={{ padding: "15px 18px", background: "var(--surface)", color: "var(--text-subtle)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}
             >
               Gi opp
             </button>
           </>
         ) : (
-          <button onClick={handleNext} style={{ flex: 1, padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          <button onClick={handleNext} style={{ flex: 1, padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
             {idx + 1 >= sentences.length ? "Se resultat" : "Neste →"}
           </button>
         )}
