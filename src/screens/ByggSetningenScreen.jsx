@@ -47,7 +47,7 @@ Svar KUN med gyldig JSON-array, ingen markdown:
 }
 
 function tokenize(fr) {
-  return fr.match(/[^\s]+/g) || [];
+  return (fr.match(/[^\s]+/g) || []).map(w => w.replace(/^[«""''`]+|[.!?,;:»""''`]+$/g, "")).filter(Boolean);
 }
 
 function normalize(s) {
