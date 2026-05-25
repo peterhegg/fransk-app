@@ -20,22 +20,34 @@ async function fetchListeningSentences(words, grammarWords) {
   const wordList = sample.map(w => `${w.fr} = ${w.no}`).join(", ");
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
-  const count = 12;
+  const count = 8;
   const prompt = `Du er en fransktutor som lager lytteøvelser for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
 ORDBANK: ${wordList}
 
 Lag nøyaktig ${count} korte franske setninger (NIVÅ ${lvl}: ${levelInstructions(lvl)}).
+
+For HVER setning lager du også 3 norske feilalternativer. Feilalternativene MÅ:
+- Ligne den riktige oversettelsen sterkt (samme struktur, nesten samme ord)
+- Endre kun 1–2 ord: f.eks. feil subjekt, feil verb, feil tall, feil preposisjon, feil objekt
+- IKKE være totalt forskjellige setninger
+
+Eksempel på riktig distraktorkvalitet:
+Riktig: "Hun kjøper brød i butikken."
+Feil1:  "Han kjøper brød i butikken."
+Feil2:  "Hun selger brød i butikken."
+Feil3:  "Hun kjøper melk i butikken."
+
 Svar KUN med gyldig JSON-array, ingen markdown:
-[{"fr":"setning på fransk","no":"norsk oversettelse"}]`;
+[{"fr":"fransk setning","no":"riktig norsk","wrong":["feil1","feil2","feil3"]}]`;
 
   const res = await fetch(PROXY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 700,
-      system: "You are a French sentence generator. Respond only with a valid JSON array, no markdown.",
+      max_tokens: 1200,
+      system: "You are a French language teacher. Respond only with a valid JSON array, no markdown.",
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -44,7 +56,7 @@ Svar KUN med gyldig JSON-array, ingen markdown:
   const match = text.match(/\[[\s\S]*\]/);
   if (!match) return null;
   const parsed = JSON.parse(match[0]);
-  return Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : null;
+  return Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr && Array.isArray(s.wrong) && s.wrong.length >= 2) : null;
 }
 
 function buildWordRound(word, allWords) {
@@ -53,14 +65,9 @@ function buildWordRound(word, allWords) {
   return { fr: word.fr, correct, options: opts };
 }
 
-function buildSentenceRound(sentence, allSentences) {
+function buildSentenceRound(sentence) {
   const correct = sentence.no;
-  const others = allSentences.filter(s => s.no !== sentence.no);
-  const distractors = shuffle(others).slice(0, 3).map(s => s.no);
-  while (distractors.length < 3 && distractors.length < allSentences.length - 1) {
-    const fb = allSentences[Math.floor(Math.random() * allSentences.length)];
-    if (fb.no !== correct && !distractors.includes(fb.no)) distractors.push(fb.no);
-  }
+  const distractors = shuffle([...sentence.wrong]).slice(0, 3);
   return { fr: sentence.fr, correct, options: shuffle([correct, ...distractors]) };
 }
 
@@ -111,7 +118,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
       const sentences = await fetchListeningSentences(words, grammarWords || []);
       if (!sentences || sentences.length < 4) { setLoadError(true); setPhase("mode"); return; }
       const chosen = shuffle(sentences).slice(0, ROUNDS);
-      setRounds(chosen.map(s => buildSentenceRound(s, sentences)));
+      setRounds(chosen.map(s => buildSentenceRound(s)));
       setPhase("play");
     } catch {
       setLoadError(true);
