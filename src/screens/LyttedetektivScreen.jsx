@@ -21,25 +21,26 @@ async function fetchListeningSentences(words, grammarWords) {
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
   const count = 8;
-  const prompt = `Du er en fransktutor som lager lytteøvelser for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
+  const prompt = `Du lager norske lytteøvelser for en ${lvl}-elev i fransk. ORDBANK: ${wordList}
 
-ORDBANK: ${wordList}
+Lag ${count} korte franske setninger (${levelInstructions(lvl)}).
 
-Lag nøyaktig ${count} korte franske setninger (NIVÅ ${lvl}: ${levelInstructions(lvl)}).
+For HVER setning: lag 3 norske feilalternativer som er MINIMALE VARIASJONER av den riktige oversettelsen.
 
-For HVER setning lager du også 3 norske feilalternativer. Feilalternativene MÅ:
-- Ligne den riktige oversettelsen sterkt (samme struktur, nesten samme ord)
-- Endre kun 1–2 ord: f.eks. feil subjekt, feil verb, feil tall, feil preposisjon, feil objekt
-- IKKE være totalt forskjellige setninger
+STRENG REGEL: Hvert feilalternativ MÅ dele minst 70 % av ordene med den riktige oversettelsen. Endre KUN 1 ord av gangen: subjektet, verbet, objektet eller en preposisjon.
 
-Eksempel på riktig distraktorkvalitet:
-Riktig: "Hun kjøper brød i butikken."
-Feil1:  "Han kjøper brød i butikken."
-Feil2:  "Hun selger brød i butikken."
-Feil3:  "Hun kjøper melk i butikken."
+GODT EKSEMPEL:
+fr: "Elle achète du pain à la boulangerie."
+no: "Hun kjøper brød i bakeriet."
+wrong: ["Han kjøper brød i bakeriet.", "Hun selger brød i bakeriet.", "Hun kjøper melk i bakeriet."]
 
-Svar KUN med gyldig JSON-array, ingen markdown:
-[{"fr":"fransk setning","no":"riktig norsk","wrong":["feil1","feil2","feil3"]}]`;
+DÅRLIG EKSEMPEL (aldri gjør dette):
+fr: "Elle achète du pain à la boulangerie."
+no: "Hun kjøper brød i bakeriet."
+wrong: ["De hørte musikk ute.", "Han løp raskt hjem.", "Vi spiste middag i går."]
+
+Svar KUN med JSON-array, ingen markdown:
+[{"fr":"...","no":"...","wrong":["...","...","..."]}]`;
 
   const res = await fetch(PROXY_URL, {
     method: "POST",
