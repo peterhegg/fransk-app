@@ -14,36 +14,40 @@ function levelInstructions(level) {
 async function fetchBuildSentences(words, grammarWords) {
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
-  const sample = shuffle([...allWords]).slice(0, 40);
-  const wordList = sample.map(w => `${w.fr} = ${w.no}`).join(", ");
+  const sample = shuffle([...allWords]).slice(0, 30);
+  const wordList = sample.map(w => `${w.fr}=${w.no}`).join(", ");
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
-  const count = 10;
-  const prompt = `Du er en fransktutor som lager setningsbyggøvelser for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
+  const count = 7;
 
-ORDBANK: ${wordList}
+  const prompt = `French sentence-building exercise for Norwegian ${lvl} learner${profile.dysleksi ? " (dyslexia)" : ""}.
+WORDS: ${wordList}
+Make ${count} sentences (${levelInstructions(lvl)}).
+For each sentence add 2-3 distractor words: wrong conjugations, wrong gender forms, or near-synonyms that don't fit. Example: if sentence uses "est", add "sont" or "était"; if "grande" add "grand" or "gros".
+JSON only, no markdown:
+[{"no":"Norwegian","fr":"French sentence","distractors":["wrong1","wrong2","wrong3"]}]`;
 
-Lag nøyaktig ${count} franske setninger (NIVÅ ${lvl}: ${levelInstructions(lvl)}).
-Setningene skal egne seg for å stykkes opp i enkeltord.
-Svar KUN med gyldig JSON-array, ingen markdown:
-[{"no":"norsk setning","fr":"korrekt fransk setning"}]`;
+  const attempt = async () => {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+      body: JSON.stringify({
+        max_tokens: 1000,
+        system: "Respond only with a valid JSON array. No markdown, no explanation.",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "";
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]);
+    return Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : null;
+  };
 
-  const res = await fetch(PROXY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 600,
-      system: "You are a French sentence generator. Respond only with valid JSON array, no markdown.",
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  const text = data.content?.find(b => b.type === "text")?.text || "";
-  const match = text.match(/\[[\s\S]*\]/);
-  if (!match) return null;
-  const parsed = JSON.parse(match[0]);
-  return Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : null;
+  // Retry once on failure
+  try { return await attempt(); } catch { /* fall through */ }
+  try { return await attempt(); } catch { return null; }
 }
 
 function tokenize(fr) {
@@ -85,9 +89,16 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
   function initRound(sents, i) {
     const s = sents[i];
     if (!s) return;
-    const words = tokenize(s.fr);
-    const shuffled = shuffle(words.map((w, j) => ({ id: `${i}-${j}`, word: w })));
-    setTiles(shuffled);
+    const correctWords = tokenize(s.fr);
+    const distractors = (s.distractors || [])
+      .map(d => d.replace(/^[«""''`]+|[.!?,;:»""''`]+$/g, "").trim())
+      .filter(Boolean)
+      .slice(0, 3);
+    const allTiles = [
+      ...correctWords.map((w, j) => ({ id: `${i}-c${j}`, word: w, distractor: false })),
+      ...distractors.map((w, j) => ({ id: `${i}-d${j}`, word: w, distractor: true })),
+    ];
+    setTiles(shuffle(allTiles));
     setPlaced([]);
     setChecked(false);
     setIsCorrect(false);
