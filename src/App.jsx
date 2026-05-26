@@ -15,6 +15,7 @@ import {
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab, getReplacementGloseWord,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
   loadUserProfile, saveUserProfile, getWordTier, loadActivityLog, loadWorstWords,
+  checkStreakBroken,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -42,6 +43,7 @@ import KategorisorteringScreen from "./screens/KategorisorteringScreen.jsx";
 import OrdstokkenScreen from "./screens/OrdstokkenScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
+import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
 
 function TranslateIcon() {
   return (
@@ -80,6 +82,7 @@ export default function App() {
   const toggleAutoPlay = () => setAutoPlay(prev => { const next = !prev; saveUserProfile({ ...loadUserProfile(), autoPlay: next }); return next; });
   const [tutorPrefs, updateTutorPrefs] = useTutorPrefs();
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem("fransk-tutor-prefs"));
+  const [streakLost, setStreakLost] = useState(() => wasStreakTaptShownToday() ? 0 : checkStreakBroken());
   const [dagensPointsInfo, setDagensPointsInfo] = useState(null);
   const [glosePointsInfo, setGlosePointsInfo] = useState(null);
   const [gramOvPointsInfo, setGramOvPointsInfo] = useState(null);
@@ -747,7 +750,8 @@ export default function App() {
   // --- Points toast ---
     const maybeTouchStreak = () => {
     const entry = loadActivityLog().find(e => e.date === todayStr());
-    if (entry && entry.answers >= 150) setStreak(touchStreak());
+    const goal = loadUserProfile().dailyGoal || 20;
+    if (entry && entry.answers >= goal) setStreak(touchStreak());
   };
 
   // --- Session bump (called by all quiz submit handlers) ---
@@ -977,6 +981,7 @@ export default function App() {
 
   return (
     <>
+      {streakLost > 0 && <StreakTaptModal lostStreak={streakLost} onClose={() => setStreakLost(0)} />}
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setBankScreen("bank")} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} {...navProps} />
     </>

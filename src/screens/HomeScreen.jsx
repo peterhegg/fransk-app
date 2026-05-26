@@ -534,15 +534,28 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           </div>
         )}
         {pushSupported && (
-          <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>PÅMINNELSER</div>
-              <div style={{ fontSize: 13, color: "var(--text)", marginTop: 2 }}>Daglig øvelsespåminnelse kl. 22</div>
+          <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: "12px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>PÅMINNELSER</div>
+                <div style={{ fontSize: 13, color: "var(--text)", marginTop: 2 }}>Daglig øvelsespåminnelse</div>
+              </div>
+              <button onClick={togglePush} disabled={pushLoading}
+                style={{ width: 44, height: 26, borderRadius: 13, background: pushEnabled ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: pushLoading ? "default" : "pointer", position: "relative", flexShrink: 0, opacity: pushLoading ? 0.6 : 1 }}>
+                <div style={{ position: "absolute", top: 3, left: pushEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
+              </button>
             </div>
-            <button onClick={togglePush} disabled={pushLoading}
-              style={{ width: 44, height: 26, borderRadius: 13, background: pushEnabled ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: pushLoading ? "default" : "pointer", position: "relative", flexShrink: 0, opacity: pushLoading ? 0.6 : 1 }}>
-              <div style={{ position: "absolute", top: 3, left: pushEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
-            </button>
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", marginBottom: 6 }}>Tidspunkt</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {["07:00","08:00","12:00","17:00","18:00","19:00","20:00","21:00","22:00"].map(t => (
+                  <button key={t} onClick={() => set("pushTime", t)}
+                    style={{ background: (profile.pushTime || "20:00") === t ? "rgba(90,154,240,0.3)" : "var(--surface)", border: `1px solid ${(profile.pushTime || "20:00") === t ? "rgba(90,154,240,0.6)" : "var(--border)"}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: (profile.pushTime || "20:00") === t ? "#5a9af0" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -592,6 +605,18 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
             {[1, 2, 3, 4, 5].map(n => (
               <button key={n} onClick={() => set("exerciseRounds", n)}
                 style={{ flex: 1, background: (profile.exerciseRounds || 5) === n ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${(profile.exerciseRounds || 5) === n ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px", cursor: "pointer", fontSize: 14, fontWeight: 600, color: (profile.exerciseRounds || 5) === n ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Daglig mål (svar per dag)</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[10, 20, 30, 50, 75, 100].map(n => (
+              <button key={n} onClick={() => set("dailyGoal", n)}
+                style={{ flex: "1 1 auto", minWidth: 44, background: (profile.dailyGoal || 20) === n ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${(profile.dailyGoal || 20) === n ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: (profile.dailyGoal || 20) === n ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                 {n}
               </button>
             ))}
@@ -707,6 +732,34 @@ function TaskCard({ item, onStart }) {
   );
 }
 
+function ConfettiBlast() {
+  const colors = ["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#ec4899"];
+  const pieces = Array.from({ length: 36 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 0.6,
+    dur: 1.4 + Math.random() * 0.8,
+    color: colors[i % colors.length],
+    w: 6 + Math.random() * 8,
+    h: 4 + Math.random() * 6,
+  }));
+  return (
+    <>
+      <style>{`
+        @keyframes conf-fall {
+          0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(105vh) rotate(600deg); opacity: 0; }
+        }
+      `}</style>
+      <div style={{ position: "fixed", inset: 0, zIndex: 8000, pointerEvents: "none", overflow: "hidden" }}>
+        {pieces.map(p => (
+          <div key={p.id} style={{ position: "absolute", left: `${p.left}%`, top: 0, width: p.w, height: p.h, background: p.color, borderRadius: 2, animation: `conf-fall ${p.dur}s ${p.delay}s ease-in forwards` }} />
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -720,6 +773,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const [profileOpen, setProfileOpen] = useState(false);
   const [profile, setProfile] = useState(() => loadUserProfile());
   const [showTutorOnboarding, setShowTutorOnboarding] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
   const searchRef = useRef(null);
 
   const hour = new Date().getHours();
@@ -743,8 +797,21 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       }).slice(0, 20)
     : [];
 
+  const dailyGoal = profile.dailyGoal || 20;
   const answerCount = loadAnswerCount();
   const todayAnswers = loadActivityLog().find(e => e.date === todayStr())?.answers || 0;
+
+  useEffect(() => {
+    if (todayAnswers < dailyGoal) return;
+    const key = "goal-reached-" + todayStr();
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      setConfettiActive(true);
+      setTimeout(() => setConfettiActive(false), 3000);
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayAnswers]);
   const bestStreak = loadBestStreak();
   const streakData = loadStreak();
   const fmtDate = d => { if (!d) return ""; const dt = new Date(d + "T12:00:00"); return `${dt.getDate()}. ${["jan","feb","mar","apr","mai","jun","jul","aug","sep","okt","nov","des"][dt.getMonth()]}`; };
@@ -1034,9 +1101,9 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
             </div>
             <div>
               <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 6 }}>
-                <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / 150) * 100)}%`, background: "var(--sage)", borderRadius: 2, transition: "width 0.3s ease" }} />
+                <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / dailyGoal) * 100)}%`, background: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--sage)", borderRadius: 2, transition: "width 0.3s ease" }} />
               </div>
-              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>{todayAnswers}/150</div>
+              <div style={{ fontSize: 10, color: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--text-muted)", marginTop: 3 }}>{todayAnswers}/{dailyGoal}{todayAnswers >= dailyGoal ? " ✓" : ""}</div>
             </div>
           </button>
         </div>
@@ -1187,6 +1254,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           onSave={() => { setOrdmesterVersion(v => v + 1); setOrdmesterEditOpen(false); }}
         />
       )}
+      {confettiActive && <ConfettiBlast />}
       {activityOpen && <ActivityModal streak={streak} onClose={() => setActivityOpen(false)} />}
       {svarOpen && <TodaysAnswersModal onClose={() => setSvarOpen(false)} />}
       {profileOpen && (

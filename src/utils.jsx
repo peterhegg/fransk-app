@@ -255,6 +255,16 @@ export function loadBestStreak() {
   try { const s = localStorage.getItem(BEST_STREAK_KEY); return s ? JSON.parse(s) : { days: 0, startDate: null, endDate: null }; }
   catch { return { days: 0, startDate: null, endDate: null }; }
 }
+export function checkStreakBroken() {
+  const s = loadStreak();
+  if (!s.lastDate || s.current <= 1) return 0;
+  const today = todayStr();
+  if (s.lastDate === today) return 0;
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  if (s.lastDate === yesterday) return 0;
+  return s.current;
+}
+
 export function touchStreak() {
   const today = new Date().toISOString().split("T")[0];
   const s = loadStreak();
@@ -559,6 +569,8 @@ export const DEFAULT_PROFILE = {
   dysleksi: true,
   exerciseRounds: 5,
   autoPlay: false,
+  dailyGoal: 20,
+  pushTime: "20:00",
 };
 
 export function loadUserProfile() {

@@ -25,10 +25,12 @@ export function usePushSubscription() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+      let scheduledTime = "20:00";
+      try { const p = JSON.parse(localStorage.getItem("fransk-user-profile") || "{}"); scheduledTime = p.pushTime || "20:00"; } catch {}
       await fetch(`${PROXY_URL}/push/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        body: JSON.stringify(sub.toJSON()),
+        body: JSON.stringify({ ...sub.toJSON(), scheduledTime }),
       });
       localStorage.setItem(STORAGE_KEY, "true");
       setEnabled(true);

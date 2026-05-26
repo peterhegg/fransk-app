@@ -40,8 +40,20 @@ function FormsSection({ forms }) {
   );
 }
 
+// Categories that should fall through to VOCAB_CAT_MAP:
+// - "Andre ord" (default/unset)
+// - Old category names renamed in the new system
+const LEGACY_CATS = new Set([
+  "Andre ord",
+  "Hilsener",          // → "Hilsener og høflighet"
+  "Tid",               // → "Tid og frekvens"
+  "Verden og natur",   // → "Natur og vær" / "Familie og relasjoner" etc.
+  "Politikk og samfunn", // → "Samfunn og politikk"
+]);
+
 export function getCatForWord(w) {
-  return w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
+  if (w.cat && !LEGACY_CATS.has(w.cat)) return w.cat;
+  return VOCAB_CAT_MAP[w.fr] || "Andre ord";
 }
 
 export default function WordDetailModal({ word, onClose, onSave, onDelete, extraCats = [] }) {
