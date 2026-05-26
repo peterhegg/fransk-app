@@ -58,7 +58,7 @@ const RANGES = [
   },
   {
     id: "100-900", label: "100–900", desc: "cent, deux cents…",
-    base: 100,
+    base: 100, step: 100,
     words: ["cent", "deux cents", "trois cents", "quatre cents", "cinq cents", "six cents", "sept cents", "huit cents", "neuf cents"],
   },
 ];
@@ -361,7 +361,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
           <div style={{ display: "flex", gap: 8, width: "max-content" }}>
             {range.words.map((w, i) => (
               <div key={i} style={{ textAlign: "center", minWidth: 44 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--cream)", fontFamily: "var(--font-body)" }}>{range.base + i}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--cream)", fontFamily: "var(--font-body)" }}>{range.base + i * (range.step || 1)}</div>
                 <div style={{ fontSize: 9, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.3, maxWidth: 56 }}>{w}</div>
               </div>
             ))}
@@ -390,7 +390,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
                 if (hasConflict) bg = "rgba(248,113,113,0.2)";
                 if (completed && isCorrect) bg = "rgba(94,154,111,0.15)";
 
-                const displayNum = val ? range.base + val - 1 : "";
+                const displayNum = val ? range.base + (val - 1) * (range.step || 1) : "";
 
                 return (
                   <button
