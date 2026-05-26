@@ -299,36 +299,11 @@ async function handleWidgetSync(body, env, corsHeaders) {
 const APP_URL = "https://peterhegg.github.io/fransk-app/";
 
 async function handleWidgetPage(uuid, env) {
-  let data = null;
+  let data = { streak: 0, todayAnswers: 0, dailyGoal: 20, dagensDone: false, updatedAt: null };
   try {
     const raw = await env.RATE_LIMIT_KV.get(`widget:${uuid}`);
-    if (raw) data = JSON.parse(raw);
+    if (raw) data = { ...data, ...JSON.parse(raw) };
   } catch {}
-
-  // No data yet — show setup prompt
-  if (!data) {
-    const html = `<!DOCTYPE html>
-<html lang="no"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta http-equiv="refresh" content="60">
-<title>L'Atelier</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden}
-body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:16px;gap:8px;cursor:pointer}
-.ico{font-size:32px}
-.lbl{font-size:12px;color:rgba(240,230,208,.5);text-align:center;line-height:1.5}
-.btn{font-size:11px;color:#e6d3a8;border:1px solid rgba(230,211,168,.3);border-radius:8px;padding:6px 14px;margin-top:4px}
-</style>
-</head>
-<body onclick="window.location.href='${APP_URL}'">
-<div class="ico">📱</div>
-<div class="lbl">Åpne L'Atelier-appen<br>for å aktivere widgeten</div>
-<div class="btn">Åpne appen</div>
-</body></html>`;
-    return new Response(html, { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } });
-  }
 
   const pct = Math.min(100, (data.todayAnswers / data.dailyGoal) * 100);
   const goalReached = data.todayAnswers >= data.dailyGoal;
