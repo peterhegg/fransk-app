@@ -44,6 +44,7 @@ import OrdstokkenScreen from "./screens/OrdstokkenScreen.jsx";
 import RollespillScreen from "./screens/RollespillScreen.jsx";
 import KryssordScreen from "./screens/KryssordScreen.jsx";
 import HistoriediktatScreen from "./screens/HistoriediktatScreen.jsx";
+import SudokuScreen from "./screens/SudokuScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
@@ -534,6 +535,7 @@ export default function App() {
     else if (id === "rollespill") setScreen("rollespill");
     else if (id === "kryssord") setScreen("kryssord");
     else if (id === "historiediktat") setScreen("historiediktat");
+    else if (id === "sudoku") setScreen("sudoku");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -1007,15 +1009,19 @@ export default function App() {
   );
 
   if (screen === "rollespill") return (
-    <RollespillScreen onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} />
+    <RollespillScreen onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "kryssord") return (
-    <KryssordScreen words={words} onBack={() => setScreen("home")} screen={screen} showWords={showWords} onNav={handleNav} />
+    <KryssordScreen words={words} onBack={() => setScreen("home")} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "historiediktat") return (
-    <HistoriediktatScreen words={words} onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} />
+    <HistoriediktatScreen words={words} onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
+  );
+
+  if (screen === "sudoku") return (
+    <SudokuScreen onBack={() => setScreen("home")} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "voice") return (

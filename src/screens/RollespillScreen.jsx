@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
-import { loadUserProfile, logGameSession } from "../utils.jsx";
+import { loadUserProfile, logGameSession, logDailyAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
 const SCENARIOS = [
@@ -32,7 +32,7 @@ When done (after turn ${MAX_TURNS} or natural end):
 Score is 1–6 (Norwegian dice). Be encouraging.`;
 }
 
-export default function RollespillScreen({ onBack, speak, screen, showWords, onNav }) {
+export default function RollespillScreen({ onBack, speak, screen, showWords, onNav, onGameComplete }) {
   const [phase, setPhase]           = useState("select");
   const [scenario, setScenario]     = useState(null);
   const [messages, setMessages]     = useState([]);  // {role, fr, no}
@@ -41,6 +41,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
   const [turn, setTurn]             = useState(0);
   const [result, setResult]         = useState(null);
   const [busy, setBusy]             = useState(false);
+  const [freeText, setFreeText]     = useState("");
 
   const profile = loadUserProfile();
 
@@ -99,6 +100,8 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       if (parsed.done) {
         setResult(parsed);
         logGameSession(turn);
+        for (let i = 0; i < turn; i++) logDailyAnswer("vocab");
+        if (onGameComplete) onGameComplete();
         setPhase("result");
       } else {
         const updHistory = [...newHistory, { role: "assistant", content: parsed.reply_fr }];
@@ -240,6 +243,20 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
               <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 3, fontStyle: "italic" }}>{opt.no}</div>
             </button>
           ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
+            <input
+              value={freeText}
+              onChange={e => setFreeText(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && freeText.trim()) { pickOption({ fr: freeText.trim(), no: "" }); setFreeText(""); } }}
+              placeholder="eller skriv selv på fransk…"
+              style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "11px 14px", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none" }}
+              autoComplete="off" autoCorrect="off" spellCheck={false}
+            />
+            <button
+              onClick={() => { if (freeText.trim()) { pickOption({ fr: freeText.trim(), no: "" }); setFreeText(""); } }}
+              style={{ padding: "11px 16px", background: freeText.trim() ? "var(--cream)" : "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 16, cursor: "pointer", color: freeText.trim() ? "#1a1209" : "var(--text-subtle)", transition: "all 0.15s" }}
+            >→</button>
+          </div>
         </div>
       )}
 

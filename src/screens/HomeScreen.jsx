@@ -693,6 +693,7 @@ const SPILL_ITEMS = [
   { id: "rollespill",        label: "Rollespill",        sub: "Snakk med Pierre i ulike situasjoner", Icon: IcoSpeak,  img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
   { id: "kryssord",          label: "Kryssord",          sub: "Fyll inn franske ord fra ordbanken",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=70&auto=format&fit=crop" },
   { id: "historiediktat",    label: "Historiediktat",    sub: "Hør historien, fyll inn ordene",       Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=70&auto=format&fit=crop" },
+  { id: "sudoku",            label: "Tallsudoku",         sub: "Sudoku — skriv tallene på fransk",    Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [

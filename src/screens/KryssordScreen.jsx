@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { logDailyAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
 const GRID_SIZE = 15;
@@ -189,7 +190,7 @@ function pickWords(bankWords) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function KryssordScreen({ words, onBack, screen, showWords, onNav }) {
+export default function KryssordScreen({ words, onBack, screen, showWords, onNav, onGameComplete }) {
   const [crossword, setCrossword] = useState(null);
   const [filled, setFilled] = useState({});   // wordId → string
   const [selected, setSelected] = useState(null); // wordId
@@ -244,13 +245,19 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
   const checkAnswers = () => {
     if (!crossword) return;
     const res = {};
+    let correctCount = 0;
     for (const w of crossword.words) {
       const typed = (filled[w.id] || "").toLowerCase();
-      res[w.id] = typed === w.fr ? "correct" : "wrong";
+      const ok = typed === w.fr;
+      res[w.id] = ok ? "correct" : "wrong";
+      if (ok) correctCount++;
     }
     setResults(res);
     setPhase("checked");
     setSelected(null);
+    logGameSession(crossword.words.length);
+    for (let i = 0; i < correctCount; i++) logDailyAnswer("vocab");
+    if (onGameComplete) onGameComplete();
   };
 
   const across = crossword?.words.filter(w => w.dir === "across").sort((a, b) => a.number - b.number) || [];
