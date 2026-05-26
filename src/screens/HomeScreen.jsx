@@ -509,19 +509,10 @@ function WidgetUrlSection() {
   const widgetUrl = `${workerBase}/widget/${uuid}`;
   const [copied, setCopied] = useState(false);
   return (
-    <div style={{ marginBottom: 14, background: "var(--bg)", borderRadius: 14, padding: "12px 14px" }}>
-      <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Android Widget</div>
-      <div style={{ fontSize: 12, color: "var(--text-subtle)", marginBottom: 8, lineHeight: 1.5 }}>
-        Installer <strong style={{ color: "var(--text)" }}>Web Widget</strong> fra Play Store → legg til → lim inn URL.
-      </div>
-      <div style={{ display: "flex", gap: 6 }}>
-        <div style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px", fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.4 }}>{widgetUrl}</div>
-        <button onClick={() => { navigator.clipboard?.writeText(widgetUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}
-          style={{ flexShrink: 0, background: copied ? "rgba(94,154,111,0.3)" : "var(--surface)", border: `1px solid ${copied ? "rgba(94,154,111,0.6)" : "var(--border)"}`, borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 12, color: copied ? "#5e9a6f" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
-          {copied ? "✓" : "Kopier"}
-        </button>
-      </div>
-    </div>
+    <button onClick={() => { navigator.clipboard?.writeText(widgetUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); }); }}
+      style={{ width: "100%", background: copied ? "rgba(94,154,111,0.15)" : "var(--bg)", border: `1px solid ${copied ? "rgba(94,154,111,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)", color: copied ? "#5e9a6f" : "var(--text-subtle)", fontSize: 13, transition: "all 0.2s", textAlign: "center" }}>
+      {copied ? "✓ Widget-URL kopiert" : "📋 Kopier Android widget-URL"}
+    </button>
   );
 }
 
@@ -669,13 +660,12 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
         </div>
       </div>
 
-        <WidgetUrlSection />
-
-      <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)" }}>
+      <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 8 }}>
         <button onClick={() => { saveUserProfile(profile); onSave(profile); }}
           style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre profil
         </button>
+        <WidgetUrlSection />
       </div>
     </SheetModal>
   );
