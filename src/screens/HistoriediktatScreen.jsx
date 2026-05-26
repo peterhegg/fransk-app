@@ -45,6 +45,7 @@ Rules:
       }),
     });
     const data = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${data.error || data.message || JSON.stringify(data)}`);
     const text = data.content?.find(b => b.type === "text")?.text || "";
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) continue;
@@ -63,6 +64,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
   const [phase, setPhase] = useState("mode");      // mode | loading | listen | fill | result
   const [story, setStory] = useState(null);
   const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [inputs, setInputs]   = useState([]);
   const [results, setResults] = useState([]);
   const [playing, setPlaying] = useState(false);
@@ -72,6 +74,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
   const load = useCallback(async () => {
     setPhase("loading");
     setError(false);
+    setErrorMsg("");
     setStory(null);
     try {
       const s = await fetchStory(words, profile);
@@ -79,7 +82,8 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
       setInputs(s.answers.map(() => ""));
       setResults([]);
       setPhase("listen");
-    } catch {
+    } catch (e) {
+      setErrorMsg(e?.message || "Ukjent feil");
       setError(true);
       setPhase("loading");
     }
@@ -177,6 +181,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
         <>
           <div style={{ fontSize: 40 }}>⚠️</div>
           <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Kunne ikke laste historien</div>
+          {errorMsg && <div style={{ fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", background: "var(--surface)", padding: "6px 10px", borderRadius: 8, maxWidth: 320, wordBreak: "break-all" }}>{errorMsg}</div>}
           <button onClick={load} style={{ padding: "12px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           <button onClick={onBack} style={{ padding: "10px 20px", background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         </>

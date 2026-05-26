@@ -43,6 +43,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
   const [busy, setBusy]             = useState(false);
   const [freeText, setFreeText]     = useState("");
   const [loadError, setLoadError]   = useState(false);
+  const [loadErrorMsg, setLoadErrorMsg] = useState("");
 
   const profile = loadUserProfile();
 
@@ -57,9 +58,10 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       }),
     });
     const data = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${data.error || data.message || JSON.stringify(data)}`);
     const text = data.content?.find(b => b.type === "text")?.text || "";
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("parse");
+    if (!match) throw new Error("parse: no JSON in response");
     return JSON.parse(match[0]);
   };
 
@@ -71,6 +73,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
     setTurn(0);
     setResult(null);
     setLoadError(false);
+    setLoadErrorMsg("");
 
     const initHistory = [{ role: "user", content: "Start the scenario. Greet me." }];
     try {
@@ -81,7 +84,8 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       setTurn(1);
       setPhase("play");
       speak(parsed.reply_fr, 0.85);
-    } catch {
+    } catch (e) {
+      setLoadErrorMsg(e?.message || "Ukjent feil");
       setLoadError(true);
     }
   };
@@ -157,6 +161,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       {loadError ? (
         <>
           <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>Kunne ikke koble til Pierre 😔</div>
+          {loadErrorMsg && <div style={{ fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", background: "var(--surface)", padding: "6px 10px", borderRadius: 8, maxWidth: 320, wordBreak: "break-all", textAlign: "left" }}>{loadErrorMsg}</div>}
           <button onClick={() => startScenario(scenario)} style={{ padding: "12px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           <button onClick={() => setPhase("select")} style={{ padding: "10px 20px", background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         </>
