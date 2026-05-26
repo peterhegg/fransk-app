@@ -296,12 +296,39 @@ async function handleWidgetSync(body, env, corsHeaders) {
   return new Response("OK", { status: 200, headers: corsHeaders });
 }
 
+const APP_URL = "https://peterhegg.github.io/fransk-app/";
+
 async function handleWidgetPage(uuid, env) {
-  let data = { streak: 0, todayAnswers: 0, dailyGoal: 20, dagensDone: false };
+  let data = null;
   try {
     const raw = await env.RATE_LIMIT_KV.get(`widget:${uuid}`);
-    if (raw) data = { ...data, ...JSON.parse(raw) };
+    if (raw) data = JSON.parse(raw);
   } catch {}
+
+  // No data yet — show setup prompt
+  if (!data) {
+    const html = `<!DOCTYPE html>
+<html lang="no"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="refresh" content="60">
+<title>L'Atelier</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:16px;gap:8px;cursor:pointer}
+.ico{font-size:32px}
+.lbl{font-size:12px;color:rgba(240,230,208,.5);text-align:center;line-height:1.5}
+.btn{font-size:11px;color:#e6d3a8;border:1px solid rgba(230,211,168,.3);border-radius:8px;padding:6px 14px;margin-top:4px}
+</style>
+</head>
+<body onclick="window.location.href='${APP_URL}'">
+<div class="ico">📱</div>
+<div class="lbl">Åpne L'Atelier-appen<br>for å aktivere widgeten</div>
+<div class="btn">Åpne appen</div>
+</body></html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } });
+  }
 
   const pct = Math.min(100, (data.todayAnswers / data.dailyGoal) * 100);
   const goalReached = data.todayAnswers >= data.dailyGoal;
@@ -309,18 +336,21 @@ async function handleWidgetPage(uuid, env) {
   const statusIcon = goalReached ? "🏆" : data.dagensDone ? "📚" : "💪";
   const dagensText = data.dagensDone ? "✓ Dagens glose fullført" : "○ Dagens glose venter";
   const dagensColor = data.dagensDone ? "#5e9a6f" : "rgba(240,230,208,0.35)";
+  const updMin = data.updatedAt ? Math.round((Date.now() - data.updatedAt) / 60000) : null;
+  const updTxt = updMin === null ? "" : updMin < 2 ? "nå nettopp" : updMin < 60 ? `${updMin} min siden` : `${Math.round(updMin/60)}t siden`;
 
   const html = `<!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta http-equiv="refresh" content="1800">
+<meta http-equiv="refresh" content="600">
 <title>L'Atelier</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden}
-body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:14px;gap:5px}
+a{text-decoration:none;color:inherit;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;padding:14px;gap:5px}
+body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,230,208,.3);margin-bottom:1px}
 .streak-row{display:flex;align-items:center;gap:5px}
 .snum{font-size:52px;font-weight:800;color:#f59e0b;line-height:1;letter-spacing:-2px}
@@ -336,9 +366,11 @@ body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
 .drow{display:flex;align-items:center;gap:5px;margin-top:4px}
 .ddot{width:6px;height:6px;border-radius:50%}
 .dtxt{font-size:10px;color:rgba(240,230,208,.4)}
+.upd{font-size:8px;color:rgba(240,230,208,.2);margin-top:3px}
 </style>
 </head>
 <body>
+<a href="${APP_URL}" target="_top">
 <div class="name">L'Atelier</div>
 <div class="streak-row">
   <div class="snum">${data.streak}</div>
@@ -357,14 +389,13 @@ body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
     <span class="dtxt">${dagensText}</span>
   </div>
 </div>
+${updTxt ? `<div class="upd">${updTxt}</div>` : ""}
+</a>
 </body>
 </html>`;
 
   return new Response(html, {
-    headers: {
-      "Content-Type": "text/html;charset=utf-8",
-      "Cache-Control": "no-store",
-    },
+    headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" },
   });
 }
 
