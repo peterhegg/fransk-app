@@ -95,8 +95,8 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
       .filter(Boolean)
       .slice(0, 3);
     const allTiles = [
-      ...correctWords.map((w, j) => ({ id: `${i}-c${j}`, word: w, distractor: false })),
-      ...distractors.map((w, j) => ({ id: `${i}-d${j}`, word: w, distractor: true })),
+      ...correctWords.map((w, j) => ({ id: `${i}-c${j}`, word: w.toLowerCase(), distractor: false })),
+      ...distractors.map((w, j) => ({ id: `${i}-d${j}`, word: w.toLowerCase(), distractor: true })),
     ];
     setTiles(shuffle(allTiles));
     setPlaced([]);
