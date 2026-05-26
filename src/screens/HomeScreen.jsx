@@ -799,7 +799,13 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const [profile, setProfile] = useState(() => loadUserProfile());
   const [showTutorOnboarding, setShowTutorOnboarding] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
+  const [now, setNow] = useState(() => new Date());
   const searchRef = useRef(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   const hour = new Date().getHours();
   const isNight = hour >= 0 && hour < 5;
@@ -1129,6 +1135,17 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
                 <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / dailyGoal) * 100)}%`, background: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--sage)", borderRadius: 2, transition: "width 0.3s ease" }} />
               </div>
               <div style={{ fontSize: 10, color: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--text-muted)", marginTop: 3 }}>{todayAnswers}/{dailyGoal}{todayAnswers >= dailyGoal ? " ✓" : ""}</div>
+              {todayAnswers < dailyGoal && (() => {
+                const midnight = new Date(now); midnight.setHours(24, 0, 0, 0);
+                const ms = midnight - now;
+                const h = Math.floor(ms / 3600000);
+                const m = Math.floor((ms % 3600000) / 60000);
+                const urgent = h < 2;
+                const warn = h < 6;
+                const color = urgent ? "#ef4444" : warn ? "#f59e0b" : "var(--text-muted)";
+                const label = h > 0 ? `${h}t ${m}m igjen` : `${m}m igjen`;
+                return <div style={{ fontSize: 10, color, marginTop: 3, fontWeight: urgent ? 700 : 400 }}>⏱ {label}</div>;
+              })()}
             </div>
           </button>
         </div>
