@@ -690,6 +690,9 @@ const SPILL_ITEMS = [
   { id: "bygg-setningen",     label: "Bygg setningen",   sub: "Sett ordene i riktig rekkefølge", Icon: IcoPen,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
   { id: "kategorisortering",  label: "Kategorisortering",sub: "Sorter ord i riktig kategori",    Icon: IcoList,   img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
   { id: "ordstokken",         label: "Ordstokken",       sub: "Stav det franske ordet",          Icon: IcoSwap,   img: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=400&q=70&auto=format&fit=crop" },
+  { id: "rollespill",        label: "Rollespill",        sub: "Snakk med Pierre i ulike situasjoner", Icon: IcoSpeak,  img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
+  { id: "kryssord",          label: "Kryssord",          sub: "Fyll inn franske ord fra ordbanken",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=70&auto=format&fit=crop" },
+  { id: "historiediktat",    label: "Historiediktat",    sub: "Hør historien, fyll inn ordene",       Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=70&auto=format&fit=crop" },
 ];
 
 const GRAMMATIKK_ITEMS = [

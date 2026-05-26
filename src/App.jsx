@@ -41,6 +41,9 @@ import LyttedetektivScreen from "./screens/LyttedetektivScreen.jsx";
 import ByggSetningenScreen from "./screens/ByggSetningenScreen.jsx";
 import KategorisorteringScreen from "./screens/KategorisorteringScreen.jsx";
 import OrdstokkenScreen from "./screens/OrdstokkenScreen.jsx";
+import RollespillScreen from "./screens/RollespillScreen.jsx";
+import KryssordScreen from "./screens/KryssordScreen.jsx";
+import HistoriediktatScreen from "./screens/HistoriediktatScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
@@ -528,6 +531,9 @@ export default function App() {
     else if (id === "bygg-setningen") setScreen("bygg-setningen");
     else if (id === "kategorisortering") setScreen("kategorisortering");
     else if (id === "ordstokken") setScreen("ordstokken");
+    else if (id === "rollespill") setScreen("rollespill");
+    else if (id === "kryssord") setScreen("kryssord");
+    else if (id === "historiediktat") setScreen("historiediktat");
     else if (id === "fri") {
       setScreen("voice");
     } else {
@@ -998,6 +1004,18 @@ export default function App() {
 
   if (screen === "ordstokken") return (
     <OrdstokkenScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} {...navProps} />
+  );
+
+  if (screen === "rollespill") return (
+    <RollespillScreen onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} />
+  );
+
+  if (screen === "kryssord") return (
+    <KryssordScreen words={words} onBack={() => setScreen("home")} screen={screen} showWords={showWords} onNav={handleNav} />
+  );
+
+  if (screen === "historiediktat") return (
+    <HistoriediktatScreen words={words} onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} />
   );
 
   if (screen === "voice") return (
