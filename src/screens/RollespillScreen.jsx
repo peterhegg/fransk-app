@@ -42,6 +42,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
   const [result, setResult]         = useState(null);
   const [busy, setBusy]             = useState(false);
   const [freeText, setFreeText]     = useState("");
+  const [loadError, setLoadError]   = useState(false);
 
   const profile = loadUserProfile();
 
@@ -69,6 +70,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
     setOptions([]);
     setTurn(0);
     setResult(null);
+    setLoadError(false);
 
     const initHistory = [{ role: "user", content: "Start the scenario. Greet me." }];
     try {
@@ -80,7 +82,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       setPhase("play");
       speak(parsed.reply_fr, 0.85);
     } catch {
-      setPhase("select");
+      setLoadError(true);
     }
   };
 
@@ -149,11 +151,21 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
 
   // ── Loading ─────────────────────────────────────────────────────────────────
   if (phase === "loading") return (
-    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32 }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <span style={{ fontSize: 52 }}>{scenario?.icon}</span>
-      <div style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--cream)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Pierre forbereder seg…</div>
+      {loadError ? (
+        <>
+          <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>Kunne ikke koble til Pierre 😔</div>
+          <button onClick={() => startScenario(scenario)} style={{ padding: "12px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+          <button onClick={() => setPhase("select")} style={{ padding: "10px 20px", background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        </>
+      ) : (
+        <>
+          <div style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--cream)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Pierre forbereder seg…</div>
+        </>
+      )}
     </div>
   );
 

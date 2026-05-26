@@ -795,10 +795,22 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const [confettiActive, setConfettiActive] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const searchRef = useRef(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(id);
+  }, []);
+
+  // Save/restore scroll position so back-nav returns to same spot
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const saved = parseInt(sessionStorage.getItem("home-scroll") || "0");
+    if (saved > 0) { requestAnimationFrame(() => { el.scrollTop = saved; }); }
+    const onScroll = () => sessionStorage.setItem("home-scroll", String(el.scrollTop));
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
   const hour = new Date().getHours();
@@ -968,7 +980,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
 
       {offlineBanner}
 
-      <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 84, scrollbarWidth: "none" }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 84, scrollbarWidth: "none" }}>
 
         {/* Header */}
         <div style={{ padding: "52px 22px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
