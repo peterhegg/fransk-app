@@ -4,7 +4,8 @@ import { tutorVisible } from "../hooks/useTutorPrefs.js";
 import { usePushSubscription } from "../hooks/usePushSubscription.js";
 import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS, ORDMESTER_GOALS } from "../constants.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords } from "../utils.jsx";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID } from "../utils.jsx";
+import { PROXY_URL } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { IcoGrid, IcoSwap, IcoList, IcoMic as IcoMicSvg, IcoPen, IcoChat as IcoChatSvg, IcoSpeak, IcoArrow, IcoFlame, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
@@ -502,6 +503,28 @@ function TodaysAnswersModal({ onClose }) {
 
 const LEVELS = ["A1", "A1/A2", "A2", "A2/B1", "B1", "B1/B2", "B2", "C1", "C2"];
 
+function WidgetUrlSection() {
+  const uuid = getOrCreateWidgetUUID();
+  const workerBase = (PROXY_URL || "").replace(/\/$/, "").split("/").slice(0, 3).join("/");
+  const widgetUrl = `${workerBase}/widget/${uuid}`;
+  const [copied, setCopied] = useState(false);
+  return (
+    <div style={{ marginBottom: 14, background: "var(--bg)", borderRadius: 14, padding: "12px 14px" }}>
+      <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Android Widget</div>
+      <div style={{ fontSize: 12, color: "var(--text-subtle)", marginBottom: 8, lineHeight: 1.5 }}>
+        Installer <strong style={{ color: "var(--text)" }}>Web Widget</strong> fra Play Store → legg til → lim inn URL.
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px", fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.4 }}>{widgetUrl}</div>
+        <button onClick={() => { navigator.clipboard?.writeText(widgetUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}
+          style={{ flexShrink: 0, background: copied ? "rgba(94,154,111,0.3)" : "var(--surface)", border: `1px solid ${copied ? "rgba(94,154,111,0.6)" : "var(--border)"}`, borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 12, color: copied ? "#5e9a6f" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+          {copied ? "✓" : "Kopier"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggleTutorVisibility }) {
   const [profile, setProfile] = useState(() => loadUserProfile());
   const set = (k, v) => setProfile(p => ({ ...p, [k]: v }));
@@ -645,6 +668,8 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           </button>
         </div>
       </div>
+
+        <WidgetUrlSection />
 
       <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)" }}>
         <button onClick={() => { saveUserProfile(profile); onSave(profile); }}

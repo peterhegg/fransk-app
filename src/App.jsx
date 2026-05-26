@@ -15,7 +15,7 @@ import {
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab, getReplacementGloseWord,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
   loadUserProfile, saveUserProfile, getWordTier, loadActivityLog, loadWorstWords,
-  checkStreakBroken,
+  checkStreakBroken, getOrCreateWidgetUUID,
 } from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
@@ -157,6 +157,15 @@ export default function App() {
     const on = () => setIsOnline(true), off = () => setIsOnline(false);
     window.addEventListener("online", on); window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+
+  // --- Widget data sync on load and visibility change ---
+  useEffect(() => {
+    syncWidgetData();
+    const onVisible = () => { if (!document.hidden) syncWidgetData(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --- Session screen save ---
@@ -747,11 +756,37 @@ export default function App() {
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult("");
   };
 
+  // --- Widget sync ---
+  const syncWidgetData = (overrideStreak) => {
+    try {
+      const uuid = getOrCreateWidgetUUID();
+      const profile = loadUserProfile();
+      const entry = loadActivityLog().find(e => e.date === todayStr());
+      const dagensDone = (() => { try { const s = JSON.parse(localStorage.getItem("fransk-dagens-glose") || "{}"); return s.date === todayStr() && !!s.phase2done; } catch { return false; } })();
+      const payload = {
+        uuid,
+        streak: overrideStreak ?? loadStreak().current,
+        todayAnswers: entry?.answers || 0,
+        dailyGoal: profile.dailyGoal || 20,
+        dagensDone,
+      };
+      fetch(PROXY_URL + "/widget/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    } catch {}
+  };
+
   // --- Points toast ---
-    const maybeTouchStreak = () => {
+  const maybeTouchStreak = () => {
     const entry = loadActivityLog().find(e => e.date === todayStr());
     const goal = loadUserProfile().dailyGoal || 20;
-    if (entry && entry.answers >= goal) setStreak(touchStreak());
+    if (entry && entry.answers >= goal) {
+      const newStreak = touchStreak();
+      setStreak(newStreak);
+      syncWidgetData(newStreak);
+    }
   };
 
   // --- Session bump (called by all quiz submit handlers) ---

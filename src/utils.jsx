@@ -557,6 +557,17 @@ export function loadTodaysWordAnswers() {
   } catch { return []; }
 }
 
+// ─── Widget UUID ─────────────────────────────────────────────────────────────
+const WIDGET_UUID_KEY = "fransk-widget-uuid";
+export function getOrCreateWidgetUUID() {
+  let id = localStorage.getItem(WIDGET_UUID_KEY);
+  if (!id) {
+    id = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem(WIDGET_UUID_KEY, id);
+  }
+  return id;
+}
+
 // ─── User profile ────────────────────────────────────────────────────────────
 const USER_PROFILE_KEY = "fransk-user-profile";
 

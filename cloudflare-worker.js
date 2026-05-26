@@ -278,12 +278,112 @@ async function sendStreakReminders(env) {
   }
 }
 
+// ── Widget ────────────────────────────────────────────────────────────────────
+
+async function handleWidgetSync(body, env, corsHeaders) {
+  const { uuid, streak, todayAnswers, dailyGoal, dagensDone } = body || {};
+  if (!uuid || !/^[a-f0-9]{24}$/.test(uuid)) {
+    return new Response("Bad request", { status: 400, headers: corsHeaders });
+  }
+  const data = {
+    streak: Math.max(0, parseInt(streak) || 0),
+    todayAnswers: Math.max(0, parseInt(todayAnswers) || 0),
+    dailyGoal: Math.max(1, parseInt(dailyGoal) || 20),
+    dagensDone: !!dagensDone,
+    updatedAt: Date.now(),
+  };
+  await env.RATE_LIMIT_KV.put(`widget:${uuid}`, JSON.stringify(data), { expirationTtl: 60 * 60 * 24 * 14 });
+  return new Response("OK", { status: 200, headers: corsHeaders });
+}
+
+async function handleWidgetPage(uuid, env) {
+  let data = { streak: 0, todayAnswers: 0, dailyGoal: 20, dagensDone: false };
+  try {
+    const raw = await env.RATE_LIMIT_KV.get(`widget:${uuid}`);
+    if (raw) data = { ...data, ...JSON.parse(raw) };
+  } catch {}
+
+  const pct = Math.min(100, (data.todayAnswers / data.dailyGoal) * 100);
+  const goalReached = data.todayAnswers >= data.dailyGoal;
+  const barColor = goalReached ? "#e6d3a8" : "#5e9a6f";
+  const statusIcon = goalReached ? "🏆" : data.dagensDone ? "📚" : "💪";
+  const dagensText = data.dagensDone ? "✓ Dagens glose fullført" : "○ Dagens glose venter";
+  const dagensColor = data.dagensDone ? "#5e9a6f" : "rgba(240,230,208,0.35)";
+
+  const html = `<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="refresh" content="1800">
+<title>L'Atelier</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#0e0b08;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:14px;gap:5px}
+.name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,230,208,.3);margin-bottom:1px}
+.streak-row{display:flex;align-items:center;gap:5px}
+.snum{font-size:52px;font-weight:800;color:#f59e0b;line-height:1;letter-spacing:-2px}
+.sico{font-size:26px;line-height:1}
+.slbl{font-size:10px;color:rgba(240,230,208,.4);text-transform:uppercase;letter-spacing:1.2px}
+.div{width:36px;height:1px;background:rgba(255,255,255,.1)}
+.prog{width:100%;max-width:190px}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.atxt{font-size:13px;font-weight:700;color:#f0e6d0}
+.stxt{font-size:10px;color:rgba(240,230,208,.4)}
+.bar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.fill{height:100%;border-radius:2px}
+.drow{display:flex;align-items:center;gap:5px;margin-top:4px}
+.ddot{width:6px;height:6px;border-radius:50%}
+.dtxt{font-size:10px;color:rgba(240,230,208,.4)}
+</style>
+</head>
+<body>
+<div class="name">L'Atelier</div>
+<div class="streak-row">
+  <div class="snum">${data.streak}</div>
+  <div class="sico">🔥</div>
+</div>
+<div class="slbl">dagers streak</div>
+<div class="div"></div>
+<div class="prog">
+  <div class="ph">
+    <span class="atxt">${data.todayAnswers} / ${data.dailyGoal}</span>
+    <span class="stxt">${statusIcon}</span>
+  </div>
+  <div class="bar"><div class="fill" style="width:${pct}%;background:${barColor}"></div></div>
+  <div class="drow">
+    <div class="ddot" style="background:${dagensColor}"></div>
+    <span class="dtxt">${dagensText}</span>
+  </div>
+</div>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html;charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 export default {
   async scheduled(event, env) {
     await sendStreakReminders(env);
   },
 
   async fetch(request, env) {
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+
+    // Widget page: public GET, no auth or origin check needed
+    if (request.method === "GET") {
+      const m = pathname.match(/^\/widget\/([a-f0-9]{24})$/);
+      if (m) return handleWidgetPage(m[1], env);
+      return new Response("Not Found", { status: 404 });
+    }
+
     const allowedOrigins = [PROD_ORIGIN];
     if (env.DEV_ORIGIN) allowedOrigins.push(env.DEV_ORIGIN);
     const origin = request.headers.get("Origin") || "";
@@ -343,10 +443,10 @@ export default {
       return new Response("Invalid JSON", { status: 400, headers: corsHeaders });
     }
 
-    // Route: /voice for real-time voice conversation
-    const pathname = new URL(request.url).pathname;
+    // Route dispatch
     if (pathname === "/push/subscribe") return handlePushSubscribe(body, env, corsHeaders);
     if (pathname === "/push/unsubscribe") return handlePushUnsubscribe(body, env, corsHeaders);
+    if (pathname === "/widget/sync") return handleWidgetSync(body, env, corsHeaders);
     if (pathname === "/voice") {
       return handleVoice(body, env, corsHeaders);
     }
