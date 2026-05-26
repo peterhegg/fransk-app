@@ -637,9 +637,9 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Daglig mål (svar per dag)</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[10, 20, 30, 50, 75, 100].map(n => (
+            {[50, 100, 150, 200, 250].map(n => (
               <button key={n} onClick={() => set("dailyGoal", n)}
-                style={{ flex: "1 1 auto", minWidth: 44, background: (profile.dailyGoal || 20) === n ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${(profile.dailyGoal || 20) === n ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: (profile.dailyGoal || 20) === n ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                style={{ flex: "1 1 auto", minWidth: 44, background: (profile.dailyGoal || 150) === n ? "rgba(230,211,168,0.18)" : "var(--bg)", border: `1px solid ${(profile.dailyGoal || 150) === n ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: (profile.dailyGoal || 150) === n ? "var(--cream)" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                 {n}
               </button>
             ))}

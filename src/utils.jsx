@@ -580,7 +580,7 @@ export const DEFAULT_PROFILE = {
   dysleksi: true,
   exerciseRounds: 5,
   autoPlay: false,
-  dailyGoal: 20,
+  dailyGoal: 150,
   pushTime: "20:00",
 };
 
