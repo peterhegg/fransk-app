@@ -16,20 +16,11 @@ const MAX_TURNS = 6;
 
 function systemPrompt(scenario, profile, words) {
   const vocabList = words && words.length > 0
-    ? words
-        .slice()
-        .sort((a, b) => (b.added || 0) - (a.added || 0))
-        .slice(0, 60)
-        .map(w => `${w.fr} (${w.no})`)
-        .join(", ")
+    ? words.map(w => w.fr).join(", ")
     : null;
 
-  const vocabSection = vocabList
-    ? `\nSTUDENT'S VOCABULARY — prioritize these words and their natural inflections in the conversation:\n${vocabList}\nBasic grammatical words (articles, prepositions, être, avoir, etc.) are always fine regardless.\n`
-    : "";
-
   return `You are a French conversation partner playing the role of ${scenario.role}. You help a Norwegian ${profile.level || "A1/A2"} learner${profile.dysleksi ? " with dyslexia" : ""} practice real French.
-${vocabSection}
+
 RULES:
 - Your French replies must be short and simple (A1/A2, max 1-2 sentences).
 - Always include a Norwegian translation of your reply.
@@ -42,7 +33,7 @@ ALWAYS respond with valid JSON only — no markdown, no explanation:
 When done (after ${MAX_TURNS} exchanges):
 {"done":true,"score":4,"comment":"Norwegian feedback in 2-3 sentences. Mention what went well and one thing to improve.","corrections":["Specific mistake if any, in Norwegian — or leave array empty"]}
 
-Score is 1–6 (Norwegian dice). Be encouraging.`;
+Score is 1–6 (Norwegian dice). Be encouraging.${vocabList ? `\n\nSTUDENT'S VOCABULARY — use these words and their natural inflections. Basic grammatical words (articles, prepositions, être, avoir) are always fine:\n${vocabList}` : ""}`;
 }
 
 const FALLBACK_OPTIONS = [
