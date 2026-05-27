@@ -1009,7 +1009,7 @@ export default function App() {
   );
 
   if (screen === "rollespill") return (
-    <RollespillScreen onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
+    <RollespillScreen words={words} onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "kryssord") return (

@@ -14,29 +14,48 @@ const SCENARIOS = [
 
 const MAX_TURNS = 6;
 
-function systemPrompt(scenario, profile) {
-  return `You are a French conversation partner playing the role of ${scenario.role}. You help a Norwegian ${profile.level || "A1/A2"} learner${profile.dysleksi ? " with dyslexia" : ""} practice real French.
+function systemPrompt(scenario, profile, words) {
+  const vocabList = words && words.length > 0
+    ? words
+        .slice()
+        .sort((a, b) => (b.added || 0) - (a.added || 0))
+        .slice(0, 60)
+        .map(w => `${w.fr} (${w.no})`)
+        .join(", ")
+    : null;
 
+  const vocabSection = vocabList
+    ? `\nSTUDENT'S VOCABULARY — prioritize these words and their natural inflections in the conversation:\n${vocabList}\nBasic grammatical words (articles, prepositions, être, avoir, etc.) are always fine regardless.\n`
+    : "";
+
+  return `You are a French conversation partner playing the role of ${scenario.role}. You help a Norwegian ${profile.level || "A1/A2"} learner${profile.dysleksi ? " with dyslexia" : ""} practice real French.
+${vocabSection}
 RULES:
 - Your French replies must be short and simple (A1/A2, max 1-2 sentences).
 - Always include a Norwegian translation of your reply.
-- Always give exactly 3 response options the learner can say. Options must be realistic for the scenario, at A1/A2 level, and meaningfully different from each other.
-- After turn ${MAX_TURNS}, wrap up the conversation naturally and set done:true.
+- Always give exactly 3 response options the learner can say. Options must be realistic for the scenario, at A1/A2 level, and meaningfully different from each other. Use vocabulary from the student's word list where possible.
+- Only set done:true after the conversation has had ${MAX_TURNS} full exchanges. Never before.
 
 ALWAYS respond with valid JSON only — no markdown, no explanation:
 {"reply_fr":"Bonjour! Vous désirez?","reply_no":"Hei! Hva ønsker du?","options":[{"fr":"Je voudrais un café, s'il vous plaît.","no":"Jeg vil gjerne ha en kaffe, takk."},{"fr":"Qu'est-ce que vous recommandez?","no":"Hva anbefaler du?"},{"fr":"Avez-vous du thé?","no":"Har dere te?"}],"done":false}
 
-When done (after turn ${MAX_TURNS} or natural end):
+When done (after ${MAX_TURNS} exchanges):
 {"done":true,"score":4,"comment":"Norwegian feedback in 2-3 sentences. Mention what went well and one thing to improve.","corrections":["Specific mistake if any, in Norwegian — or leave array empty"]}
 
 Score is 1–6 (Norwegian dice). Be encouraging.`;
 }
 
-export default function RollespillScreen({ onBack, speak, screen, showWords, onNav, onGameComplete }) {
+const FALLBACK_OPTIONS = [
+  { fr: "Je comprends.", no: "Jeg forstår." },
+  { fr: "D'accord, merci.", no: "Greit, takk." },
+  { fr: "Pouvez-vous répéter?", no: "Kan du gjenta?" },
+];
+
+export default function RollespillScreen({ words, onBack, speak, screen, showWords, onNav, onGameComplete }) {
   const [phase, setPhase]           = useState("select");
   const [scenario, setScenario]     = useState(null);
-  const [messages, setMessages]     = useState([]);  // {role, fr, no}
-  const [apiHistory, setApiHistory] = useState([]);  // raw {role, content} for Claude
+  const [messages, setMessages]     = useState([]);
+  const [apiHistory, setApiHistory] = useState([]);
   const [options, setOptions]       = useState([]);
   const [turn, setTurn]             = useState(0);
   const [result, setResult]         = useState(null);
@@ -44,6 +63,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
   const [freeText, setFreeText]     = useState("");
   const [loadError, setLoadError]   = useState(false);
   const [loadErrorMsg, setLoadErrorMsg] = useState("");
+  const [showNo, setShowNo]         = useState(true);   // toggle Norwegian translations
 
   const profile = loadUserProfile();
 
@@ -53,7 +73,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
       body: JSON.stringify({
         max_tokens: 600,
-        system: systemPrompt(sc, profile),
+        system: systemPrompt(sc, profile, words),
         messages: history,
       }),
     });
@@ -75,12 +95,12 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
     setLoadError(false);
     setLoadErrorMsg("");
 
-    const initHistory = [{ role: "user", content: "Start the scenario. Greet me." }];
+    const initHistory = [{ role: "user", content: "Start the scenario. Greet me as the customer arrives." }];
     try {
       const parsed = await callClaude(initHistory, sc);
       setApiHistory([...initHistory, { role: "assistant", content: parsed.reply_fr }]);
       setMessages([{ role: "assistant", fr: parsed.reply_fr, no: parsed.reply_no }]);
-      setOptions(parsed.options || []);
+      setOptions(parsed.options?.length ? parsed.options : FALLBACK_OPTIONS);
       setTurn(1);
       setPhase("play");
       speak(parsed.reply_fr, 0.85);
@@ -94,8 +114,8 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
     if (busy) return;
     setBusy(true);
 
-    const newMsg    = { role: "user", fr: opt.fr, no: opt.no };
-    const newMsgs   = [...messages, newMsg];
+    const newMsg     = { role: "user", fr: opt.fr, no: opt.no };
+    const newMsgs    = [...messages, newMsg];
     const newHistory = [...apiHistory, { role: "user", content: opt.fr }];
     setMessages(newMsgs);
     setOptions([]);
@@ -103,28 +123,28 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
     try {
       const parsed = await callClaude(newHistory, scenario);
 
-      if (parsed.done) {
+      // Only accept done:true if we've actually reached MAX_TURNS
+      const isDone = parsed.done && turn >= MAX_TURNS - 1;
+
+      if (isDone) {
         setResult(parsed);
         logGameSession(turn);
         for (let i = 0; i < turn; i++) logDailyAnswer("vocab");
         if (onGameComplete) onGameComplete();
         setPhase("result");
       } else {
-        const updHistory = [...newHistory, { role: "assistant", content: parsed.reply_fr }];
+        const replyFr = parsed.reply_fr || "…";
+        const replyNo = parsed.reply_no || "";
+        const updHistory = [...newHistory, { role: "assistant", content: replyFr }];
         setApiHistory(updHistory);
-        setMessages([...newMsgs, { role: "assistant", fr: parsed.reply_fr, no: parsed.reply_no }]);
-        setOptions(parsed.options || []);
+        setMessages([...newMsgs, { role: "assistant", fr: replyFr, no: replyNo }]);
+        setOptions(parsed.options?.length ? parsed.options : FALLBACK_OPTIONS);
         setTurn(t => t + 1);
-        speak(parsed.reply_fr, 0.85);
+        speak(replyFr, 0.85);
       }
     } catch {
-      // Recover with generic options
       setApiHistory(newHistory);
-      setOptions([
-        { fr: "Je comprends.", no: "Jeg forstår." },
-        { fr: "D'accord, merci.", no: "Greit, takk." },
-        { fr: "Pouvez-vous répéter?", no: "Kan du gjenta?" },
-      ]);
+      setOptions(FALLBACK_OPTIONS);
     }
     setBusy(false);
   };
@@ -140,7 +160,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       <div style={{ flex: 1, padding: "0 22px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
         {SCENARIOS.map(sc => (
           <button key={sc.id} onClick={() => startScenario(sc)}
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "18px 20px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, transition: "border-color 0.15s" }}>
+            style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "18px 20px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
             <span style={{ fontSize: 34, flexShrink: 0 }}>{sc.icon}</span>
             <div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.2px" }}>{sc.label}</div>
@@ -211,7 +231,22 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
           <span style={{ fontSize: 18 }}>{scenario?.icon}</span>
           <span style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>{scenario?.label}</span>
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>{turn}/{MAX_TURNS}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            onClick={() => setShowNo(v => !v)}
+            title={showNo ? "Skjul norsk" : "Vis norsk"}
+            style={{
+              background: showNo ? "rgba(230,211,168,0.15)" : "transparent",
+              border: `1px solid ${showNo ? "rgba(230,211,168,0.4)" : "var(--border)"}`,
+              borderRadius: 8, padding: "4px 8px", cursor: "pointer",
+              fontSize: 11, color: showNo ? "var(--cream)" : "var(--text-subtle)",
+              fontFamily: "var(--font-body)", fontWeight: 600, letterSpacing: 0.3,
+            }}
+          >
+            🇳🇴
+          </button>
+          <div style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>{turn}/{MAX_TURNS}</div>
+        </div>
       </div>
 
       {/* Progress bar */}
@@ -222,7 +257,7 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
       </div>
 
       {/* Chat */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 260 }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 280 }}>
         {messages.map((m, i) => (
           <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
             <div style={{
@@ -233,12 +268,13 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
               padding: "12px 16px",
             }}>
               <div style={{ fontSize: 15, color: "var(--text)", fontFamily: "var(--font-body)", lineHeight: 1.45 }}>{m.fr}</div>
-              <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 5, fontStyle: "italic", lineHeight: 1.4 }}>{m.no}</div>
+              {showNo && m.no && (
+                <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 5, fontStyle: "italic", lineHeight: 1.4 }}>{m.no}</div>
+              )}
             </div>
           </div>
         ))}
 
-        {/* Typing indicator */}
         {busy && (
           <div style={{ display: "flex", justifyContent: "flex-start" }}>
             <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "18px 18px 18px 4px", padding: "14px 18px", display: "flex", gap: 5, alignItems: "center" }}>
@@ -255,9 +291,11 @@ export default function RollespillScreen({ onBack, speak, screen, showWords, onN
         <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "10px 16px 12px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190, display: "flex", flexDirection: "column", gap: 7 }}>
           {options.map((opt, i) => (
             <button key={i} onClick={() => pickOption(opt)}
-              style={{ textAlign: "left", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "12px 16px", cursor: "pointer", transition: "border-color 0.15s, background 0.15s" }}>
+              style={{ textAlign: "left", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: showNo && opt.no ? "12px 16px 10px" : "13px 16px", cursor: "pointer" }}>
               <div style={{ fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", fontWeight: 500, lineHeight: 1.35 }}>{opt.fr}</div>
-              <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 3, fontStyle: "italic" }}>{opt.no}</div>
+              {showNo && opt.no && (
+                <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 3, fontStyle: "italic" }}>{opt.no}</div>
+              )}
             </button>
           ))}
           <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
