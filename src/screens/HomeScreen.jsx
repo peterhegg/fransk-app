@@ -751,31 +751,138 @@ function TaskCard({ item, onStart }) {
   );
 }
 
-function ConfettiBlast() {
-  const colors = ["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#ec4899"];
-  const pieces = Array.from({ length: 36 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 0.6,
-    dur: 1.4 + Math.random() * 0.8,
-    color: colors[i % colors.length],
-    w: 6 + Math.random() * 8,
-    h: 4 + Math.random() * 6,
-  }));
+function ConfettiBlast({ streak, onDone }) {
+  const [alive, setAlive] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setAlive(false), 4400);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!alive) { const t = setTimeout(onDone, 600); return () => clearTimeout(t); }
+  }, [alive, onDone]);
+
+  const COLORS = ["#FFD700","#FF6B6B","#4ECDC4","#45B7D1","#96CEB4","#FFEAA7","#DDA0DD","#FF8C42","#6C5CE7","#00B894","#FD79A8","#FDCB6E"];
+  const EMOJIS = ["⭐","🌟","✨","💫","🎊","🎉","🏅","🎯","🌸","💥"];
+
+  const [pieces] = useState(() => [
+    ...Array.from({ length: 44 }, (_, i) => {
+      const angle = (Math.PI * 2 * i) / 44 + (Math.random() - 0.5) * 0.4;
+      const speed = 90 + Math.random() * 200;
+      return { id: `a${i}`, isEmoji: Math.random() > 0.72, emoji: EMOJIS[i % EMOJIS.length],
+        tx: Math.cos(angle) * speed, ty: Math.sin(angle) * speed + 70 + Math.random() * 60,
+        rot: (Math.random() - 0.5) * 800, color: COLORS[i % COLORS.length],
+        size: 6 + Math.random() * 9, delay: Math.random() * 180, dur: 1300 + Math.random() * 700 };
+    }),
+    ...Array.from({ length: 44 }, (_, i) => {
+      const angle = (Math.PI * 2 * i) / 44 + (Math.random() - 0.5) * 0.4;
+      const speed = 120 + Math.random() * 230;
+      return { id: `b${i}`, isEmoji: Math.random() > 0.65, emoji: EMOJIS[(i + 4) % EMOJIS.length],
+        tx: Math.cos(angle) * speed, ty: Math.sin(angle) * speed + 90 + Math.random() * 70,
+        rot: (Math.random() - 0.5) * 600, color: COLORS[(i + 4) % COLORS.length],
+        size: 5 + Math.random() * 10, delay: 320 + Math.random() * 220, dur: 1500 + Math.random() * 600 };
+    }),
+    ...Array.from({ length: 24 }, (_, i) => {
+      const angle = (Math.PI * 2 * i) / 24 + (Math.random() - 0.5) * 0.6;
+      const speed = 70 + Math.random() * 160;
+      return { id: `c${i}`, isEmoji: true, emoji: EMOJIS[i % EMOJIS.length],
+        tx: Math.cos(angle) * speed, ty: Math.sin(angle) * speed + 50 + Math.random() * 50,
+        rot: (Math.random() - 0.5) * 400, color: COLORS[i % COLORS.length],
+        size: 18 + Math.random() * 8, delay: 620 + Math.random() * 280, dur: 1800 + Math.random() * 500 };
+    }),
+  ]);
+
   return (
-    <>
+    <div
+      onClick={() => setAlive(false)}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: alive ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0)",
+        transition: "background 0.6s, opacity 0.6s",
+        opacity: alive ? 1 : 0,
+      }}
+    >
       <style>{`
-        @keyframes conf-fall {
-          0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(105vh) rotate(600deg); opacity: 0; }
+        @keyframes burst-fly {
+          0%   { transform: translate(-50%,-50%) translate(0px,0px) rotate(0deg) scale(1); opacity:1; }
+          70%  { opacity: 0.9; }
+          100% { transform: translate(-50%,-50%) translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(0.3); opacity:0; }
+        }
+        @keyframes card-pop {
+          0%  { transform: scale(0.1) rotate(-8deg); opacity: 0; }
+          55% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+          75% { transform: scale(0.96) rotate(-1deg); }
+          100%{ transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes trophy-sway {
+          0%,100%{ transform: translateY(0) rotate(-4deg) scale(1); }
+          50%    { transform: translateY(-12px) rotate(4deg) scale(1.08); }
+        }
+        @keyframes streak-glow {
+          0%,100%{ box-shadow: 0 0 12px rgba(255,140,66,0.3); }
+          50%    { box-shadow: 0 0 28px rgba(255,140,66,0.7); }
+        }
+        @keyframes stars-pulse {
+          0%,100%{ opacity: 0.6; transform: scale(1); }
+          50%    { opacity: 1; transform: scale(1.15); }
         }
       `}</style>
-      <div style={{ position: "fixed", inset: 0, zIndex: 8000, pointerEvents: "none", overflow: "hidden" }}>
-        {pieces.map(p => (
-          <div key={p.id} style={{ position: "absolute", left: `${p.left}%`, top: 0, width: p.w, height: p.h, background: p.color, borderRadius: 2, animation: `conf-fall ${p.dur}s ${p.delay}s ease-in forwards` }} />
-        ))}
+
+      {pieces.map(p => (
+        p.isEmoji
+          ? <div key={p.id} style={{ position: "absolute", left: "50%", top: "45%",
+              fontSize: p.size, lineHeight: 1, userSelect: "none", pointerEvents: "none",
+              "--tx": p.tx + "px", "--ty": p.ty + "px", "--rot": p.rot + "deg",
+              animation: `burst-fly ${p.dur}ms ${p.delay}ms cubic-bezier(0.2,0.8,0.4,1) forwards` }}>{p.emoji}</div>
+          : <div key={p.id} style={{ position: "absolute", left: "50%", top: "45%",
+              width: p.size * 1.5, height: p.size * 0.55, background: p.color, borderRadius: 3,
+              pointerEvents: "none",
+              "--tx": p.tx + "px", "--ty": p.ty + "px", "--rot": p.rot + "deg",
+              boxShadow: `0 0 ${p.size * 2}px ${p.color}99`,
+              animation: `burst-fly ${p.dur}ms ${p.delay}ms cubic-bezier(0.2,0.8,0.4,1) forwards` }} />
+      ))}
+
+      <div style={{
+        position: "relative", zIndex: 2,
+        background: "rgba(16,10,4,0.95)", border: "2px solid #E6D3A8",
+        borderRadius: 32, padding: "32px 40px",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+        backdropFilter: "blur(20px)",
+        boxShadow: "0 0 100px rgba(230,211,168,0.2), 0 0 40px rgba(230,211,168,0.1), 0 32px 80px rgba(0,0,0,0.7)",
+        animation: "card-pop 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards",
+        maxWidth: 300, width: "80vw",
+      }}>
+        <div style={{ fontSize: 68, lineHeight: 1, animation: "trophy-sway 2.2s ease-in-out infinite" }}>🏆</div>
+
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 600, color: "#E6D3A8", textAlign: "center", letterSpacing: "-0.5px", lineHeight: 1.2 }}>
+          Daglig mål nådd!
+        </div>
+
+        <div style={{ display: "flex", gap: 6, animation: "stars-pulse 1.8s ease-in-out infinite" }}>
+          {"⭐⭐⭐".split("").map((s, i) => <span key={i} style={{ fontSize: 22 }}>{s}</span>)}
+        </div>
+
+        {streak > 0 && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: "rgba(255,140,66,0.12)", borderRadius: 24,
+            padding: "9px 20px", border: "1px solid rgba(255,140,66,0.4)",
+            animation: "streak-glow 2s ease-in-out infinite",
+          }}>
+            <span style={{ fontSize: 26 }}>🔥</span>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, color: "#FF8C42" }}>
+              {streak} {streak === 1 ? "dag" : "dager"} på rad!
+            </span>
+          </div>
+        )}
+
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", marginTop: 4, letterSpacing: 0.3 }}>
+          Trykk for å lukke
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -845,7 +952,6 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, "1");
       setConfettiActive(true);
-      setTimeout(() => setConfettiActive(false), 3000);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayAnswers]);
@@ -1302,7 +1408,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           onSave={() => { setOrdmesterVersion(v => v + 1); setOrdmesterEditOpen(false); }}
         />
       )}
-      {confettiActive && <ConfettiBlast />}
+      {confettiActive && <ConfettiBlast streak={streak} onDone={() => setConfettiActive(false)} />}
       {activityOpen && <ActivityModal streak={streak} onClose={() => setActivityOpen(false)} />}
       {svarOpen && <TodaysAnswersModal onClose={() => setSvarOpen(false)} />}
       {profileOpen && (
