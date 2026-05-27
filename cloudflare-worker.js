@@ -412,12 +412,12 @@ export default {
     }
 
     if (request.method !== "POST") {
-      return new Response("Method not allowed", { status: 405 });
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const token = request.headers.get("X-App-Token");
     if (!env.CLIENT_TOKEN || token !== env.CLIENT_TOKEN) {
-      return new Response("Forbidden", { status: 403 });
+      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (!await checkBudget(env)) {
