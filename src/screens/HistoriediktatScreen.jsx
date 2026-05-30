@@ -182,7 +182,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           <div style={{ fontSize: 40 }}>⚠️</div>
           <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Kunne ikke laste historien</div>
           {errorMsg && <div style={{ fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", background: "var(--surface)", padding: "6px 10px", borderRadius: 8, maxWidth: 320, wordBreak: "break-all" }}>{errorMsg}</div>}
-          <button onClick={load} style={{ padding: "12px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+          <button onClick={load} style={{ padding: "12px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           <button onClick={onBack} style={{ padding: "10px 20px", background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         </>
       ) : (
@@ -233,7 +233,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
             width: 88, height: 88, borderRadius: "50%",
             background: playing ? "rgba(230,211,168,0.15)" : "var(--cream)",
             border: playing ? "2px solid var(--cream)" : "none",
-            color: playing ? "var(--cream)" : "#1a1209",
+            color: playing ? "var(--cream)" : "var(--on-accent)",
             fontSize: 32, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
@@ -264,7 +264,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
 
         <button
           onClick={() => { stopPlay(); setPhase("fill"); }}
-          style={{ width: "100%", maxWidth: 320, padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}
+          style={{ width: "100%", maxWidth: 320, padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}
         >
           Klar til å fylle inn →
         </button>
@@ -310,7 +310,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
         </div>
 
         <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "12px 22px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190 }}>
-          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
             Sjekk svar
           </button>
         </div>
@@ -351,7 +351,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
         </div>
 
         <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "12px 22px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190 }}>
-          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
             Sjekk svar
           </button>
         </div>
@@ -375,7 +375,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
 
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 22px 180px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ background: "var(--surface)", borderRadius: 20, padding: "24px 20px", border: "1px solid var(--border)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 600, color: pct === 100 ? "#5e9a6f" : pct >= 60 ? "var(--cream)" : "#ef4444" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 600, color: pct === 100 ? "var(--color-success)" : pct >= 60 ? "var(--cream)" : "var(--color-error)" }}>
             {score}/{total}
           </div>
           <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
@@ -393,11 +393,11 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
             const answer = story.answers[idx] || "";
             return (
               <span key={si} style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 3px", gap: 1 }}>
-                <span style={{ fontWeight: 700, color: correct ? "#5e9a6f" : "#ef4444", borderBottom: `2px solid ${correct ? "#5e9a6f" : "#ef4444"}`, padding: "0 3px", fontSize: 15 }}>
+                <span style={{ fontWeight: 700, color: correct ? "var(--color-success)" : "var(--color-error)", borderBottom: `2px solid ${correct ? "var(--color-success)" : "var(--color-error)"}`, padding: "0 3px", fontSize: 15 }}>
                   {correct ? typed : answer}
                 </span>
                 {!correct && (
-                  <span style={{ fontSize: 10, color: "#ef4444", fontFamily: "var(--font-body)", lineHeight: 1 }}>({typed})</span>
+                  <span style={{ fontSize: 10, color: "var(--color-error)", fontFamily: "var(--font-body)", lineHeight: 1 }}>({typed})</span>
                 )}
               </span>
             );
@@ -406,7 +406,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
       </div>
 
       <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "12px 22px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190, display: "flex", gap: 10 }}>
-        <button onClick={load} style={{ flex: 1, padding: "14px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Ny historie</button>
+        <button onClick={load} style={{ flex: 1, padding: "14px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Ny historie</button>
         <button
           onClick={() => { setPhase("fill"); setInputs(story.answers.map(() => "")); setResults([]); }}
           style={{ flex: 1, padding: "14px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}

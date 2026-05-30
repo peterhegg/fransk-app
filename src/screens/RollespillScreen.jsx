@@ -173,7 +173,7 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
         <>
           <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>Kunne ikke koble til Pierre 😔</div>
           {loadErrorMsg && <div style={{ fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", background: "var(--surface)", padding: "6px 10px", borderRadius: 8, maxWidth: 320, wordBreak: "break-all", textAlign: "left" }}>{loadErrorMsg}</div>}
-          <button onClick={() => startScenario(scenario)} style={{ padding: "12px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+          <button onClick={() => startScenario(scenario)} style={{ padding: "12px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           <button onClick={() => setPhase("select")} style={{ padding: "10px 20px", background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
         </>
       ) : (
@@ -198,10 +198,10 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
             {result?.comment}
           </div>
           {result?.corrections?.filter(Boolean).map((c, i) => (
-            <div key={i} style={{ width: "100%", maxWidth: 320, fontSize: 12, color: "var(--text-subtle)", background: "rgba(248,113,113,0.08)", borderRadius: 10, padding: "10px 14px", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>⚠ {c}</div>
+            <div key={i} style={{ width: "100%", maxWidth: 320, fontSize: 12, color: "var(--text-subtle)", background: "var(--color-error-bg)", borderRadius: 10, padding: "10px 14px", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>⚠ {c}</div>
           ))}
           <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-            <button onClick={() => startScenario(scenario)} style={{ padding: "14px 24px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Spill igjen</button>
+            <button onClick={() => startScenario(scenario)} style={{ padding: "14px 24px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Spill igjen</button>
             <button onClick={() => setPhase("select")} style={{ padding: "14px 24px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Velg scenario</button>
           </div>
         </div>
@@ -300,7 +300,7 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
             />
             <button
               onClick={() => { if (freeText.trim()) { pickOption({ fr: freeText.trim(), no: "" }); setFreeText(""); } }}
-              style={{ padding: "11px 16px", background: freeText.trim() ? "var(--cream)" : "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 16, cursor: "pointer", color: freeText.trim() ? "#1a1209" : "var(--text-subtle)", transition: "all 0.15s" }}
+              style={{ padding: "11px 16px", background: freeText.trim() ? "var(--cream)" : "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 16, cursor: "pointer", color: freeText.trim() ? "var(--on-accent)" : "var(--text-subtle)", transition: "all 0.15s" }}
             >→</button>
           </div>
         </div>

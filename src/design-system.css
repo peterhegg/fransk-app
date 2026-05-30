@@ -89,8 +89,20 @@
   --shadow-md:         0 2px 4px rgba(28,24,22,0.06), 0 10px 24px rgba(28,24,22,0.14);
   --shadow-card:       0 1px 0 rgba(28,24,22,0.06), 0 6px 14px -8px rgba(28,24,22,0.10);
   --shadow-card-hover: 0 4px 8px rgba(28,24,22,0.08), 0 16px 32px rgba(28,24,22,0.16);
-  --radius-card:      20px;
+  --radius-card:      18px;
   --radius-btn:       14px;
+  --radius-chip:      10px;
+  --radius-control:   14px;
+  --radius-feature:   24px;
+  --on-accent:            #ffffff;
+  --color-success-bg:     rgba(42, 77, 58, 0.10);
+  --color-success-border: rgba(42, 77, 58, 0.42);
+  --color-error-bg:       rgba(200, 58, 58, 0.08);
+  --color-error-border:   rgba(200, 58, 58, 0.42);
+  --color-streak:         #c69838;
+  --color-info:           #2e6be6;
+  --color-info-bg:        rgba(46, 107, 230, 0.10);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ── Dark mode (French midnight) ─────────────────────────────────── */
@@ -124,6 +136,14 @@
   --shadow-md:         0 6px 28px rgba(0, 0, 0, 0.65);
   --shadow-card:       0 2px 16px rgba(0, 0, 0, 0.55);
   --shadow-card-hover: 0 10px 36px rgba(0, 0, 0, 0.80);
+  --on-accent:            #1a1209;
+  --color-success-bg:     rgba(0, 200, 150, 0.15);
+  --color-success-border: rgba(0, 200, 150, 0.55);
+  --color-error-bg:       rgba(240, 138, 117, 0.15);
+  --color-error-border:   rgba(240, 138, 117, 0.50);
+  --color-streak:         #e8b86d;
+  --color-info:           #818cf8;
+  --color-info-bg:        rgba(129, 140, 248, 0.16);
   /* Restore warm palette overridden by :root light-mode values */
   --cream:          #e6d3a8;
   --cream-deep:     #c9b78d;
@@ -250,3 +270,25 @@ body {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.4; transform: scale(1.3); }
 }
+
+/* ── Game UI shared feedback + entrance ─────────────────────────── */
+@keyframes correct-pop { 0% { transform: scale(1); } 42% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes wrong-shake { 0%,100% { transform: translateX(0); } 18%,58% { transform: translateX(-6px); } 38%,78% { transform: translateX(6px); } }
+@keyframes cell-pop    { 0% { transform: scale(0.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes celebrate   { 0% { transform: scale(0.4) rotate(-12deg); } 55% { transform: scale(1.15) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes riseIn      { from { transform: translateY(10px); } to { transform: translateY(0); } }
+@keyframes wave        { 0%,100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+
+.anim-correct { animation: correct-pop 0.4s var(--ease-spring); }
+.anim-wrong   { animation: wrong-shake 0.42s ease; }
+.anim-cell    { animation: cell-pop 0.28s var(--ease-spring); }
+.sheet-up     { animation: riseIn 0.32s var(--ease-default) both; }
+
+.press { transition: transform var(--duration-fast) ease, background var(--duration-normal) ease, border-color var(--duration-normal) ease, color var(--duration-normal) ease; }
+.press:active { transform: scale(0.97); }
+
+.stagger > * { animation: riseIn 0.4s var(--ease-default) both; }
+.stagger > *:nth-child(1){animation-delay:40ms}.stagger > *:nth-child(2){animation-delay:110ms}
+.stagger > *:nth-child(3){animation-delay:180ms}.stagger > *:nth-child(4){animation-delay:250ms}
+.stagger > *:nth-child(5){animation-delay:320ms}.stagger > *:nth-child(6){animation-delay:390ms}
+.stagger > *:nth-child(7){animation-delay:460ms}.stagger > *:nth-child(8){animation-delay:530ms}

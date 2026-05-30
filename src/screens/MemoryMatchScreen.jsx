@@ -110,8 +110,8 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
           <div style={{ display: "flex", gap: 16 }}>
             {[
               { label: "Poeng", val: score, color: "var(--cream)" },
-              { label: "Tid", val: fmt(seconds), color: "#34d399" },
-              { label: "Feil", val: mistakes, color: "#f87171" },
+              { label: "Tid", val: fmt(seconds), color: "var(--color-success)" },
+              { label: "Feil", val: mistakes, color: "var(--color-error)" },
             ].map(s => (
               <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 20px", textAlign: "center", minWidth: 80 }}>
                 <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
@@ -120,7 +120,7 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
             ))}
           </div>
           <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               Spill igjen
             </button>
             <button onClick={onBack} style={{ padding: "14px 28px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
@@ -143,7 +143,7 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
           ← Tilbake
         </button>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "#34d399", fontFamily: "var(--font-body)", fontWeight: 600 }}>
+          <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
             {matched.size}/{totalPairs} par
           </span>
           <span style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
@@ -185,16 +185,16 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
                   aspectRatio: "1",
                   borderRadius: 12,
                   border: isMatched
-                    ? "2px solid #34d399"
+                    ? "2px solid var(--color-success)"
                     : isSelected
                     ? "2px solid var(--cream)"
                     : isFlipped
                     ? "2px solid rgba(230,211,168,0.4)"
                     : "2px solid var(--border)",
                   background: isMatched
-                    ? "rgba(52,211,153,0.12)"
+                    ? "var(--color-success-bg)"
                     : isFlipped
-                    ? isFr ? "rgba(129,140,248,0.15)" : "rgba(251,191,36,0.13)"
+                    ? isFr ? "var(--color-info-bg)" : "rgba(251,191,36,0.13)"
                     : "var(--surface)",
                   cursor: isMatched ? "default" : "pointer",
                   transition: "all 0.18s ease",
@@ -208,7 +208,7 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
                 {isFlipped || isMatched ? (
                   <span style={{
                     fontSize: card.text.length > 10 ? 11 : card.text.length > 6 ? 13 : 15,
-                    color: isMatched ? "#34d399" : isFr ? "#818cf8" : "#fbbf24",
+                    color: isMatched ? "var(--color-success)" : isFr ? "var(--color-info)" : "var(--color-streak)",
                     fontFamily: "var(--font-body)",
                     fontWeight: 600,
                     textAlign: "center",

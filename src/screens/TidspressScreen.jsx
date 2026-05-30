@@ -111,7 +111,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
   };
 
   const timerPct = (timeLeft / DURATION) * 100;
-  const timerColor = timeLeft > 20 ? "#34d399" : timeLeft > 10 ? "#fbbf24" : "#f87171";
+  const timerColor = timeLeft > 20 ? "var(--color-success)" : timeLeft > 10 ? "var(--color-streak)" : "var(--color-error)";
   const isNewHigh = done && score > loadHighScore() - 1 && score >= highScore;
 
   if (!started) {
@@ -131,7 +131,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
               <div style={{ fontSize: 22, fontWeight: 700, color: "var(--cream)", fontFamily: "var(--font-body)" }}>{highScore}</div>
             </div>
           )}
-          <button onClick={() => setStarted(true)} style={{ padding: "16px 48px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 16, fontSize: 17, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", letterSpacing: 0.3 }}>
+          <button onClick={() => setStarted(true)} style={{ padding: "16px 48px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 16, fontSize: 17, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", letterSpacing: 0.3 }}>
             Start!
           </button>
           <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
@@ -153,8 +153,8 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
           <div style={{ display: "flex", gap: 12 }}>
             {[
               { label: "Poeng", val: score, color: "var(--cream)" },
-              { label: "Riktige", val: answered - wrong, color: "#34d399" },
-              { label: "Feil", val: wrong, color: "#f87171" },
+              { label: "Riktige", val: answered - wrong, color: "var(--color-success)" },
+              { label: "Feil", val: wrong, color: "var(--color-error)" },
             ].map(s => (
               <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", textAlign: "center", minWidth: 80 }}>
                 <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
@@ -168,7 +168,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
             </div>
           )}
           <div style={{ display: "flex", gap: 12 }}>
-            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               Prøv igjen
             </button>
             <button onClick={onBack} style={{ padding: "14px 28px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
@@ -197,7 +197,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
         </button>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           {streak >= 3 && (
-            <span style={{ fontSize: 13, color: "#fbbf24", fontFamily: "var(--font-body)", fontWeight: 600 }}>
+            <span style={{ fontSize: 13, color: "var(--color-streak)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
               🔥 {streak}
             </span>
           )}
@@ -211,7 +211,7 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
       <div style={{ padding: "0 20px 4px", display: "flex", gap: 16, alignItems: "baseline" }}>
         <span style={{ fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 500, color: "var(--cream)", letterSpacing: "-1px" }}>{score}</span>
         <span style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>{answered} svar</span>
-        {streak >= 5 && <span style={{ fontSize: 12, color: "#fbbf24", fontFamily: "var(--font-body)" }}>×1.5</span>}
+        {streak >= 5 && <span style={{ fontSize: 12, color: "var(--color-streak)", fontFamily: "var(--font-body)" }}>×1.5</span>}
       </div>
 
       {/* Question */}
@@ -239,12 +239,12 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
                   padding: "16px 12px",
                   borderRadius: 16,
                   border: showResult
-                    ? correctOpt ? "2px solid #34d399" : "2px solid #f87171"
+                    ? correctOpt ? "2px solid var(--color-success)" : "2px solid var(--color-error)"
                     : "2px solid var(--border)",
                   background: showResult
-                    ? correctOpt ? "rgba(52,211,153,0.15)" : "rgba(248,113,113,0.15)"
+                    ? correctOpt ? "var(--color-success-bg)" : "var(--color-error-bg)"
                     : "var(--surface)",
-                  color: showResult ? (correctOpt ? "#34d399" : "#f87171") : "var(--text)",
+                  color: showResult ? (correctOpt ? "var(--color-success)" : "var(--color-error)") : "var(--text)",
                   fontSize: opt.length > 14 ? 13 : 15,
                   fontFamily: "var(--font-body)",
                   fontWeight: 500,

@@ -172,19 +172,19 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
             </div>
           </div>
           {loadError && (
-            <div style={{ fontSize: 13, color: "#f87171", fontFamily: "var(--font-body)", textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: "var(--color-error)", fontFamily: "var(--font-body)", textAlign: "center" }}>
               Nettverksfeil. Prøv igjen eller velg ord-modus.
             </div>
           )}
           <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 320 }}>
-            <button onClick={startOrd} style={{ flex: 1, padding: "20px 12px", background: "rgba(251,191,36,0.12)", border: "2px solid #fbbf24", borderRadius: 18, cursor: "pointer", textAlign: "center" }}>
+            <button onClick={startOrd} style={{ flex: 1, padding: "20px 12px", background: "rgba(251,191,36,0.12)", border: "2px solid var(--color-streak)", borderRadius: 18, cursor: "pointer", textAlign: "center" }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>🎵</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#fbbf24", fontFamily: "var(--font-body)" }}>Ord</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--color-streak)", fontFamily: "var(--font-body)" }}>Ord</div>
               <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4, fontFamily: "var(--font-body)", lineHeight: 1.4 }}>Hør et ord,<br />velg norsk</div>
             </button>
-            <button onClick={startSetning} disabled={!isOnline} style={{ flex: 1, padding: "20px 12px", background: isOnline ? "rgba(129,140,248,0.12)" : "var(--surface)", border: `2px solid ${isOnline ? "#818cf8" : "var(--border)"}`, borderRadius: 18, cursor: isOnline ? "pointer" : "not-allowed", textAlign: "center", opacity: isOnline ? 1 : 0.5 }}>
+            <button onClick={startSetning} disabled={!isOnline} style={{ flex: 1, padding: "20px 12px", background: isOnline ? "var(--color-info-bg)" : "var(--surface)", border: `2px solid ${isOnline ? "var(--color-info)" : "var(--border)"}`, borderRadius: 18, cursor: isOnline ? "pointer" : "not-allowed", textAlign: "center", opacity: isOnline ? 1 : 0.5 }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>🎙️</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#818cf8", fontFamily: "var(--font-body)" }}>Setning</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--color-info)", fontFamily: "var(--font-body)" }}>Setning</div>
               <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4, fontFamily: "var(--font-body)", lineHeight: 1.4 }}>Hør AI-setning,<br />velg norsk</div>
             </button>
           </div>
@@ -198,7 +198,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
   if (phase === "loading") {
     return (
       <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-        <div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "#818cf8", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+        <div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--color-info)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Lager setninger…</div>
       </div>
@@ -216,8 +216,8 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             {[
-              { label: "Riktige", val: score, color: "#34d399" },
-              { label: "Feil", val: wrong, color: "#f87171" },
+              { label: "Riktige", val: score, color: "var(--color-success)" },
+              { label: "Feil", val: wrong, color: "var(--color-error)" },
               { label: "Prosent", val: `${pct}%`, color: "var(--cream)" },
             ].map(s => (
               <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", textAlign: "center", minWidth: 80 }}>
@@ -227,7 +227,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
             ))}
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={() => restart(gameMode)} style={{ padding: "14px 24px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={() => restart(gameMode)} style={{ padding: "14px 24px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               Spill igjen
             </button>
             <button onClick={() => { setPhase("mode"); setLoadError(false); setIdx(0); setScore(0); setWrong(0); setSelected(null); lockedRef.current = false; }} style={{ padding: "14px 24px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
@@ -256,7 +256,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
           ← Avslutt
         </button>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "#34d399", fontFamily: "var(--font-body)", fontWeight: 600 }}>
+          <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
             {score}/{rounds.length}
           </span>
           <span style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
@@ -268,7 +268,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
       {/* Progress dots */}
       <div style={{ display: "flex", gap: 4, padding: "0 20px 16px", justifyContent: "center" }}>
         {rounds.map((_, i) => (
-          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < idx ? "#34d399" : i === idx ? "var(--cream)" : "var(--border)", transition: "background 0.2s" }} />
+          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < idx ? "var(--color-success)" : i === idx ? "var(--cream)" : "var(--border)", transition: "background 0.2s" }} />
         ))}
       </div>
 
@@ -281,7 +281,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <button
               onClick={playAudio}
-              style={{ width: 64, height: 64, borderRadius: "50%", background: speaking ? "rgba(129,140,248,0.2)" : "rgba(230,211,168,0.12)", border: `2px solid ${speaking ? "#818cf8" : "var(--cream)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, transition: "all 0.2s ease", flexShrink: 0 }}
+              style={{ width: 64, height: 64, borderRadius: "50%", background: speaking ? "var(--color-info-bg)" : "rgba(230,211,168,0.12)", border: `2px solid ${speaking ? "var(--color-info)" : "var(--cream)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, transition: "all 0.2s ease", flexShrink: 0 }}
             >
               {speaking ? "⏸" : "▶"}
             </button>
@@ -295,7 +295,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
             </button>
           </div>
           {showFeedback && (
-            <div style={{ fontSize: 13, color: isCorrect ? "#34d399" : "#f87171", fontFamily: "var(--font-body)", fontWeight: 500, textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: isCorrect ? "var(--color-success)" : "var(--color-error)", fontFamily: "var(--font-body)", fontWeight: 500, textAlign: "center" }}>
               {current.fr}
             </div>
           )}
@@ -317,16 +317,16 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
                 padding: isSentenceMode ? "14px 18px" : "18px 10px",
                 borderRadius: 16,
                 border: showGreen
-                  ? "2px solid #34d399"
+                  ? "2px solid var(--color-success)"
                   : showRed
-                  ? "2px solid #f87171"
+                  ? "2px solid var(--color-error)"
                   : "2px solid var(--border)",
                 background: showGreen
-                  ? "rgba(52,211,153,0.13)"
+                  ? "var(--color-success-bg)"
                   : showRed
-                  ? "rgba(248,113,113,0.13)"
+                  ? "var(--color-error-bg)"
                   : "var(--surface)",
-                color: showGreen ? "#34d399" : showRed ? "#f87171" : "var(--text)",
+                color: showGreen ? "var(--color-success)" : showRed ? "var(--color-error)" : "var(--text)",
                 fontSize: opt.length > 30 ? 12 : opt.length > 15 ? 13 : 15,
                 fontFamily: "var(--font-body)",
                 cursor: showFeedback ? "default" : "pointer",
@@ -344,7 +344,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
       {/* Neste-knapp: fixed over BottomNav */}
       {showFeedback && (
         <div style={{ position: "fixed", bottom: 92, left: 0, right: 0, padding: "0 20px", zIndex: 190 }}>
-          <button onClick={handleNext} style={{ width: "100%", padding: "16px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
+          <button onClick={handleNext} style={{ width: "100%", padding: "16px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
             {idx + 1 >= rounds.length ? "Se resultat" : "Neste →"}
           </button>
         </div>

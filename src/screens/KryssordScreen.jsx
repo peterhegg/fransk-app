@@ -233,7 +233,7 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
       {/* Header */}
       <div style={{ padding: "52px 20px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Tilbake</button>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: allCorrect ? "#5e9a6f" : "var(--text)", letterSpacing: "-0.3px" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: allCorrect ? "var(--color-success)" : "var(--text)", letterSpacing: "-0.3px" }}>
           {allCorrect ? "🎉 Perfekt!" : "Kryssord"}
         </div>
         <button onClick={generate} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Nytt ↺</button>
@@ -274,8 +274,8 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
                 if (phase === "checked") {
                   const wCorrect = cellWords.some(w => results[w.id] === "correct");
                   const wWrong   = cellWords.some(w => results[w.id] === "wrong");
-                  if (wWrong) { bg = "rgba(248,113,113,0.15)"; borderColor = "rgba(248,113,113,0.5)"; }
-                  if (wCorrect && !wWrong) { bg = "rgba(94,154,111,0.15)"; borderColor = "rgba(94,154,111,0.5)"; }
+                  if (wWrong) { bg = "var(--color-error-bg)"; borderColor = "var(--color-error-bg)"; }
+                  if (wCorrect && !wWrong) { bg = "var(--color-success-bg)"; borderColor = "var(--color-success-bg)"; }
                 }
 
                 const shownLetter = phase === "checked" ? letterFromGrid : displayLetter;
@@ -373,7 +373,7 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
                     style={{
                       textAlign: "left",
                       background: isSel ? "rgba(230,211,168,0.1)" : "var(--surface)",
-                      border: `1px solid ${isSel ? "var(--cream)" : res === "correct" ? "rgba(94,154,111,0.4)" : res === "wrong" ? "rgba(248,113,113,0.4)" : "var(--border)"}`,
+                      border: `1px solid ${isSel ? "var(--cream)" : res === "correct" ? "var(--color-success-bg)" : res === "wrong" ? "var(--color-error-bg)" : "var(--border)"}`,
                       borderRadius: 12, padding: "10px 14px", cursor: "pointer",
                     }}
                   >
@@ -382,7 +382,7 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
                         <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>{w.number}. </span>
                         <span style={{ fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)" }}>{w.no}</span>
                       </span>
-                      <span style={{ fontSize: 12, fontFamily: "var(--font-body)", color: res === "correct" ? "#5e9a6f" : res === "wrong" ? "#ef4444" : "var(--text-subtle)" }}>
+                      <span style={{ fontSize: 12, fontFamily: "var(--font-body)", color: res === "correct" ? "var(--color-success)" : res === "wrong" ? "var(--color-error)" : "var(--text-subtle)" }}>
                         {res === "correct" ? `✓ ${w.fr}` : res === "wrong" ? `✗ (${w.fr})` : userTyped ? `"${userTyped}"` : `${w.fr.length} bokst.`}
                       </span>
                     </div>
@@ -397,12 +397,12 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
       {/* Bottom actions */}
       <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "10px 20px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190 }}>
         {phase === "play" ? (
-          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
             Sjekk svar
           </button>
         ) : (
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={generate} style={{ flex: 1, padding: "14px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Nytt kryssord</button>
+            <button onClick={generate} style={{ flex: 1, padding: "14px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Nytt kryssord</button>
             <button onClick={onBack} style={{ flex: 1, padding: "14px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
           </div>
         )}

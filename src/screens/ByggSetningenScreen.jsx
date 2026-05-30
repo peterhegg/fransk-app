@@ -177,7 +177,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
         <div style={{ fontSize: 48 }}>📡</div>
         <div style={{ fontSize: 16, color: "var(--text)", fontFamily: "var(--font-display)", textAlign: "center" }}>Kunne ikke laste setninger</div>
         <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>Sjekk nettverkstilkoblingen og prøv igjen.</div>
-        <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
+        <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
         <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
       </div>
     );
@@ -194,9 +194,9 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             {[
-              { label: "Riktige", val: score, color: "#34d399" },
+              { label: "Riktige", val: score, color: "var(--color-success)" },
               { label: "Totalt", val: sentences.length, color: "var(--cream)" },
-              { label: "Prosent", val: `${pct}%`, color: "#818cf8" },
+              { label: "Prosent", val: `${pct}%`, color: "var(--color-info)" },
             ].map(s => (
               <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", textAlign: "center", minWidth: 80 }}>
                 <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
@@ -205,7 +205,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
             ))}
           </div>
           <div style={{ display: "flex", gap: 12 }}>
-            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Spill igjen</button>
+            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Spill igjen</button>
             <button onClick={onBack} style={{ padding: "14px 28px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>Hjem</button>
           </div>
         </div>
@@ -222,14 +222,14 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
           ← Avslutt
         </button>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "#34d399", fontFamily: "var(--font-body)", fontWeight: 600 }}>{score}/{sentences.length}</span>
+          <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>{score}/{sentences.length}</span>
         </div>
       </div>
 
       {/* Progress */}
       <div style={{ display: "flex", gap: 4, padding: "0 20px 16px", justifyContent: "center" }}>
         {sentences.map((_, i) => (
-          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < idx ? "#34d399" : i === idx ? "var(--cream)" : "var(--border)", transition: "background 0.2s" }} />
+          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < idx ? "var(--color-success)" : i === idx ? "var(--cream)" : "var(--border)", transition: "background 0.2s" }} />
         ))}
       </div>
 
@@ -250,9 +250,9 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
         <div style={{
           minHeight: 56,
           background: checked
-            ? isCorrect ? "rgba(52,211,153,0.08)" : "rgba(248,113,113,0.08)"
+            ? isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)"
             : "rgba(230,211,168,0.05)",
-          border: `2px solid ${checked ? (isCorrect ? "#34d399" : "#f87171") : "var(--border)"}`,
+          border: `2px solid ${checked ? (isCorrect ? "var(--color-success)" : "var(--color-error)") : "var(--border)"}`,
           borderRadius: 16,
           padding: "10px 12px",
           display: "flex",
@@ -273,8 +273,8 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
                 padding: "7px 12px",
                 borderRadius: 10,
                 border: "none",
-                background: checked ? (isCorrect ? "rgba(52,211,153,0.2)" : "rgba(248,113,113,0.2)") : "rgba(230,211,168,0.15)",
-                color: checked ? (isCorrect ? "#34d399" : "#f87171") : "var(--cream)",
+                background: checked ? (isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)") : "rgba(230,211,168,0.15)",
+                color: checked ? (isCorrect ? "var(--color-success)" : "var(--color-error)") : "var(--cream)",
                 fontSize: 14,
                 fontFamily: "var(--font-body)",
                 fontWeight: 500,
@@ -288,8 +288,8 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
 
         {/* Feedback */}
         {checked && (
-          <div style={{ marginTop: 10, padding: "10px 14px", background: isCorrect ? "rgba(52,211,153,0.08)" : "rgba(248,113,113,0.08)", borderRadius: 12 }}>
-            <div style={{ fontSize: 13, color: isCorrect ? "#34d399" : "#f87171", fontFamily: "var(--font-body)", fontWeight: 600 }}>
+          <div style={{ marginTop: 10, padding: "10px 14px", background: isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)", borderRadius: 12 }}>
+            <div style={{ fontSize: 13, color: isCorrect ? "var(--color-success)" : "var(--color-error)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
               {isCorrect ? "✓ Riktig!" : "✗ Feil"}
             </div>
             {!isCorrect && (
@@ -334,7 +334,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
             <button
               onClick={handleCheck}
               disabled={placed.length === 0}
-              style={{ flex: 1, padding: "15px", background: placed.length ? "var(--cream)" : "var(--surface)", color: placed.length ? "#1a1209" : "var(--text-subtle)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: placed.length ? "pointer" : "not-allowed", fontFamily: "var(--font-body)", transition: "all 0.2s", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}
+              style={{ flex: 1, padding: "15px", background: placed.length ? "var(--cream)" : "var(--surface)", color: placed.length ? "var(--on-accent)" : "var(--text-subtle)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: placed.length ? "pointer" : "not-allowed", fontFamily: "var(--font-body)", transition: "all 0.2s", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}
             >
               Sjekk
             </button>
@@ -346,7 +346,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
             </button>
           </>
         ) : (
-          <button onClick={handleNext} style={{ flex: 1, padding: "15px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
+          <button onClick={handleNext} style={{ flex: 1, padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
             {idx + 1 >= sentences.length ? "Se resultat" : "Neste →"}
           </button>
         )}

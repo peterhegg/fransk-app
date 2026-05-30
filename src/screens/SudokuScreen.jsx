@@ -387,8 +387,8 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
                 let bg = "var(--bg)";
                 if (isSel) bg = "rgba(230,211,168,0.28)";
                 else if (inSameGroup) bg = "rgba(230,211,168,0.07)";
-                if (hasConflict) bg = "rgba(248,113,113,0.2)";
-                if (completed && isCorrect) bg = "rgba(94,154,111,0.15)";
+                if (hasConflict) bg = "var(--color-error-bg)";
+                if (completed && isCorrect) bg = "var(--color-success-bg)";
 
                 const displayNum = val ? range.base + (val - 1) * (range.step || 1) : "";
 
@@ -399,7 +399,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
                     style={{
                       width: cellSize, height: cellSize,
                       background: bg,
-                      border: `1px solid ${hasConflict ? "rgba(248,113,113,0.5)" : "var(--border)"}`,
+                      border: `1px solid ${hasConflict ? "var(--color-error-bg)" : "var(--border)"}`,
                       borderRight: c < 8 && (c + 1) % 3 === 0 ? "2px solid var(--text-subtle)" : undefined,
                       padding: 0, cursor: isGiven ? "default" : "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -411,7 +411,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
                       <span style={{
                         fontSize: cellSize * 0.4,
                         fontWeight: isGiven ? 700 : 500,
-                        color: isGiven ? "var(--text)" : hasConflict ? "#ef4444" : "var(--cream)",
+                        color: isGiven ? "var(--text)" : hasConflict ? "var(--color-error)" : "var(--cream)",
                         fontFamily: "var(--font-body)",
                         lineHeight: 1,
                         animation: !isGiven && val !== 0 ? "pop 0.25s ease" : undefined,
@@ -445,10 +445,10 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
                   onChange={e => setInputVal(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") submitInput(); if (e.key === "Escape") { setSelected(null); setInputVal(""); } }}
                   placeholder={`f.eks. ${range?.words[Math.floor(Math.random() * 3)] || ""}…`}
-                  style={{ flex: 1, background: "var(--surface)", border: `1px solid ${shake ? "rgba(248,113,113,0.6)" : "var(--border)"}`, borderRadius: 12, padding: "12px 14px", fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", animation: shake ? "shake 0.5s ease" : undefined }}
+                  style={{ flex: 1, background: "var(--surface)", border: `1px solid ${shake ? "var(--color-error-bg)" : "var(--border)"}`, borderRadius: 12, padding: "12px 14px", fontSize: 14, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", animation: shake ? "shake 0.5s ease" : undefined }}
                   autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck={false}
                 />
-                <button onClick={submitInput} style={{ padding: "12px 18px", background: inputVal.trim() ? "var(--cream)" : "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 16, cursor: "pointer", color: inputVal.trim() ? "#1a1209" : "var(--text-subtle)", transition: "all 0.15s" }}>→</button>
+                <button onClick={submitInput} style={{ padding: "12px 18px", background: inputVal.trim() ? "var(--cream)" : "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 16, cursor: "pointer", color: inputVal.trim() ? "var(--on-accent)" : "var(--text-subtle)", transition: "all 0.15s" }}>→</button>
                 <button onClick={clearCell} style={{ padding: "12px 14px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 14, cursor: "pointer", color: "var(--text-subtle)" }}>✕</button>
               </div>
             </>
@@ -466,7 +466,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
           <div style={{ fontSize: 60 }}>🎉</div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 500, color: "var(--cream)", textAlign: "center" }}>Sudoku fullført!</div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => startGame(rangeId, puzzleIdx + 1)} style={{ padding: "14px 22px", background: "var(--cream)", color: "#1a1209", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={() => startGame(rangeId, puzzleIdx + 1)} style={{ padding: "14px 22px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
               Ny puzzle
             </button>
             <button onClick={() => setRangeId(null)} style={{ padding: "14px 22px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>
