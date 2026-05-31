@@ -1103,7 +1103,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", paddingTop: 14 }}>
             <ThemeToggle />
-            <div style={{ width: 36, height: 36, borderRadius: 99, overflow: "hidden", background: "linear-gradient(180deg,#0055A4 33%,#fff 33% 67%,#EF4135 67%)", border: "1.5px solid var(--cream)", flexShrink: 0 }} />
+            <div style={{ width: 36, height: 36, borderRadius: 99, overflow: "hidden", background: "linear-gradient(90deg,#0055A4 33%,#fff 33% 67%,#EF4135 67%)", border: "1.5px solid var(--cream)", flexShrink: 0 }} />
           </div>
         </div>
 
