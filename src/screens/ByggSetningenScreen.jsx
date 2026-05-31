@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { shuffle, logGameSession, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
+import { GameHeader, GameProgress, GameResult, LoadingState, Chip, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 
 function levelInstructions(level) {
   const l = level || "A1/A2";
@@ -45,7 +46,6 @@ JSON only, no markdown:
     return Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : null;
   };
 
-  // Retry once on failure
   try { return await attempt(); } catch { /* fall through */ }
   try { return await attempt(); } catch { return null; }
 }
@@ -59,15 +59,16 @@ function normalize(s) {
 }
 
 export default function ByggSetningenScreen({ words, grammarWords, onBack, speak, speaking, isOnline, screen, showWords, onNav }) {
-  const [phase, setPhase] = useState("loading"); // "loading" | "play" | "done" | "error"
+  const [phase, setPhase] = useState("loading");
   const [sentences, setSentences] = useState([]);
   const [idx, setIdx] = useState(0);
-  const [tiles, setTiles] = useState([]); // { id, word, placed }
-  const [placed, setPlaced] = useState([]); // tile ids in order
+  const [tiles, setTiles] = useState([]);
+  const [placed, setPlaced] = useState([]);
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState(0);
-  const abortRef = useRef(null);
+
+  const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
 
   useEffect(() => {
     let cancelled = false;
@@ -161,77 +162,50 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
     }
   };
 
-  if (phase === "loading") {
-    return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-        <div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--cream)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Lager setninger…</div>
-      </div>
-    );
-  }
+  // ── Loading ───────────────────────────────────────────────────────────────
+  if (phase === "loading") return <LoadingState label="Lager setninger…" bottomNav={nav} />;
 
-  if (phase === "error") {
-    return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: 24 }}>
-        <div style={{ fontSize: 48 }}>📡</div>
-        <div style={{ fontSize: 16, color: "var(--text)", fontFamily: "var(--font-display)", textAlign: "center" }}>Kunne ikke laste setninger</div>
-        <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>Sjekk nettverkstilkoblingen og prøv igjen.</div>
-        <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
-      </div>
-    );
-  }
+  // ── Error ─────────────────────────────────────────────────────────────────
+  if (phase === "error") return (
+    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: 24 }}>
+      <div style={{ fontSize: 48 }}>📡</div>
+      <div style={{ fontSize: 16, color: "var(--text)", fontFamily: "var(--font-display)", textAlign: "center" }}>Kunne ikke laste setninger</div>
+      <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>Sjekk nettverkstilkoblingen og prøv igjen.</div>
+      <PrimaryButton onClick={restart}>Prøv igjen</PrimaryButton>
+      <GhostButton onClick={onBack} style={{ fontSize: 13, padding: "10px 20px" }}>Tilbake</GhostButton>
+    </div>
+  );
 
+  // ── Done ──────────────────────────────────────────────────────────────────
   if (phase === "done") {
     const pct = Math.round((score / sentences.length) * 100);
     return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", gap: 24 }}>
-          <div style={{ fontSize: 56 }}>{pct >= 80 ? "🏗️" : pct >= 50 ? "🧩" : "🔧"}</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--text)", textAlign: "center", letterSpacing: "-0.5px" }}>
-            {pct >= 80 ? "Mester-bygger!" : pct >= 50 ? "Bra bygget!" : "Fortsett å øv!"}
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            {[
-              { label: "Riktige", val: score, color: "var(--color-success)" },
-              { label: "Totalt", val: sentences.length, color: "var(--cream)" },
-              { label: "Prosent", val: `${pct}%`, color: "var(--color-info)" },
-            ].map(s => (
-              <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", textAlign: "center", minWidth: 80 }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
-                <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Spill igjen</button>
-            <button onClick={onBack} style={{ padding: "14px 28px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>Hjem</button>
-          </div>
-        </div>
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
-      </div>
+      <GameResult
+        icon={pct >= 80 ? "🏗️" : pct >= 50 ? "🧩" : "🔧"}
+        title={pct >= 80 ? "Mester-bygger!" : pct >= 50 ? "Bra bygget!" : "Fortsett å øv!"}
+        stats={[
+          { label: "Riktige", value: score,             tone: "success" },
+          { label: "Totalt",  value: sentences.length,  tone: "accent"  },
+          { label: "Prosent", value: `${pct}%`,         tone: "neutral" },
+        ]}
+        primary={{ label: "Spill igjen", onClick: restart }}
+        secondary={{ label: "Hjem", onClick: onBack }}
+        bottomNav={nav}
+      />
     );
   }
 
+  // ── Play ──────────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "56px 20px 12px" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-          ← Avslutt
-        </button>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>{score}/{sentences.length}</span>
-        </div>
-      </div>
+      <GameHeader
+        onBack={onBack}
+        backLabel="Avslutt"
+        title="Bygg setningen"
+        right={<span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>{score}/{sentences.length}</span>}
+      />
 
-      {/* Progress */}
-      <div style={{ display: "flex", gap: 4, padding: "0 20px 16px", justifyContent: "center" }}>
-        {sentences.map((_, i) => (
-          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < idx ? "var(--color-success)" : i === idx ? "var(--cream)" : "var(--border)", transition: "background 0.2s" }} />
-        ))}
-      </div>
+      <GameProgress total={sentences.length} current={idx} />
 
       {/* Norwegian prompt */}
       <div style={{ padding: "0 20px 16px" }}>
@@ -252,43 +226,32 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
           background: checked
             ? isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)"
             : "rgba(230,211,168,0.05)",
-          border: `2px solid ${checked ? (isCorrect ? "var(--color-success)" : "var(--color-error)") : "var(--border)"}`,
+          border: `2px solid ${checked ? (isCorrect ? "var(--color-success-border)" : "var(--color-error-border)") : "var(--border)"}`,
           borderRadius: 16,
           padding: "10px 12px",
           display: "flex",
           flexWrap: "wrap",
           gap: 6,
           alignItems: "center",
-          minHeight: 56,
           transition: "border-color 0.2s, background 0.2s",
         }}>
           {placedTiles.length === 0 && !checked && (
             <span style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", fontStyle: "italic" }}>Trykk ord nedenfor…</span>
           )}
           {placedTiles.map((tile, i) => (
-            <button
+            <Chip
               key={tile.id}
+              tone={checked ? (isCorrect ? "correct" : "wrong") : "active"}
               onClick={() => handleRemove(tile.id, i)}
-              style={{
-                padding: "7px 12px",
-                borderRadius: 10,
-                border: "none",
-                background: checked ? (isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)") : "rgba(230,211,168,0.15)",
-                color: checked ? (isCorrect ? "var(--color-success)" : "var(--color-error)") : "var(--cream)",
-                fontSize: 14,
-                fontFamily: "var(--font-body)",
-                fontWeight: 500,
-                cursor: checked ? "default" : "pointer",
-              }}
+              style={{ cursor: checked ? "default" : "pointer" }}
             >
               {tile.word}
-            </button>
+            </Chip>
           ))}
         </div>
 
-        {/* Feedback */}
         {checked && (
-          <div style={{ marginTop: 10, padding: "10px 14px", background: isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)", borderRadius: 12 }}>
+          <div style={{ marginTop: 10, padding: "10px 14px", background: isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)", borderRadius: 12, border: `1px solid ${isCorrect ? "var(--color-success-border)" : "var(--color-error-border)"}` }}>
             <div style={{ fontSize: 13, color: isCorrect ? "var(--color-success)" : "var(--color-error)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
               {isCorrect ? "✓ Riktig!" : "✗ Feil"}
             </div>
@@ -302,57 +265,35 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
       </div>
 
       {/* Word tiles */}
-      <div style={{ padding: "0 20px 100px" }}>
+      <div style={{ padding: "0 20px 120px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {unplacedTiles.map(tile => (
-            <button
-              key={tile.id}
-              onClick={() => handlePlace(tile)}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 12,
-                border: "2px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text)",
-                fontSize: 15,
-                fontFamily: "var(--font-body)",
-                fontWeight: 500,
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-            >
+            <Chip key={tile.id} tone="idle" onClick={() => handlePlace(tile)}>
               {tile.word}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
 
-      {/* Action buttons: fixed over BottomNav */}
-      <div style={{ position: "fixed", bottom: 92, left: 0, right: 0, padding: "0 20px", zIndex: 190, display: "flex", gap: 10 }}>
+      {/* Action dock */}
+      <Dock>
         {!checked ? (
           <>
-            <button
-              onClick={handleCheck}
-              disabled={placed.length === 0}
-              style={{ flex: 1, padding: "15px", background: placed.length ? "var(--cream)" : "var(--surface)", color: placed.length ? "var(--on-accent)" : "var(--text-subtle)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: placed.length ? "pointer" : "not-allowed", fontFamily: "var(--font-body)", transition: "all 0.2s", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}
-            >
+            <PrimaryButton onClick={handleCheck} disabled={placed.length === 0} style={{ flex: 1 }}>
               Sjekk
-            </button>
-            <button
-              onClick={handleSkip}
-              style={{ padding: "15px 18px", background: "var(--surface)", color: "var(--text-subtle)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}
-            >
+            </PrimaryButton>
+            <GhostButton onClick={handleSkip} style={{ padding: "15px 18px" }}>
               Gi opp
-            </button>
+            </GhostButton>
           </>
         ) : (
-          <button onClick={handleNext} style={{ flex: 1, padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
+          <PrimaryButton onClick={handleNext} style={{ flex: 1 }}>
             {idx + 1 >= sentences.length ? "Se resultat" : "Neste →"}
-          </button>
+          </PrimaryButton>
         )}
-      </div>
+      </Dock>
 
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {nav}
     </div>
   );
 }

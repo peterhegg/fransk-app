@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { logDailyAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 
 // ── French number ranges ──────────────────────────────────────────────────────
 // Each range has exactly 9 words mapping to values 1–9
@@ -463,15 +464,11 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
       {/* Completed state */}
       {completed && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 28px", gap: 16 }}>
-          <div style={{ fontSize: 60 }}>🎉</div>
+          <div style={{ fontSize: 60, animation: "celebrate 0.5s var(--ease-spring) both" }}>🎉</div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 500, color: "var(--cream)", textAlign: "center" }}>Sudoku fullført!</div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => startGame(rangeId, puzzleIdx + 1)} style={{ padding: "14px 22px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Ny puzzle
-            </button>
-            <button onClick={() => setRangeId(null)} style={{ padding: "14px 22px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Bytt tallrekke
-            </button>
+            <PrimaryButton onClick={() => startGame(rangeId, puzzleIdx + 1)}>Ny puzzle</PrimaryButton>
+            <GhostButton onClick={() => setRangeId(null)}>Bytt tallrekke</GhostButton>
           </div>
         </div>
       )}

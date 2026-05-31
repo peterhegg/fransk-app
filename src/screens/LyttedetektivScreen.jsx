@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { shuffle, getQuizOptions, logGameSession, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
+import { GameHeader, GameProgress, GameResult, LoadingState, OptionButton, AudioButton, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 
 const ROUNDS = 8;
 
@@ -73,8 +74,8 @@ function buildSentenceRound(sentence) {
 }
 
 export default function LyttedetektivScreen({ words, grammarWords, onBack, speak, speaking, isOnline, screen, showWords, onNav }) {
-  const [phase, setPhase] = useState("mode"); // "mode" | "loading" | "play" | "done"
-  const [gameMode, setGameMode] = useState(null); // "ord" | "setning"
+  const [phase, setPhase] = useState("mode");
+  const [gameMode, setGameMode] = useState(null);
   const [rounds, setRounds] = useState([]);
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -84,6 +85,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
   const lockedRef = useRef(false);
   const hasSpokenRef = useRef(false);
 
+  const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
   const current = rounds[idx] || null;
 
   const playAudio = useCallback(() => {
@@ -131,8 +133,7 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
     if (lockedRef.current || selected !== null) return;
     lockedRef.current = true;
     setSelected(opt);
-    const isCorrect = opt === current.correct;
-    if (isCorrect) setScore(s => s + 1);
+    if (opt === current.correct) setScore(s => s + 1);
     else setWrong(w => w + 1);
   };
 
@@ -160,117 +161,87 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
     else { setPhase("mode"); }
   };
 
-  if (phase === "mode") {
-    return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", gap: 28 }}>
-          <div style={{ fontSize: 56 }}>🔊</div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.5px" }}>Lyttedetektiv</div>
-            <div style={{ fontSize: 14, color: "var(--text-subtle)", marginTop: 8, fontFamily: "var(--font-body)", lineHeight: 1.5 }}>
-              Hør fransklyden — velg riktig norsk.
-            </div>
+  // ── Mode ──────────────────────────────────────────────────────────────────
+  if (phase === "mode") return (
+    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", gap: 28 }}>
+        <div style={{ fontSize: 56 }}>🔊</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.5px" }}>Lyttedetektiv</div>
+          <div style={{ fontSize: 14, color: "var(--text-subtle)", marginTop: 8, fontFamily: "var(--font-body)", lineHeight: 1.5 }}>
+            Hør fransklyden — velg riktig norsk.
           </div>
-          {loadError && (
-            <div style={{ fontSize: 13, color: "var(--color-error)", fontFamily: "var(--font-body)", textAlign: "center" }}>
-              Nettverksfeil. Prøv igjen eller velg ord-modus.
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 320 }}>
-            <button onClick={startOrd} style={{ flex: 1, padding: "20px 12px", background: "rgba(251,191,36,0.12)", border: "2px solid var(--color-streak)", borderRadius: 18, cursor: "pointer", textAlign: "center" }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>🎵</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--color-streak)", fontFamily: "var(--font-body)" }}>Ord</div>
-              <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4, fontFamily: "var(--font-body)", lineHeight: 1.4 }}>Hør et ord,<br />velg norsk</div>
-            </button>
-            <button onClick={startSetning} disabled={!isOnline} style={{ flex: 1, padding: "20px 12px", background: isOnline ? "var(--color-info-bg)" : "var(--surface)", border: `2px solid ${isOnline ? "var(--color-info)" : "var(--border)"}`, borderRadius: 18, cursor: isOnline ? "pointer" : "not-allowed", textAlign: "center", opacity: isOnline ? 1 : 0.5 }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>🎙️</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--color-info)", fontFamily: "var(--font-body)" }}>Setning</div>
-              <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4, fontFamily: "var(--font-body)", lineHeight: 1.4 }}>Hør AI-setning,<br />velg norsk</div>
-            </button>
-          </div>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
         </div>
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+        {loadError && (
+          <div style={{ fontSize: 13, color: "var(--color-error)", fontFamily: "var(--font-body)", textAlign: "center" }}>
+            Nettverksfeil. Prøv igjen eller velg ord-modus.
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 320 }}>
+          <button onClick={startOrd} className="press" style={{ flex: 1, padding: "20px 12px", background: "rgba(251,191,36,0.12)", border: "2px solid var(--color-streak)", borderRadius: 18, cursor: "pointer", textAlign: "center" }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>🎵</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--color-streak)", fontFamily: "var(--font-body)" }}>Ord</div>
+            <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4, fontFamily: "var(--font-body)", lineHeight: 1.4 }}>Hør et ord,<br />velg norsk</div>
+          </button>
+          <button onClick={startSetning} disabled={!isOnline} className="press" style={{ flex: 1, padding: "20px 12px", background: isOnline ? "var(--color-info-bg)" : "var(--surface)", border: `2px solid ${isOnline ? "var(--color-info)" : "var(--border)"}`, borderRadius: 18, cursor: isOnline ? "pointer" : "not-allowed", textAlign: "center", opacity: isOnline ? 1 : 0.5 }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>🎙️</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--color-info)", fontFamily: "var(--font-body)" }}>Setning</div>
+            <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 4, fontFamily: "var(--font-body)", lineHeight: 1.4 }}>Hør AI-setning,<br />velg norsk</div>
+          </button>
+        </div>
+        <button onClick={onBack} className="press" style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
       </div>
-    );
-  }
+      {nav}
+    </div>
+  );
 
-  if (phase === "loading") {
-    return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-        <div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--color-info)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Lager setninger…</div>
-      </div>
-    );
-  }
+  // ── Loading ───────────────────────────────────────────────────────────────
+  if (phase === "loading") return <LoadingState label="Lager setninger…" bottomNav={nav} />;
 
+  // ── Done ──────────────────────────────────────────────────────────────────
   if (phase === "done") {
     const pct = Math.round((score / rounds.length) * 100);
+    const icon = pct >= 80 ? "🏅" : pct >= 50 ? "👍" : "🎧";
+    const title = pct >= 80 ? "Utmerket lytting!" : pct >= 50 ? "Bra jobbet!" : "Øv mer på lytting!";
     return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", gap: 24 }}>
-          <div style={{ fontSize: 56 }}>{pct >= 80 ? "🏅" : pct >= 50 ? "👍" : "🎧"}</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--text)", textAlign: "center", letterSpacing: "-0.5px" }}>
-            {pct >= 80 ? "Utmerket lytting!" : pct >= 50 ? "Bra jobbet!" : "Øv mer på lytting!"}
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            {[
-              { label: "Riktige", val: score, color: "var(--color-success)" },
-              { label: "Feil", val: wrong, color: "var(--color-error)" },
-              { label: "Prosent", val: `${pct}%`, color: "var(--cream)" },
-            ].map(s => (
-              <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", textAlign: "center", minWidth: 80 }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
-                <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={() => restart(gameMode)} style={{ padding: "14px 24px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Spill igjen
-            </button>
-            <button onClick={() => { setPhase("mode"); setLoadError(false); setIdx(0); setScore(0); setWrong(0); setSelected(null); lockedRef.current = false; }} style={{ padding: "14px 24px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Bytt modus
-            </button>
-            <button onClick={onBack} style={{ padding: "14px 24px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Hjem
-            </button>
-          </div>
-        </div>
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
-      </div>
+      <GameResult
+        icon={icon}
+        title={title}
+        stats={[
+          { label: "Riktige", value: score, tone: "success" },
+          { label: "Feil",    value: wrong, tone: "error" },
+          { label: "Prosent", value: `${pct}%`, tone: "accent" },
+        ]}
+        primary={{ label: "Spill igjen", onClick: () => restart(gameMode) }}
+        secondary={{ label: "Bytt modus", onClick: () => { setPhase("mode"); setLoadError(false); setIdx(0); setScore(0); setWrong(0); setSelected(null); lockedRef.current = false; } }}
+        tertiary={{ label: "Hjem", onClick: onBack }}
+        bottomNav={nav}
+      />
     );
   }
 
+  // ── Play ──────────────────────────────────────────────────────────────────
   const showFeedback = selected !== null;
   const isCorrect = selected === current?.correct;
-
   const isSentenceMode = gameMode === "setning";
+
+  const optionState = (opt) => {
+    if (!showFeedback) return "idle";
+    if (opt === current.correct) return "reveal";
+    if (opt === selected) return "wrong";
+    return "disabled";
+  };
 
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", paddingBottom: 188 }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "56px 20px 12px" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-          ← Avslutt
-        </button>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
-            {score}/{rounds.length}
-          </span>
-          <span style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
-            {gameMode === "ord" ? "♪ Ord" : "🎙 Setning"}
-          </span>
-        </div>
-      </div>
+      <GameHeader
+        onBack={onBack}
+        backLabel="Avslutt"
+        title={gameMode === "ord" ? "♪ Ord" : "🎙 Setning"}
+        right={<span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>{score}/{rounds.length}</span>}
+      />
 
-      {/* Progress dots */}
-      <div style={{ display: "flex", gap: 4, padding: "0 20px 16px", justifyContent: "center" }}>
-        {rounds.map((_, i) => (
-          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < idx ? "var(--color-success)" : i === idx ? "var(--cream)" : "var(--border)", transition: "background 0.2s" }} />
-        ))}
-      </div>
+      <GameProgress total={rounds.length} current={idx} />
 
       {/* Audio card */}
       <div style={{ padding: "0 20px 20px" }}>
@@ -278,22 +249,11 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
           <div style={{ fontSize: 12, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "var(--font-body)" }}>
             Hva sier de?
           </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button
-              onClick={playAudio}
-              style={{ width: 64, height: 64, borderRadius: "50%", background: speaking ? "var(--color-info-bg)" : "rgba(230,211,168,0.12)", border: `2px solid ${speaking ? "var(--color-info)" : "var(--cream)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, transition: "all 0.2s ease", flexShrink: 0 }}
-            >
-              {speaking ? "⏸" : "▶"}
-            </button>
-            <button
-              onClick={() => current && speak(current.fr, 0.45)}
-              title="Spill sakte"
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, background: "none", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 12px", cursor: "pointer", color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}
-            >
-              <span style={{ fontSize: 16 }}>🐢</span>
-              <span style={{ fontSize: 10 }}>Sakte</span>
-            </button>
-          </div>
+          <AudioButton
+            playing={speaking}
+            onClick={playAudio}
+            onSlow={() => current && speak(current.fr, 0.45)}
+          />
           {showFeedback && (
             <div style={{ fontSize: 13, color: isCorrect ? "var(--color-success)" : "var(--color-error)", fontFamily: "var(--font-body)", fontWeight: 500, textAlign: "center" }}>
               {current.fr}
@@ -303,54 +263,35 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
       </div>
 
       {/* Options */}
-      <div style={{ padding: "0 20px", display: isSentenceMode ? "flex" : "grid", flexDirection: "column", gridTemplateColumns: isSentenceMode ? undefined : "1fr 1fr", gap: 10 }}>
-        {current?.options.map(opt => {
-          const isSelected = selected === opt;
-          const isCorrectOpt = opt === current.correct;
-          const showGreen = showFeedback && isCorrectOpt;
-          const showRed = showFeedback && isSelected && !isCorrectOpt;
-          return (
-            <button
-              key={opt}
-              onClick={() => !showFeedback && handleAnswer(opt)}
-              style={{
-                padding: isSentenceMode ? "14px 18px" : "18px 10px",
-                borderRadius: 16,
-                border: showGreen
-                  ? "2px solid var(--color-success)"
-                  : showRed
-                  ? "2px solid var(--color-error)"
-                  : "2px solid var(--border)",
-                background: showGreen
-                  ? "var(--color-success-bg)"
-                  : showRed
-                  ? "var(--color-error-bg)"
-                  : "var(--surface)",
-                color: showGreen ? "var(--color-success)" : showRed ? "var(--color-error)" : "var(--text)",
-                fontSize: opt.length > 30 ? 12 : opt.length > 15 ? 13 : 15,
-                fontFamily: "var(--font-body)",
-                cursor: showFeedback ? "default" : "pointer",
-                textAlign: isSentenceMode ? "left" : "center",
-                lineHeight: 1.4,
-                transition: "all 0.15s ease",
-              }}
-            >
-              {opt}
-            </button>
-          );
-        })}
+      <div style={{
+        padding: "0 20px",
+        display: isSentenceMode ? "flex" : "grid",
+        flexDirection: "column",
+        gridTemplateColumns: isSentenceMode ? undefined : "1fr 1fr",
+        gap: 10,
+      }}>
+        {current?.options.map(opt => (
+          <OptionButton
+            key={opt}
+            state={optionState(opt)}
+            onClick={() => !showFeedback && handleAnswer(opt)}
+            align={isSentenceMode ? "left" : "center"}
+            style={{ fontSize: opt.length > 30 ? 12 : opt.length > 15 ? 13 : 15 }}
+          >
+            {opt}
+          </OptionButton>
+        ))}
       </div>
 
-      {/* Neste-knapp: fixed over BottomNav */}
       {showFeedback && (
-        <div style={{ position: "fixed", bottom: 92, left: 0, right: 0, padding: "0 20px", zIndex: 190 }}>
-          <button onClick={handleNext} style={{ width: "100%", padding: "16px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
+        <Dock>
+          <PrimaryButton onClick={handleNext} style={{ flex: 1 }}>
             {idx + 1 >= rounds.length ? "Se resultat" : "Neste →"}
-          </button>
-        </div>
+          </PrimaryButton>
+        </Dock>
       )}
 
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {nav}
     </div>
   );
 }

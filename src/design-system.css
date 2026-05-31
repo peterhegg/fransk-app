@@ -272,6 +272,7 @@ body {
 }
 
 /* ── Game UI shared feedback + entrance ─────────────────────────── */
+@keyframes spin        { to { transform: rotate(360deg); } }
 @keyframes correct-pop { 0% { transform: scale(1); } 42% { transform: scale(1.05); } 100% { transform: scale(1); } }
 @keyframes wrong-shake { 0%,100% { transform: translateX(0); } 18%,58% { transform: translateX(-6px); } 38%,78% { transform: translateX(6px); } }
 @keyframes cell-pop    { 0% { transform: scale(0.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }

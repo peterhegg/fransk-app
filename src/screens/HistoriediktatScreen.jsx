@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { GameHeader, GameResult, LoadingState, Dock, PrimaryButton, GhostButton, Waveform, AudioButton } from "../components/GameUI.jsx";
 
 function normalize(str) {
   return (str || "")
@@ -60,8 +61,8 @@ Rules:
 }
 
 export default function HistoriediktatScreen({ words, onBack, speak, screen, showWords, onNav, onGameComplete }) {
-  const [mode, setMode]   = useState(null);       // null | "easy" | "hard"
-  const [phase, setPhase] = useState("mode");      // mode | loading | listen | fill | result
+  const [mode, setMode]   = useState(null);
+  const [phase, setPhase] = useState("mode");
   const [story, setStory] = useState(null);
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -70,6 +71,8 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
   const [playing, setPlaying] = useState(false);
   const inputRefs = useRef([]);
   const profile = loadUserProfile();
+
+  const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
 
   const load = useCallback(async () => {
     setPhase("loading");
@@ -142,16 +145,12 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
   // ── Mode selector ─────────────────────────────────────────────────────────
   if (phase === "mode") return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Tilbake</button>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.3px" }}>Historiediktat</div>
-        <div style={{ width: 60 }} />
-      </div>
+      <GameHeader onBack={onBack} backLabel="Tilbake" title="Historiediktat" />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 28px", gap: 16 }}>
         <div style={{ fontSize: 52 }}>📖</div>
         <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 500, color: "var(--text)", textAlign: "center" }}>Velg vanskelighetsgrad</div>
 
-        <button onClick={() => startMode("easy")} style={{
+        <button onClick={() => startMode("easy")} className="press" style={{
           width: "100%", maxWidth: 340,
           background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18,
           padding: "20px 22px", textAlign: "left", cursor: "pointer",
@@ -160,7 +159,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Historien er synlig med tomme felt.<br />Fyll inn ordene som mangler.</div>
         </button>
 
-        <button onClick={() => startMode("hard")} style={{
+        <button onClick={() => startMode("hard")} className="press" style={{
           width: "100%", maxWidth: 340,
           background: "var(--surface)", border: "1px solid var(--cream)", borderRadius: 18,
           padding: "20px 22px", textAlign: "left", cursor: "pointer",
@@ -169,45 +168,35 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Historien er skjult. Hør den så mange<br />ganger du trenger, skriv ordene fra hukommelsen.</div>
         </button>
       </div>
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {nav}
     </div>
   );
 
   // ── Loading ───────────────────────────────────────────────────────────────
-  if (phase === "loading") return (
-    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      {error ? (
-        <>
+  if (phase === "loading") {
+    if (error) return (
+      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32 }}>
           <div style={{ fontSize: 40 }}>⚠️</div>
           <div style={{ fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Kunne ikke laste historien</div>
           {errorMsg && <div style={{ fontSize: 11, color: "var(--text-subtle)", fontFamily: "monospace", background: "var(--surface)", padding: "6px 10px", borderRadius: 8, maxWidth: 320, wordBreak: "break-all" }}>{errorMsg}</div>}
-          <button onClick={load} style={{ padding: "12px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
-          <button onClick={onBack} style={{ padding: "10px 20px", background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-        </>
-      ) : (
-        <>
-          <span style={{ fontSize: 52 }}>📖</span>
-          <div style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--cream)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Lager historien…</div>
-        </>
-      )}
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
-    </div>
-  );
+          <PrimaryButton onClick={load}>Prøv igjen</PrimaryButton>
+          <GhostButton onClick={onBack} style={{ fontSize: 13, padding: "10px 20px" }}>← Tilbake</GhostButton>
+        </div>
+        {nav}
+      </div>
+    );
+    return <LoadingState icon="📖" label="Lager historien…" bottomNav={nav} />;
+  }
 
   // ── Listen ────────────────────────────────────────────────────────────────
   if (phase === "listen") return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-      <style>{`@keyframes wave{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1)}}`}</style>
-
-      <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <button onClick={() => { stopPlay(); setPhase("mode"); setMode(null); }} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Tilbake</button>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.3px" }}>
-          {mode === "hard" ? "🎧 Ekte diktat" : "📝 Enkel"}
-        </div>
-        <div style={{ width: 60 }} />
-      </div>
+      <GameHeader
+        onBack={() => { stopPlay(); setPhase("mode"); setMode(null); }}
+        backLabel="Tilbake"
+        title={mode === "hard" ? "🎧 Ekte diktat" : "📝 Enkel"}
+      />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 32px", gap: 24 }}>
         <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center", lineHeight: 1.7 }}>
@@ -216,36 +205,14 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
             : "Lytt til historien. Du kan høre den så mange ganger du vil."}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 5, height: 48 }}>
-          {Array.from({ length: 7 }, (_, i) => (
-            <div key={i} style={{
-              width: 5, height: 36, borderRadius: 3,
-              background: playing ? "var(--cream)" : "var(--border)",
-              animation: playing ? `wave 0.9s ${i * 0.12}s ease-in-out infinite` : "none",
-              transformOrigin: "center",
-            }} />
-          ))}
-        </div>
+        <Waveform active={playing} />
 
-        <button
-          onClick={playing ? stopPlay : playStory}
-          style={{
-            width: 88, height: 88, borderRadius: "50%",
-            background: playing ? "rgba(230,211,168,0.15)" : "var(--cream)",
-            border: playing ? "2px solid var(--cream)" : "none",
-            color: playing ? "var(--cream)" : "var(--on-accent)",
-            fontSize: 32, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          {playing ? "⏹" : "▶"}
-        </button>
+        <AudioButton playing={playing} onClick={playing ? stopPlay : playStory} />
 
         <div style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
           {playing ? "Spiller…" : "Trykk for å høre"}
         </div>
 
-        {/* Show story text only in easy mode */}
         {mode === "easy" && story && (
           <div style={{ width: "100%", maxWidth: 380, background: "var(--surface)", borderRadius: 18, padding: "18px 20px", border: "1px solid var(--border)", fontSize: 14, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.8, fontStyle: "italic" }}>
             {story.segments.map((seg, i) => (
@@ -262,15 +229,12 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           </div>
         )}
 
-        <button
-          onClick={() => { stopPlay(); setPhase("fill"); }}
-          style={{ width: "100%", maxWidth: 320, padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}
-        >
+        <PrimaryButton onClick={() => { stopPlay(); setPhase("fill"); }} style={{ width: "100%", maxWidth: 320 }}>
           Klar til å fylle inn →
-        </button>
+        </PrimaryButton>
       </div>
 
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {nav}
     </div>
   );
 
@@ -279,13 +243,18 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
     let blankIdx = 0;
     return (
       <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={() => { stopPlay(); setPhase("listen"); }} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Lytt igjen</button>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.3px" }}>Fyll inn ordene</div>
-          <button onClick={playing ? stopPlay : playStory} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 20, cursor: "pointer", padding: 0 }}>{playing ? "⏹" : "▶"}</button>
-        </div>
+        <GameHeader
+          onBack={() => { stopPlay(); setPhase("listen"); }}
+          backLabel="Lytt igjen"
+          title="Fyll inn ordene"
+          right={
+            <button onClick={playing ? stopPlay : playStory} className="press" style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 20, cursor: "pointer", padding: 4 }}>
+              {playing ? "⏹" : "▶"}
+            </button>
+          }
+        />
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "12px 22px 180px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 22px 100px" }}>
           <div style={{ background: "var(--surface)", borderRadius: 20, padding: "22px 20px", border: "1px solid var(--border)", fontSize: 16, color: "var(--text)", fontFamily: "var(--font-body)", lineHeight: 2.4 }}>
             {story.segments.map((seg, si) => {
               if (!seg.blank) return <span key={si}>{seg.text}</span>;
@@ -309,28 +278,31 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           </div>
         </div>
 
-        <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "12px 22px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190 }}>
-          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            Sjekk svar
-          </button>
-        </div>
+        <Dock>
+          <PrimaryButton onClick={checkAnswers} style={{ flex: 1 }}>Sjekk svar</PrimaryButton>
+        </Dock>
 
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+        {nav}
       </div>
     );
   }
 
-  // ── Fill (Hard — hidden story, numbered inputs) ────────────────────────────
+  // ── Fill (Hard) ───────────────────────────────────────────────────────────
   if (phase === "fill" && mode === "hard") {
     return (
       <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={() => { stopPlay(); setPhase("listen"); }} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Lytt igjen</button>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: "var(--cream)", letterSpacing: "-0.3px" }}>🎧 Diktat</div>
-          <button onClick={playing ? stopPlay : playStory} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 20, cursor: "pointer", padding: 0 }}>{playing ? "⏹" : "▶"}</button>
-        </div>
+        <GameHeader
+          onBack={() => { stopPlay(); setPhase("listen"); }}
+          backLabel="Lytt igjen"
+          title="🎧 Diktat"
+          right={
+            <button onClick={playing ? stopPlay : playStory} className="press" style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 20, cursor: "pointer", padding: 4 }}>
+              {playing ? "⏹" : "▶"}
+            </button>
+          }
+        />
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 22px 180px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 22px 100px", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginBottom: 4, lineHeight: 1.6 }}>
             Skriv de {story.answers.length} ordene du hørte, i riktig rekkefølge:
           </div>
@@ -350,13 +322,11 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           ))}
         </div>
 
-        <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "12px 22px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190 }}>
-          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            Sjekk svar
-          </button>
-        </div>
+        <Dock>
+          <PrimaryButton onClick={checkAnswers} style={{ flex: 1 }}>Sjekk svar</PrimaryButton>
+        </Dock>
 
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+        {nav}
       </div>
     );
   }
@@ -367,13 +337,9 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
   let blankIdx2 = 0;
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Tilbake</button>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.3px" }}>Resultat</div>
-        <div style={{ width: 60 }} />
-      </div>
+      <GameHeader onBack={onBack} backLabel="Tilbake" title="Resultat" />
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 22px 180px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 22px 100px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ background: "var(--surface)", borderRadius: 20, padding: "24px 20px", border: "1px solid var(--border)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 600, color: pct === 100 ? "var(--color-success)" : pct >= 60 ? "var(--cream)" : "var(--color-error)" }}>
             {score}/{total}
@@ -383,7 +349,6 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
           </div>
         </div>
 
-        {/* Story with corrections */}
         <div style={{ background: "var(--surface)", borderRadius: 20, padding: "22px 20px", border: "1px solid var(--border)", fontSize: 15, color: "var(--text)", fontFamily: "var(--font-body)", lineHeight: 2.6 }}>
           {story.segments.map((seg, si) => {
             if (!seg.blank) return <span key={si}>{seg.text}</span>;
@@ -405,17 +370,14 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
         </div>
       </div>
 
-      <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "12px 22px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190, display: "flex", gap: 10 }}>
-        <button onClick={load} style={{ flex: 1, padding: "14px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Ny historie</button>
-        <button
-          onClick={() => { setPhase("fill"); setInputs(story.answers.map(() => "")); setResults([]); }}
-          style={{ flex: 1, padding: "14px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}
-        >
+      <Dock>
+        <PrimaryButton onClick={load} style={{ flex: 1 }}>Ny historie</PrimaryButton>
+        <GhostButton onClick={() => { setPhase("fill"); setInputs(story.answers.map(() => "")); setResults([]); }} style={{ flex: 1 }}>
           Prøv igjen
-        </button>
-      </div>
+        </GhostButton>
+      </Dock>
 
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {nav}
     </div>
   );
 }

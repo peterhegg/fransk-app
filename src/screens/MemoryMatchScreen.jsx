@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { shuffle, selectExerciseWords, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { GameHeader, GameResult } from "../components/GameUI.jsx";
 
 const PAIR_COUNT = 8;
 const FLIP_DELAY = 900;
@@ -101,35 +102,18 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
 
   if (done) {
     return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", gap: 24 }}>
-          <div style={{ fontSize: 64 }}>🎉</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--text)", textAlign: "center", letterSpacing: "-0.5px" }}>
-            Fullført!
-          </div>
-          <div style={{ display: "flex", gap: 16 }}>
-            {[
-              { label: "Poeng", val: score, color: "var(--cream)" },
-              { label: "Tid", val: fmt(seconds), color: "var(--color-success)" },
-              { label: "Feil", val: mistakes, color: "var(--color-error)" },
-            ].map(s => (
-              <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 20px", textAlign: "center", minWidth: 80 }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
-                <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Spill igjen
-            </button>
-            <button onClick={onBack} style={{ padding: "14px 28px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Hjem
-            </button>
-          </div>
-        </div>
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
-      </div>
+      <GameResult
+        icon="🎉"
+        title="Fullført!"
+        stats={[
+          { label: "Poeng", value: score,       tone: "accent"  },
+          { label: "Tid",   value: fmt(seconds), tone: "success" },
+          { label: "Feil",  value: mistakes,     tone: "error"   },
+        ]}
+        primary={{ label: "Spill igjen", onClick: restart }}
+        secondary={{ label: "Hjem", onClick: onBack }}
+        bottomNav={<BottomNav screen={screen} showWords={showWords} onNav={onNav} />}
+      />
     );
   }
 
@@ -137,27 +121,19 @@ export default function MemoryMatchScreen({ words, onBack, speak, screen, showWo
 
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "56px 20px 12px" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", padding: "4px 0", fontFamily: "var(--font-body)" }}>
-          ← Tilbake
-        </button>
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
-            {matched.size}/{totalPairs} par
-          </span>
-          <span style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
-            {fmt(seconds)}
-          </span>
-        </div>
-      </div>
-
-      {/* Title */}
-      <div style={{ padding: "0 20px 20px" }}>
-        <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.4px" }}>
-          Memory
-        </h1>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
+      <GameHeader
+        onBack={onBack}
+        backLabel="Tilbake"
+        title="Memory"
+        right={
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "var(--color-success)", fontFamily: "var(--font-body)", fontWeight: 600 }}>{matched.size}/{totalPairs}</span>
+            <span style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>{fmt(seconds)}</span>
+          </div>
+        }
+      />
+      <div style={{ padding: "0 20px 12px" }}>
+        <p style={{ margin: 0, fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>
           Match norsk og fransk — {totalPairs} par
         </p>
       </div>

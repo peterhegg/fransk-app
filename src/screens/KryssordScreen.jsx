@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { logDailyAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { GameHeader, LoadingState, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 
 const GRID_SIZE = 15;
 
@@ -205,23 +206,19 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
   const down   = crossword?.words.filter(w => w.dir === "down").sort((a, b) => a.number - b.number) || [];
   const allCorrect = phase === "checked" && crossword?.words.every(w => results[w.id] === "correct");
 
+  const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
+
   if (emptyBank) return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32 }}>
       <div style={{ fontSize: 52 }}>📚</div>
       <div style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--text)", textAlign: "center" }}>Trenger flere ord</div>
       <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center", lineHeight: 1.7 }}>Legg til minst 8–10 ord i ordbanken<br />for å spille Kryssord.</div>
-      <button onClick={onBack} style={{ marginTop: 8, padding: "12px 28px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, color: "var(--text)", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      <GhostButton onClick={onBack} style={{ marginTop: 8 }}>← Tilbake</GhostButton>
+      {nav}
     </div>
   );
 
-  if (!crossword) return (
-    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <div style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--cream)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)" }}>Bygger kryssordet…</div>
-    </div>
-  );
+  if (!crossword) return <LoadingState label="Bygger kryssordet…" bottomNav={nav} />;
 
   const { grid, words: cwWords } = crossword;
   const cols = grid[0]?.length || 1;
@@ -230,14 +227,16 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
 
-      {/* Header */}
-      <div style={{ padding: "52px 20px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>← Tilbake</button>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 500, color: allCorrect ? "var(--color-success)" : "var(--text)", letterSpacing: "-0.3px" }}>
-          {allCorrect ? "🎉 Perfekt!" : "Kryssord"}
-        </div>
-        <button onClick={generate} style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Nytt ↺</button>
-      </div>
+      <GameHeader
+        onBack={onBack}
+        backLabel="Tilbake"
+        title={allCorrect ? "🎉 Perfekt!" : "Kryssord"}
+        right={
+          <button onClick={generate} className="press" style={{ background: "none", border: "none", color: "var(--text-subtle)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0" }}>
+            Nytt ↺
+          </button>
+        }
+      />
 
       {/* Grid */}
       <div style={{ display: "flex", justifyContent: "center", padding: "6px 22px 10px", overflowX: "auto" }}>
@@ -394,21 +393,18 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
         ))}
       </div>
 
-      {/* Bottom actions */}
-      <div style={{ position: "fixed", bottom: 84, left: 0, right: 0, padding: "10px 20px", background: "linear-gradient(to top, var(--bg) 80%, transparent)", zIndex: 190 }}>
+      <Dock>
         {phase === "play" ? (
-          <button onClick={checkAnswers} style={{ width: "100%", padding: "15px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-            Sjekk svar
-          </button>
+          <PrimaryButton onClick={checkAnswers} style={{ flex: 1 }}>Sjekk svar</PrimaryButton>
         ) : (
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={generate} style={{ flex: 1, padding: "14px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Nytt kryssord</button>
-            <button onClick={onBack} style={{ flex: 1, padding: "14px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Tilbake</button>
-          </div>
+          <>
+            <PrimaryButton onClick={generate} style={{ flex: 1 }}>Nytt kryssord</PrimaryButton>
+            <GhostButton onClick={onBack} style={{ flex: 1 }}>Tilbake</GhostButton>
+          </>
         )}
-      </div>
+      </Dock>
 
-      <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
+      {nav}
     </div>
   );
 }

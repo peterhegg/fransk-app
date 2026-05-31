@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { shuffle, getQuizOptions, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import { GameResult, OptionButton } from "../components/GameUI.jsx";
 
 const DURATION = 60;
 const HIGH_SCORE_KEY = "fransk-tidspress-highscore";
@@ -144,40 +145,19 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
   if (done) {
     const newHigh = score >= highScore && score > 0;
     return (
-      <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", gap: 24 }}>
-          <div style={{ fontSize: 56 }}>{newHigh ? "🏆" : "⏱️"}</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500, color: "var(--text)", textAlign: "center", letterSpacing: "-0.5px" }}>
-            {newHigh ? "Ny rekord!" : "Tid ute!"}
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            {[
-              { label: "Poeng", val: score, color: "var(--cream)" },
-              { label: "Riktige", val: answered - wrong, color: "var(--color-success)" },
-              { label: "Feil", val: wrong, color: "var(--color-error)" },
-            ].map(s => (
-              <div key={s.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", textAlign: "center", minWidth: 80 }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "var(--font-body)" }}>{s.val}</div>
-                <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          {newHigh && (
-            <div style={{ fontSize: 13, color: "var(--cream)", fontFamily: "var(--font-body)" }}>
-              Forrige rekord: {loadHighScore()} → {score}
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 12 }}>
-            <button onClick={restart} style={{ padding: "14px 28px", background: "var(--cream)", color: "var(--on-accent)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Prøv igjen
-            </button>
-            <button onClick={onBack} style={{ padding: "14px 28px", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-              Hjem
-            </button>
-          </div>
-        </div>
-        <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
-      </div>
+      <GameResult
+        icon={newHigh ? "🏆" : "⏱️"}
+        title={newHigh ? "Ny rekord!" : "Tid ute!"}
+        subtitle={newHigh ? `Forrige rekord: ${loadHighScore()} → ${score}` : undefined}
+        stats={[
+          { label: "Poeng",   value: score,             tone: "accent"  },
+          { label: "Riktige", value: answered - wrong,  tone: "success" },
+          { label: "Feil",    value: wrong,             tone: "error"   },
+        ]}
+        primary={{ label: "Prøv igjen", onClick: restart }}
+        secondary={{ label: "Hjem", onClick: onBack }}
+        bottomNav={<BottomNav screen={screen} showWords={showWords} onNav={onNav} />}
+      />
     );
   }
 
@@ -230,32 +210,18 @@ export default function TidspressScreen({ words, onBack, speak, speaking, screen
           {options.map(opt => {
             const isSelected = selected === opt;
             const correctOpt = opt === correct;
-            const showResult = isSelected;
+            const state = isSelected
+              ? (correctOpt ? "correct" : "wrong")
+              : "idle";
             return (
-              <button
+              <OptionButton
                 key={opt}
+                state={state}
                 onClick={() => handleAnswer(opt)}
-                style={{
-                  padding: "16px 12px",
-                  borderRadius: 16,
-                  border: showResult
-                    ? correctOpt ? "2px solid var(--color-success)" : "2px solid var(--color-error)"
-                    : "2px solid var(--border)",
-                  background: showResult
-                    ? correctOpt ? "var(--color-success-bg)" : "var(--color-error-bg)"
-                    : "var(--surface)",
-                  color: showResult ? (correctOpt ? "var(--color-success)" : "var(--color-error)") : "var(--text)",
-                  fontSize: opt.length > 14 ? 13 : 15,
-                  fontFamily: "var(--font-body)",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                  textAlign: "center",
-                  lineHeight: 1.3,
-                }}
+                style={{ fontSize: opt.length > 14 ? 13 : 15 }}
               >
                 {opt}
-              </button>
+              </OptionButton>
             );
           })}
         </div>
