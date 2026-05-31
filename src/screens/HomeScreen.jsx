@@ -697,6 +697,7 @@ const SPILL_ITEMS = [
 ];
 
 const GRAMMATIKK_ITEMS = [
+  { id: "grammatikk-teori",      label: "Grammatikkteori",        sub: "Lær teorien bak reglene",          Icon: IcoArrow,    img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
   { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
   { id: "artikkel-ovelse",       label: "Artikkeltest",          sub: "Øv på le / la / les / l'",         Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
   { id: "bøying-ovelse",         label: "Bøyingstest",           sub: "Skriv riktig bøyingsform",         Icon: IcoPen,      img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },

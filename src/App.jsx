@@ -36,6 +36,7 @@ import GenerertFlervalgScreen from "./screens/GenerertFlervalgScreen.jsx";
 import DagensRettelseScreen from "./screens/DagensRettelseScreen.jsx";
 import { ArticleExerciseScreen, ConjugationExerciseScreen } from "./screens/FormExerciseScreen.jsx";
 import BoyningsTabellScreen from "./screens/BoyningsTabellScreen.jsx";
+import GrammatikkTeoriScreen from "./screens/GrammatikkTeoriScreen.jsx";
 import MemoryMatchScreen from "./screens/MemoryMatchScreen.jsx";
 import TidspressScreen from "./screens/TidspressScreen.jsx";
 import LyttedetektivScreen from "./screens/LyttedetektivScreen.jsx";
@@ -286,6 +287,7 @@ export default function App() {
       else if (rs === "artikkel-ovelse") setScreen("artikkel-ovelse");
       else if (rs === "bøying-ovelse") setScreen("bøying-ovelse");
       else if (rs === "boyningstabell") setScreen("boyningstabell");
+      else if (rs === "grammatikk-teori") setScreen("grammatikk-teori");
       else if (rs === "chat" && s.modeId) startMode(s.modeId);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -529,6 +531,7 @@ export default function App() {
     else if (id === "artikkel-ovelse") setScreen("artikkel-ovelse");
     else if (id === "bøying-ovelse") setScreen("bøying-ovelse");
     else if (id === "boyningstabell") setScreen("boyningstabell");
+    else if (id === "grammatikk-teori") setScreen("grammatikk-teori");
     else if (id === "memory-match") setScreen("memory-match");
     else if (id === "tidspress") setScreen("tidspress");
     else if (id === "lyttedetektiv") setScreen("lyttedetektiv");
@@ -991,6 +994,13 @@ export default function App() {
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
       <BoyningsTabellScreen words={words} grammarWords={grammarWords} onBack={() => setScreen("home")} speak={speak} {...navProps} />
+    </>
+  );
+
+  if (screen === "grammatikk-teori") return (
+    <>
+      {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
+      <GrammatikkTeoriScreen onBack={() => setScreen("home")} tutorPrefs={tutorPrefs} isOnline={isOnline} {...navProps} />
     </>
   );
 
