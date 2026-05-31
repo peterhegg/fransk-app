@@ -3,6 +3,9 @@ import { registerRoute, NavigationRoute } from "workbox-routing";
 import { NetworkFirst } from "workbox-strategies";
 import { createHandlerBoundToURL } from "workbox-precaching";
 
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
