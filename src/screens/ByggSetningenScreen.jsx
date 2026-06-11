@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { shuffle, logGameSession, loadUserProfile } from "../utils.jsx";
+import { shuffle, logGameSession, logDailyAnswer, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, GameResult, LoadingState, Chip, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
@@ -125,7 +125,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
     const correct = normalize(builtSentence) === normalize(current.fr);
     setIsCorrect(correct);
     setChecked(true);
-    if (correct) setScore(s => s + 1);
+    if (correct) { setScore(s => s + 1); logDailyAnswer("vocab"); }
     speak(current.fr, 0.8);
   };
 

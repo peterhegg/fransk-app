@@ -795,13 +795,18 @@ export default function App() {
   // --- Points toast ---
   const maybeTouchStreak = () => {
     const entry = loadActivityLog().find(e => e.date === todayStr());
-    const goal = loadUserProfile().dailyGoal || 20;
+    const goal = loadUserProfile().streakGoal || 20;
     if (entry && entry.answers >= goal) {
       const newStreak = touchStreak();
       setStreak(newStreak);
       syncWidgetData(newStreak);
     }
   };
+
+  useEffect(() => {
+    if (screen === "home") maybeTouchStreak();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
   // --- Session bump (called by all quiz submit handlers) ---
   const bumpSession = (type = "vocab") => {

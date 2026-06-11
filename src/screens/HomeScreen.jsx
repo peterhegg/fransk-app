@@ -637,6 +637,19 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           </div>
         </div>
 
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Streak-mål (svar for å få streak)</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, lineHeight: 1.4 }}>Teller svar fra alle øvelser inkl. Bygg setningen og Ordstokken</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[5, 10, 15, 20, 25].map(n => (
+              <button key={n} onClick={() => set("streakGoal", n)}
+                style={{ flex: "1 1 auto", minWidth: 44, background: (profile.streakGoal || 20) === n ? "rgba(255,140,66,0.18)" : "var(--bg)", border: `1px solid ${(profile.streakGoal || 20) === n ? "rgba(255,140,66,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: (profile.streakGoal || 20) === n ? "#FF8C42" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
           <div>
             <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Automatisk uttale</div>

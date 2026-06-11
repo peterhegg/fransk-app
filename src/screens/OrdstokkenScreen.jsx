@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { shuffle, logGameSession } from "../utils.jsx";
+import { shuffle, logGameSession, logDailyAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
 const ROUNDS = 10;
@@ -71,6 +71,7 @@ export default function OrdstokkenScreen({ words, grammarWords, onBack, speak, s
       if (correct) {
         setScore(s => s + 1);
         speak(current.word.fr, 0.8);
+        logDailyAnswer("vocab");
       } else {
         setShake(true);
         setTimeout(() => setShake(false), 500);

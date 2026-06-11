@@ -581,6 +581,7 @@ export const DEFAULT_PROFILE = {
   exerciseRounds: 5,
   autoPlay: false,
   dailyGoal: 150,
+  streakGoal: 20,
   pushTime: "20:00",
 };
 
