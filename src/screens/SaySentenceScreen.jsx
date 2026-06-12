@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
-import { shuffle, loadUserProfile, logDailyAnswer } from "../utils.jsx";
+import { shuffle, loadUserProfile, logDailyAnswer, logSentenceAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
 
@@ -155,6 +155,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
       const res = matched ? "correct" : "incorrect";
       setResult(res);
       logDailyAnswer("grammar");
+      if (matched) logSentenceAnswer();
       if (matched) {
         setStats(st => ({ correct: st.correct + 1, wrong: st.wrong }));
         setHistory(h => [...h, "correct"]);

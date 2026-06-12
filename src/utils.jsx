@@ -492,6 +492,9 @@ function touchDay(update) {
 export function logDailyAnswer(type = "vocab") {
   touchDay(e => ({ ...e, answers: (e.answers || 0) + 1, [type]: (e[type] || 0) + 1 }));
 }
+export function logSentenceAnswer() {
+  touchDay(e => ({ ...e, sentences: (e.sentences || 0) + 1 }));
+}
 export function logVocabSession() {}
 export function logGrammarSession() {}
 export function logDagligGrammatikk() {
@@ -581,7 +584,7 @@ export const DEFAULT_PROFILE = {
   exerciseRounds: 5,
   autoPlay: false,
   dailyGoal: 150,
-  streakGoal: 20,
+  sentenceGoal: 5,
   pushTime: "20:00",
 };
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
-import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logGameSession } from "../utils.jsx";
+import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logSentenceAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameResult, LoadingState, Dock, PrimaryButton, GhostButton, Waveform, AudioButton } from "../components/GameUI.jsx";
 
@@ -136,7 +136,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
     stopPlay();
     const correct = res.filter(r => r === "correct").length;
     logGameSession(story.answers.length);
-    for (let i = 0; i < correct; i++) logDailyAnswer("vocab");
+    for (let i = 0; i < correct; i++) { logDailyAnswer("vocab"); logSentenceAnswer(); }
     if (onGameComplete) onGameComplete();
   };
 

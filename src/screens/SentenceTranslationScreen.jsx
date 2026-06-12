@@ -1,7 +1,7 @@
 import { SpeakButton } from "../components/AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
-import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
+import { shuffle, logDailyAnswer, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
 function levelInstructions(level) {
@@ -193,6 +193,7 @@ export default function SentenceTranslationScreen({
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     logDailyAnswer("grammar");
+    if (passed) logSentenceAnswer();
   };
 
   const next = () => {

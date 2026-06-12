@@ -638,12 +638,12 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
         </div>
 
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Streak-mål (svar for å få streak)</div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, lineHeight: 1.4 }}>Teller svar fra alle øvelser inkl. Bygg setningen og Ordstokken</div>
+          <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Setningstrening (til streak)</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, lineHeight: 1.4 }}>Bygg setningen · Ordstokken · Oversett setningen · Si setningen · Historiediktat</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[5, 10, 15, 20, 25].map(n => (
-              <button key={n} onClick={() => set("streakGoal", n)}
-                style={{ flex: "1 1 auto", minWidth: 44, background: (profile.streakGoal || 20) === n ? "rgba(255,140,66,0.18)" : "var(--bg)", border: `1px solid ${(profile.streakGoal || 20) === n ? "rgba(255,140,66,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: (profile.streakGoal || 20) === n ? "#FF8C42" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
+              <button key={n} onClick={() => set("sentenceGoal", n)}
+                style={{ flex: "1 1 auto", minWidth: 44, background: (profile.sentenceGoal || 5) === n ? "rgba(255,140,66,0.18)" : "var(--bg)", border: `1px solid ${(profile.sentenceGoal || 5) === n ? "rgba(255,140,66,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "10px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: (profile.sentenceGoal || 5) === n ? "#FF8C42" : "var(--text)", fontFamily: "var(--font-body)", transition: "all 0.15s" }}>
                 {n}
               </button>
             ))}
@@ -956,9 +956,12 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       }).slice(0, 20)
     : [];
 
-  const dailyGoal = profile.dailyGoal || 20;
+  const dailyGoal = profile.dailyGoal || 150;
+  const sentenceGoal = profile.sentenceGoal || 5;
   const answerCount = loadAnswerCount();
-  const todayAnswers = loadActivityLog().find(e => e.date === todayStr())?.answers || 0;
+  const todayLog = loadActivityLog().find(e => e.date === todayStr());
+  const todayAnswers = todayLog?.answers || 0;
+  const todaySentences = todayLog?.sentences || 0;
 
   useEffect(() => {
     if (todayAnswers < dailyGoal) return;
@@ -1261,7 +1264,11 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
               <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 6 }}>
                 <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / dailyGoal) * 100)}%`, background: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--sage)", borderRadius: 2, transition: "width 0.3s ease" }} />
               </div>
-              <div style={{ fontSize: 10, color: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--text-muted)", marginTop: 3 }}>{todayAnswers}/{dailyGoal}{todayAnswers >= dailyGoal ? " ✓" : ""}</div>
+              <div style={{ fontSize: 10, color: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--text-muted)", marginTop: 2 }}>{todayAnswers}/{dailyGoal}{todayAnswers >= dailyGoal ? " ✓" : ""}</div>
+              <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 5 }}>
+                <div style={{ height: "100%", width: `${Math.min(100, (todaySentences / sentenceGoal) * 100)}%`, background: todaySentences >= sentenceGoal ? "#FF8C42" : "rgba(255,140,66,0.55)", borderRadius: 2, transition: "width 0.3s ease" }} />
+              </div>
+              <div style={{ fontSize: 10, color: todaySentences >= sentenceGoal ? "#FF8C42" : "var(--text-muted)", marginTop: 2 }}>✍️ {todaySentences}/{sentenceGoal}{todaySentences >= sentenceGoal ? " ✓" : ""}</div>
               {todayAnswers < dailyGoal && (() => {
                 const midnight = new Date(now); midnight.setHours(24, 0, 0, 0);
                 const ms = midnight - now;
@@ -1271,7 +1278,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
                 const warn = h < 6;
                 const color = urgent ? "#ef4444" : warn ? "#f59e0b" : "var(--text-muted)";
                 const label = h > 0 ? `${h}t ${m}m igjen` : `${m}m igjen`;
-                return <div style={{ fontSize: 10, color, marginTop: 3, fontWeight: urgent ? 700 : 400 }}>⏱ {label}</div>;
+                return <div style={{ fontSize: 10, color, marginTop: 2, fontWeight: urgent ? 700 : 400 }}>⏱ {label}</div>;
               })()}
             </div>
           </button>

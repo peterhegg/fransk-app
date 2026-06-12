@@ -11,7 +11,7 @@ import {
   getQuizOptions, checkQuizAnswer, todayStr,
   getTodaysGloseWords, getCurrentGrammarTopic,
   incrementAnswerCount, loadAnswerCount, updateWordPoints,
-  logDailyAnswer, logVocabSession, logGrammarSession, logDagligGrammatikk, logWordAnswer,
+  logDailyAnswer, logVocabSession, logGrammarSession, logDagligGrammatikk, logWordAnswer, logSentenceAnswer,
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab, getReplacementGloseWord,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
   loadUserProfile, saveUserProfile, getWordTier, loadActivityLog, loadWorstWords,
@@ -795,8 +795,10 @@ export default function App() {
   // --- Points toast ---
   const maybeTouchStreak = () => {
     const entry = loadActivityLog().find(e => e.date === todayStr());
-    const goal = loadUserProfile().streakGoal || 20;
-    if (entry && entry.answers >= goal) {
+    const profile = loadUserProfile();
+    const dailyGoal = profile.dailyGoal || 150;
+    const sentenceGoal = profile.sentenceGoal || 5;
+    if (entry && entry.answers >= dailyGoal && (entry.sentences || 0) >= sentenceGoal) {
       const newStreak = touchStreak();
       setStreak(newStreak);
       syncWidgetData(newStreak);
