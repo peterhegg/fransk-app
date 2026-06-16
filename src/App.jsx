@@ -75,6 +75,13 @@ export default function App() {
   const [mode, setMode] = useState(null);
   const [bankScreen, setBankScreen] = useState(null); // null | "bank" | "ordbanken" | "grammatikkbanken"
 
+  // --- Group filters for exercises ---
+  const [gloseGroup, setGloseGroup] = useState(() => { try { return localStorage.getItem("fransk-glose-group") || null; } catch { return null; } });
+  const [gramGroup, setGramGroup] = useState(() => { try { return localStorage.getItem("fransk-gram-group") || null; } catch { return null; } });
+
+  const saveGloseGroup = (g) => { setGloseGroup(g); try { if (g) localStorage.setItem("fransk-glose-group", g); else localStorage.removeItem("fransk-glose-group"); } catch {} };
+  const saveGramGroup = (g) => { setGramGroup(g); try { if (g) localStorage.setItem("fransk-gram-group", g); else localStorage.removeItem("fransk-gram-group"); } catch {} };
+
   // --- Shared data ---
   const [words, setWords] = useState(loadWords);
   const [grammarWords, setGrammarWords] = useState(loadGrammarWords);
@@ -473,7 +480,8 @@ export default function App() {
   const startGlose = () => {
     if (!words.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
     gloseChoiceCountRef.current = 0;
-    const q = selectExerciseWords(words).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
+    const pool = gloseGroup ? words.filter(w => (w.goal || "core") === gloseGroup) : words;
+    const q = selectExerciseWords(pool.length ? pool : words).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGloseQueue(q); setGloseCard(q[0]);
     setGloseOptions(getQuizOptions(q[0], words, !!q[0].reverse)); setGloseMode(pickMode(gloseChoiceCountRef));
     setGloseInput(""); setGloseChecked(false); setGloseResult(""); setGloseStats({ correct: 0, wrong: 0 }); setGloseHistory([]);
@@ -481,7 +489,8 @@ export default function App() {
   };
 
   const startGloseTier = (tiers) => {
-    const filtered = words.filter(w => tiers.includes(getWordTier(w.points || 0)));
+    const pool = gloseGroup ? words.filter(w => (w.goal || "core") === gloseGroup) : words;
+    const filtered = pool.filter(w => tiers.includes(getWordTier(w.points || 0)));
     if (!filtered.length) { setNoWordsMsg(true); setTimeout(() => setNoWordsMsg(false), 3000); return; }
     gloseChoiceCountRef.current = 0;
     const q = selectExerciseWords(filtered).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
@@ -504,7 +513,8 @@ export default function App() {
   const startGramOvelse = () => {
     if (!grammarWords.length) { setGramOvCard(null); setScreen("grammatikk-ovelse"); return; }
     gramOvChoiceCountRef.current = 0;
-    const q = selectExerciseWords(grammarWords).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
+    const pool = gramGroup ? grammarWords.filter(w => w.topicId === gramGroup) : grammarWords;
+    const q = selectExerciseWords(pool.length ? pool : grammarWords).map(w => Math.random() < 0.5 ? { ...w, reverse: true } : w);
     setGramOvQueue(q); setGramOvCard(q[0]);
     setGramOvOptions(getQuizOptions(q[0], grammarWords, !!q[0].reverse)); setGramOvMode(pickMode(gramOvChoiceCountRef));
     setGramOvInput(""); setGramOvChecked(false); setGramOvResult(""); setGramOvStats({ correct: 0, wrong: 0 }); setGramOvHistory([]);
@@ -1069,7 +1079,7 @@ export default function App() {
     <>
       {streakLost > 0 && <StreakTaptModal lostStreak={streakLost} onClose={() => setStreakLost(0)} />}
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setBankScreen("bank")} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} {...navProps} />
+      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={startMode} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setBankScreen("bank")} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} gloseGroup={gloseGroup} onGloseGroupChange={saveGloseGroup} gramGroup={gramGroup} onGramGroupChange={saveGramGroup} {...navProps} />
     </>
   );
 }

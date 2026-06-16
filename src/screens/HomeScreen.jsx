@@ -901,7 +901,27 @@ function ConfettiBlast({ streak, onDone }) {
   );
 }
 
-export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange }) {
+function GroupSelector({ groups, selected, onChange }) {
+  if (!groups.length) return null;
+  const chipStyle = (active) => ({
+    flex: "0 0 auto", background: active ? "var(--cream)" : "none",
+    border: `1px solid ${active ? "var(--cream)" : "rgba(230,211,168,0.25)"}`,
+    borderRadius: 20, padding: "4px 12px", cursor: "pointer",
+    fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: 0.3,
+    color: active ? "var(--bg)" : "var(--text-subtle)", whiteSpace: "nowrap",
+    transition: "all 0.15s",
+  });
+  return (
+    <div style={{ display: "flex", gap: 6, padding: "0 22px 10px", overflowX: "auto", scrollbarWidth: "none" }}>
+      <button style={chipStyle(!selected)} onClick={() => onChange(null)}>Alle</button>
+      {groups.map(g => (
+        <button key={g.id} style={chipStyle(selected === g.id)} onClick={() => onChange(g.id)}>{g.label}</button>
+      ))}
+    </div>
+  );
+}
+
+export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange, gloseGroup, onGloseGroupChange, gramGroup, onGramGroupChange }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -1366,10 +1386,30 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         })()}
 
         {/* Gloser */}
-        <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
+        {(() => {
+          const availableGloseGroups = VOCAB_GOALS.filter(g => words.some(w => (w.goal || "core") === g.id));
+          return (
+            <>
+              <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
+              {availableGloseGroups.length > 1 && (
+                <GroupSelector groups={availableGloseGroups} selected={gloseGroup} onChange={onGloseGroupChange} />
+              )}
+            </>
+          );
+        })()}
 
         {/* Grammatikk */}
-        <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />
+        {(() => {
+          const availableGramGroups = GRAMMAR_TOPICS.filter(t => grammarWords.some(w => w.topicId === t.id));
+          return (
+            <>
+              <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />
+              {availableGramGroups.length > 1 && (
+                <GroupSelector groups={availableGramGroups} selected={gramGroup} onChange={onGramGroupChange} />
+              )}
+            </>
+          );
+        })()}
 
         {/* Spill */}
         <TaskSection title="Spillarena" items={SPILL_ITEMS} onStart={onStart} />
