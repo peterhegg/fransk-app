@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { shuffle, logGameSession, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
@@ -13,7 +13,7 @@ function levelInstructions(level) {
   return "7-10 ord. Passé composé og enkle konjunksjoner.";
 }
 
-async function fetchBuildSentences(words, grammarWords) {
+async function fetchBuildSentences(words, grammarWords, direction = "no-fr") {
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
   const sample = shuffle([...allWords]).slice(0, 30);
@@ -21,13 +21,16 @@ async function fetchBuildSentences(words, grammarWords) {
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
   const count = 7;
+  const buildFrench = direction === "no-fr";
 
   const prompt = `French sentence-building exercise for Norwegian ${lvl} learner${profile.dysleksi ? " (dyslexia)" : ""}.
 WORDS: ${wordList}
 Make ${count} sentences (${levelInstructions(lvl)}).
-For each sentence add 2-3 distractor words: wrong conjugations, wrong gender forms, or near-synonyms that don't fit. Example: if sentence uses "est", add "sont" or "était"; if "grande" add "grand" or "gros".
+${buildFrench
+  ? `The learner is shown the Norwegian sentence and builds the FRENCH translation. For each sentence add 2-3 FRENCH distractor words: wrong conjugations, wrong gender forms, or near-synonyms that don't fit. Example: if sentence uses "est", add "sont" or "était"; if "grande" add "grand" or "gros".`
+  : `The learner is shown the French sentence and builds the NORWEGIAN translation. For each sentence add 2-3 NORWEGIAN distractor words: wrong inflections or near-synonyms that don't fit the sentence. Example: if sentence uses "spiser", add "spiste" or "drikker".`}
 JSON only, no markdown:
-[{"no":"Norwegian","fr":"French sentence","distractors":["wrong1","wrong2","wrong3"]}]`;
+[{"no":"Norwegian sentence","fr":"French sentence","distractors":["wrong1","wrong2","wrong3"]}]`;
 
   const attempt = async () => {
     const res = await fetch(PROXY_URL, {
@@ -60,7 +63,8 @@ function normalize(s) {
 }
 
 export default function ByggSetningenScreen({ words, grammarWords, onBack, speak, speaking, isOnline, screen, showWords, onNav }) {
-  const [phase, setPhase] = useState("loading");
+  const [phase, setPhase] = useState("mode");
+  const [direction, setDirection] = useState("no-fr");
   const [sentences, setSentences] = useState([]);
   const [idx, setIdx] = useState(0);
   const [tiles, setTiles] = useState([]);
@@ -68,30 +72,37 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState(0);
+  const dragRef = useRef(null);
 
+  const buildFrench = direction === "no-fr";
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await fetchBuildSentences(words, grammarWords || []);
-        if (cancelled) return;
-        if (!result || result.length < 2) { setPhase("error"); return; }
-        setSentences(result);
-        initRound(result, 0);
-        setPhase("play");
-      } catch {
-        if (!cancelled) setPhase("error");
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
+  async function load(dir) {
+    setPhase("loading");
+    setSentences([]);
+    setIdx(0);
+    setScore(0);
+    try {
+      const result = await fetchBuildSentences(words, grammarWords || [], dir);
+      if (!result || result.length < 2) { setPhase("error"); return; }
+      setSentences(result);
+      initRound(result, 0, dir);
+      setPhase("play");
+    } catch {
+      setPhase("error");
+    }
+  }
 
-  function initRound(sents, i) {
+  const chooseDirection = (dir) => {
+    setDirection(dir);
+    load(dir);
+  };
+
+  function initRound(sents, i, dir = direction) {
     const s = sents[i];
     if (!s) return;
-    const correctWords = tokenize(s.fr);
+    const target = dir === "no-fr" ? s.fr : s.no;
+    const correctWords = tokenize(target);
     const distractors = (s.distractors || [])
       .map(d => d.replace(/^[«""''`]+|[.!?,;:»""''`]+$/g, "").trim())
       .filter(Boolean)
@@ -107,6 +118,8 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
   }
 
   const current = sentences[idx] || null;
+  const sourceText = current ? (buildFrench ? current.no : current.fr) : "";
+  const targetText = current ? (buildFrench ? current.fr : current.no) : "";
   const placedTiles = placed.map(id => tiles.find(t => t.id === id)).filter(Boolean);
   const unplacedTiles = tiles.filter(t => !placed.includes(t.id));
   const builtSentence = placedTiles.map(t => t.word).join(" ");
@@ -116,14 +129,46 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
     setPlaced(p => [...p, tile.id]);
   };
 
-  const handleRemove = (tileId, placedIdx) => {
+  const handleRemoveByIndex = (placedIdx) => {
     if (checked) return;
     setPlaced(p => p.filter((_, i) => i !== placedIdx));
   };
 
+  // Drag-to-reorder placed tiles (pointer-based, works on touch).
+  const handleTilePointerDown = (e, placedIdx) => {
+    if (checked) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+    dragRef.current = { fromIdx: placedIdx, startX: e.clientX, startY: e.clientY, moved: false };
+  };
+
+  const handleTilePointerMove = (e) => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (!d.moved && Math.abs(e.clientX - d.startX) < 8 && Math.abs(e.clientY - d.startY) < 8) return;
+    d.moved = true;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const tileEl = el?.closest?.("[data-placed-idx]");
+    if (!tileEl) return;
+    const overIdx = parseInt(tileEl.dataset.placedIdx, 10);
+    if (isNaN(overIdx) || overIdx === d.fromIdx) return;
+    setPlaced(p => {
+      const next = [...p];
+      const [moved] = next.splice(d.fromIdx, 1);
+      next.splice(overIdx, 0, moved);
+      return next;
+    });
+    d.fromIdx = overIdx;
+  };
+
+  const handleTilePointerUp = () => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    if (d && !d.moved) handleRemoveByIndex(d.fromIdx);
+  };
+
   const handleCheck = () => {
     if (!placed.length) return;
-    const correct = normalize(builtSentence) === normalize(current.fr);
+    const correct = normalize(builtSentence) === normalize(targetText);
     setIsCorrect(correct);
     setChecked(true);
     if (correct) { setScore(s => s + 1); logSentenceAnswer(); }
@@ -147,21 +192,37 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
     speak(current.fr, 0.8);
   };
 
-  const restart = async () => {
-    setPhase("loading");
-    setSentences([]);
-    setIdx(0);
-    setScore(0);
-    try {
-      const result = await fetchBuildSentences(words, grammarWords || []);
-      if (!result || result.length < 2) { setPhase("error"); return; }
-      setSentences(result);
-      initRound(result, 0);
-      setPhase("play");
-    } catch {
-      setPhase("error");
-    }
-  };
+  const restart = async () => { await load(direction); };
+
+  // ── Mode selector ─────────────────────────────────────────────────────────
+  if (phase === "mode") return (
+    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
+      <GameHeader onBack={onBack} backLabel="Tilbake" title="Bygg setningen" />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 28px", gap: 16 }}>
+        <div style={{ fontSize: 52 }}>🏗️</div>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 500, color: "var(--text)", textAlign: "center" }}>Hva vil du oversette fra?</div>
+
+        <button onClick={() => chooseDirection("no-fr")} className="press" style={{
+          width: "100%", maxWidth: 340,
+          background: "var(--surface)", border: "1px solid var(--cream)", borderRadius: 18,
+          padding: "20px 22px", textAlign: "left", cursor: "pointer",
+        }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 500, color: "var(--cream)", marginBottom: 4 }}>🇳🇴 → 🇫🇷 Fra norsk</div>
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Se den norske setningen, bygg den franske.</div>
+        </button>
+
+        <button onClick={() => chooseDirection("fr-no")} className="press" style={{
+          width: "100%", maxWidth: 340,
+          background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18,
+          padding: "20px 22px", textAlign: "left", cursor: "pointer",
+        }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 500, color: "var(--text)", marginBottom: 4 }}>🇫🇷 → 🇳🇴 Fra fransk</div>
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Se den franske setningen, bygg den norske.</div>
+        </button>
+      </div>
+      {nav}
+    </div>
+  );
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (phase === "loading") return <LoadingState label="Lager setninger…" bottomNav={nav} />;
@@ -190,7 +251,8 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
           { label: "Prosent", value: `${pct}%`,         tone: "neutral" },
         ]}
         primary={{ label: "Spill igjen", onClick: restart }}
-        secondary={{ label: "Hjem", onClick: onBack }}
+        secondary={{ label: "Bytt språk", onClick: () => setPhase("mode") }}
+        tertiary={{ label: "Hjem", onClick: onBack }}
         bottomNav={nav}
       />
     );
@@ -208,15 +270,18 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
 
       <GameProgress total={sentences.length} current={idx} />
 
-      {/* Norwegian prompt */}
+      {/* Source prompt */}
       <div style={{ padding: "0 20px 16px" }}>
         <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "var(--font-body)", marginBottom: 8 }}>
-          Bygg på fransk:
+          {buildFrench ? "Bygg på fransk:" : "Bygg på norsk:"}
         </div>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "18px 20px" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.2px", lineHeight: 1.4 }}>
-            {current?.no}
+            {sourceText}
           </div>
+          {!buildFrench && (
+            <button onClick={() => speak(current.fr, 0.8)} className="press" style={{ flexShrink: 0, background: "none", border: "1px solid var(--border)", borderRadius: 10, padding: "8px 12px", fontSize: 16, cursor: "pointer", color: "var(--cream)" }}>🔊</button>
+          )}
         </div>
       </div>
 
@@ -240,16 +305,28 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
             <span style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", fontStyle: "italic" }}>Trykk ord nedenfor…</span>
           )}
           {placedTiles.map((tile, i) => (
-            <Chip
+            <span
               key={tile.id}
-              tone={checked ? (isCorrect ? "correct" : "wrong") : "active"}
-              onClick={() => handleRemove(tile.id, i)}
-              style={{ cursor: checked ? "default" : "pointer" }}
+              data-placed-idx={i}
+              onPointerDown={checked ? undefined : e => handleTilePointerDown(e, i)}
+              onPointerMove={checked ? undefined : handleTilePointerMove}
+              onPointerUp={checked ? undefined : handleTilePointerUp}
+              style={{ display: "inline-flex", touchAction: "none" }}
             >
-              {tile.word}
-            </Chip>
+              <Chip
+                tone={checked ? (isCorrect ? "correct" : "wrong") : "active"}
+                style={{ cursor: checked ? "default" : "grab" }}
+              >
+                {tile.word}
+              </Chip>
+            </span>
           ))}
         </div>
+        {!checked && placedTiles.length > 1 && (
+          <div style={{ fontSize: 11, color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginTop: 6, fontStyle: "italic" }}>
+            Dra for å flytte ord · trykk for å fjerne
+          </div>
+        )}
 
         {checked && (
           <div style={{ marginTop: 10, padding: "10px 14px", background: isCorrect ? "var(--color-success-bg)" : "var(--color-error-bg)", borderRadius: 12, border: `1px solid ${isCorrect ? "var(--color-success-border)" : "var(--color-error-border)"}` }}>
@@ -258,7 +335,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
             </div>
             {!isCorrect && (
               <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", marginTop: 4 }}>
-                Riktig: <span style={{ color: "var(--text)" }}>{current?.fr}</span>
+                Riktig: <span style={{ color: "var(--text)" }}>{targetText}</span>
               </div>
             )}
           </div>
@@ -269,7 +346,9 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
             <AiFeedback
               isOnline={isOnline}
               resetKey={`bygg-${idx}`}
-              buildPrompt={() => `Norsk elev bygde en fransk setning feil.\nNorsk: "${current?.no}"\nKorrekt fransk: "${current?.fr}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — feil ordstilling, bøying eller ordvalg for akkurat denne setningen. Gi én huskeregel knyttet til strukturen her.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`}
+              buildPrompt={() => buildFrench
+                ? `Norsk elev bygde en fransk setning feil.\nNorsk: "${current?.no}"\nKorrekt fransk: "${current?.fr}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — feil ordstilling, bøying eller ordvalg for akkurat denne setningen. Gi én huskeregel knyttet til strukturen her.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
+                : `Norsk elev oversatte en fransk setning til norsk feil.\nFransk: "${current?.fr}"\nKorrekt norsk: "${current?.no}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt med oversettelsen — feil ordstilling, bøying eller ordvalg. Gi én huskeregel knyttet til denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`}
             />
           </div>
         )}
