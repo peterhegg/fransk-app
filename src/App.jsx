@@ -1003,7 +1003,7 @@ export default function App() {
   if (screen === "bøying-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <ConjugationExerciseScreen words={words} grammarWords={grammarWords} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <ConjugationExerciseScreen words={words} grammarWords={grammarWords} setWords={setWords} onBack={() => setScreen("home")} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} isOnline={isOnline} {...navProps} />
     </>
   );
 
@@ -1050,11 +1050,11 @@ export default function App() {
   );
 
   if (screen === "kryssord") return (
-    <KryssordScreen words={words} onBack={() => setScreen("home")} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
+    <KryssordScreen words={words} onBack={() => setScreen("home")} isOnline={isOnline} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "historiediktat") return (
-    <HistoriediktatScreen words={words} onBack={() => setScreen("home")} speak={speak} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
+    <HistoriediktatScreen words={words} onBack={() => setScreen("home")} speak={speak} isOnline={isOnline} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "sudoku") return (

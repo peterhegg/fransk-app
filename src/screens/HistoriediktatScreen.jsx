@@ -3,6 +3,7 @@ import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logSentenceAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameResult, LoadingState, Dock, PrimaryButton, GhostButton, Waveform, AudioButton } from "../components/GameUI.jsx";
+import AiFeedback from "../components/AiFeedback.jsx";
 
 function normalize(str) {
   return (str || "")
@@ -60,7 +61,7 @@ Rules:
   throw new Error("parse");
 }
 
-export default function HistoriediktatScreen({ words, onBack, speak, screen, showWords, onNav, onGameComplete }) {
+export default function HistoriediktatScreen({ words, onBack, speak, isOnline, screen, showWords, onNav, onGameComplete }) {
   const [mode, setMode]   = useState(null);
   const [phase, setPhase] = useState("mode");
   const [story, setStory] = useState(null);
@@ -368,6 +369,23 @@ export default function HistoriediktatScreen({ words, onBack, speak, screen, sho
             );
           })}
         </div>
+
+        {score < total && (
+          <AiFeedback
+            isOnline={isOnline}
+            resetKey={`diktat-${story.full}`}
+            style={{ maxWidth: "100%" }}
+            buildPrompt={() => {
+              const wrongList = story.answers
+                .map((ans, i) => ({ ans, typed: inputs[i] || "—", ok: results[i] === "correct" }))
+                .filter(x => !x.ok)
+                .map(x => `riktig "${x.ans}" — eleven skrev "${x.typed}"`)
+                .join("; ");
+              const lvl = profile.level || "A1/A2";
+              return `Norsk ${lvl}-elev gjorde en fransk diktatøvelse og fylte inn noen ord feil.\nHistorie: "${story.full}"\nFeil: ${wrongList}\n\nForklar på norsk (2-3 korte setninger) SPESIFIKT hva som er galt med stavingen eller bøyingen for akkurat disse ordene. Gi én huskeregel.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+            }}
+          />
+        )}
       </div>
 
       <Dock>

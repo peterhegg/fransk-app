@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { logDailyAnswer, logGameSession } from "../utils.jsx";
+import { logDailyAnswer, logGameSession, loadUserProfile } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, LoadingState, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
+import AiFeedback from "../components/AiFeedback.jsx";
 
 const GRID_SIZE = 15;
 
@@ -148,7 +149,7 @@ function pickWords(bankWords) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function KryssordScreen({ words, onBack, screen, showWords, onNav, onGameComplete }) {
+export default function KryssordScreen({ words, onBack, isOnline, screen, showWords, onNav, onGameComplete }) {
   const [crossword, setCrossword] = useState(null);
   const [typed, setTyped]         = useState({});   // wordId → string (what user typed so far)
   const [selected, setSelected]   = useState(null); // wordId
@@ -391,6 +392,22 @@ export default function KryssordScreen({ words, onBack, screen, showWords, onNav
             </div>
           </div>
         ))}
+
+        {phase === "checked" && !allCorrect && (
+          <AiFeedback
+            isOnline={isOnline}
+            resetKey={crossword?.words.map(w => w.id).join("-")}
+            style={{ maxWidth: "100%" }}
+            buildPrompt={() => {
+              const wrongList = crossword.words
+                .filter(w => results[w.id] === "wrong")
+                .map(w => `riktig "${w.fr}" (${w.no}) — eleven skrev "${typed[w.id] || "—"}"`)
+                .join("; ");
+              const lvl = loadUserProfile().level || "A1/A2";
+              return `Norsk ${lvl}-elev løste et fransk kryssord og stavet noen ord feil.\nFeil: ${wrongList}\n\nForklar på norsk (2-3 korte setninger) SPESIFIKT hva som er galt med stavingen for akkurat disse ordene. Gi én huskeregel for å huske riktig staving.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+            }}
+          />
+        )}
       </div>
 
       <Dock>

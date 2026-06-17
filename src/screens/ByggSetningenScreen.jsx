@@ -3,6 +3,7 @@ import { shuffle, logGameSession, logSentenceAnswer, loadUserProfile } from "../
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, GameResult, LoadingState, Chip, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
+import AiFeedback from "../components/AiFeedback.jsx";
 
 function levelInstructions(level) {
   const l = level || "A1/A2";
@@ -260,6 +261,16 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
                 Riktig: <span style={{ color: "var(--text)" }}>{current?.fr}</span>
               </div>
             )}
+          </div>
+        )}
+
+        {checked && !isCorrect && (
+          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+            <AiFeedback
+              isOnline={isOnline}
+              resetKey={`bygg-${idx}`}
+              buildPrompt={() => `Norsk elev bygde en fransk setning feil.\nNorsk: "${current?.no}"\nKorrekt fransk: "${current?.fr}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — feil ordstilling, bøying eller ordvalg for akkurat denne setningen. Gi én huskeregel knyttet til strukturen her.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`}
+            />
           </div>
         )}
       </div>

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { touchStreak, shuffle, checkQuizAnswer, updateWordPoints, logWordAnswer, loadAnswerCount, saveWords } from "../utils.jsx";
+import { touchStreak, shuffle, checkQuizAnswer, updateWordPoints, logWordAnswer, loadAnswerCount, saveWords, loadUserProfile } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { AutoPlayToggle } from "../components/AudioControls.jsx";
+import AiFeedback from "../components/AiFeedback.jsx";
 
 const ARTICLE_OPTIONS = ["le", "la", "les", "l'"];
 
@@ -197,7 +198,7 @@ export function ArticleExerciseScreen({ words, grammarWords = [], onBack, speak,
   );
 }
 
-export function ConjugationExerciseScreen({ words, grammarWords = [], setWords, onBack, speak, autoPlay, onToggleAutoPlay, screen, showWords, onNav }) {
+export function ConjugationExerciseScreen({ words, grammarWords = [], setWords, onBack, speak, autoPlay, onToggleAutoPlay, isOnline, screen, showWords, onNav }) {
   const [queue, setQueue] = useState(() => buildConjugationQueue(words, grammarWords));
   const [card, setCard] = useState(() => queue[0] || null);
   const [input, setInput] = useState("");
@@ -337,7 +338,17 @@ export function ConjugationExerciseScreen({ words, grammarWords = [], setWords, 
             </button>
           </div>
         ) : (
-          <div style={{ width: "100%", maxWidth: 380 }}>
+          <div style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+            {(result === "wrong" || result === "close") && (
+              <AiFeedback
+                isOnline={isOnline}
+                resetKey={`${card.word.fr}-${card.form}`}
+                buildPrompt={() => {
+                  const lvl = loadUserProfile().level || "A1/A2";
+                  return `Norsk ${lvl}-elev svarte galt på en bøyingstest (${FORM_TYPE_LABELS[card.formType] || card.formType}).\nVerb: ${card.word.fr} (${card.word.no})\nRiktig bøyingsform: "${card.form}"\nEleven svarte: "${input}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt med bøyingen — for akkurat dette verbet og denne tiden. Gi én huskeregel knyttet direkte til denne formen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+                }}
+              />
+            )}
             <button onClick={next} style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: "pointer", width: "100%" }}>
               {queue.length <= 1 ? "Fullfør" : "Neste →"}
             </button>
