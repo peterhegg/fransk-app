@@ -21,6 +21,7 @@ const RANGES = [
   { id: "71-79",   label: "71–79",   desc: "soixante et onze…",       base: 71,  words: ["soixante et onze","soixante-douze","soixante-treize","soixante-quatorze","soixante-quinze","soixante-seize","soixante-dix-sept","soixante-dix-huit","soixante-dix-neuf"] },
   { id: "81-89",   label: "81–89",   desc: "quatre-vingt-un…",        base: 81,  words: ["quatre-vingt-un","quatre-vingt-deux","quatre-vingt-trois","quatre-vingt-quatre","quatre-vingt-cinq","quatre-vingt-six","quatre-vingt-sept","quatre-vingt-huit","quatre-vingt-neuf"] },
   { id: "91-99",   label: "91–99",   desc: "quatre-vingt-onze…",      base: 91,  words: ["quatre-vingt-onze","quatre-vingt-douze","quatre-vingt-treize","quatre-vingt-quatorze","quatre-vingt-quinze","quatre-vingt-seize","quatre-vingt-dix-sept","quatre-vingt-dix-huit","quatre-vingt-dix-neuf"] },
+  { id: "10-90",   label: "10–90",   desc: "dix, vingt, trente…",      base: 10,  step: 10,  words: ["dix","vingt","trente","quarante","cinquante","soixante","soixante-dix","quatre-vingts","quatre-vingt-dix"] },
   { id: "100-900", label: "100–900", desc: "cent, deux cents…",        base: 100, step: 100, words: ["cent","deux cents","trois cents","quatre cents","cinq cents","six cents","sept cents","huit cents","neuf cents"] },
 ];
 
