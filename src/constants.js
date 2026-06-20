@@ -719,6 +719,20 @@ export const VOCAB_CAT_MAP = {
   "vie": "Følelser og identitet",
   "problème": "Kommunikasjon og tanker",
   "attaque": "Tour de France",
+  "attaquer": "Tour de France", "bidon": "Tour de France",
+  "capitaine de route": "Tour de France", "casque": "Tour de France",
+  "chaîne": "Tour de France", "commissaire": "Tour de France",
+  "compteur": "Tour de France", "cuissard": "Tour de France",
+  "dérailleur": "Tour de France", "frein": "Tour de France",
+  "fuite": "Tour de France", "gps": "Tour de France",
+  "guidon": "Tour de France", "maillot vert": "Tour de France",
+  "mécano": "Tour de France", "oreillette": "Tour de France",
+  "pédale": "Tour de France", "roue": "Tour de France",
+  "rouleur": "Tour de France", "sacoche": "Tour de France",
+  "selle": "Tour de France", "soigneur": "Tour de France",
+  "vainqueur": "Tour de France",
+  "championne": "Sport og fritid",
+  "en fait": "Adverb og bindeord", "quand même": "Adverb og bindeord",
 };
 
 export const GRAMMAR_TOPICS = [

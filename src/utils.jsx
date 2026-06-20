@@ -161,7 +161,7 @@ function migrateWord(w) {
 }
 
 const WB_MIGRATION_KEY = "fransk-wb-migration";
-const WB_MIGRATION_VERSION = 3;
+const WB_MIGRATION_VERSION = 4;
 
 const LEGACY_CATS_MIGRATION = new Set([
   "Andre ord", "Hilsener", "Tid", "Verden og natur", "Politikk og samfunn",
@@ -207,6 +207,18 @@ function runWordBankMigrations(words) {
       if (!w.cat || !LEGACY_CATS_MIGRATION.has(w.cat)) return w;
       const correct = VOCAB_CAT_MAP[w.fr];
       if (!correct) return { ...w, cat: undefined };
+      return { ...w, cat: correct };
+    });
+    saveWords(result);
+  }
+
+  if (version < 4) {
+    // Reset explicit cat for words where stored cat conflicts with VOCAB_CAT_MAP
+    // (e.g. réponse was wrongly stored as "Vanlige verb")
+    result = result.map(w => {
+      if (!w.cat) return w;
+      const correct = VOCAB_CAT_MAP[w.fr];
+      if (!correct || w.cat === correct) return w;
       return { ...w, cat: correct };
     });
     saveWords(result);
