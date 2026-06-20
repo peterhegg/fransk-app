@@ -586,11 +586,12 @@ export default function App() {
         if ((clean.points || 0) < MASTERY_POINTS) { const { level: nl, nextReview: nr } = scheduleNext(w.level, passed); return { ...clean, level: nl, nextReview: nr }; }
         return clean;
       }));
-    } else if (result === "correct") {
-      logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, 1, result);
-      setDagensPointsInfo({ pts: 1, ptsBefore: 0, tierBefore: 0, tierAfter: getWordTier(1), justMastered: false });
+    } else if (passed) {
+      const gained = result === "correct" ? 1 : 0;
+      logWordAnswer(dagensCard.fr, dagensCard.no, dagensCard.phonetic, 0, gained, result);
+      setDagensPointsInfo({ pts: gained, ptsBefore: 0, tierBefore: 0, tierAfter: getWordTier(gained), justMastered: false });
       const currentGoalId = getActiveGoal(words, loadGoalOrder()).id;
-      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.p || dagensCard.phonetic || "", forms: dagensCard.forms || [], level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: 1, goal: currentGoalId };
+      const nw = { id: Date.now() + Math.random(), fr: dagensCard.fr, no: dagensCard.no, phonetic: dagensCard.p || dagensCard.phonetic || "", forms: dagensCard.forms || [], level: 1, nextReview: Date.now() + SR_INTERVALS[1] * 86400000, added: Date.now(), points: gained, goal: currentGoalId };
       setWords(prev => prev.some(w => w.fr === nw.fr) ? prev : [...prev, nw]);
     }
   };
