@@ -161,7 +161,7 @@ function migrateWord(w) {
 }
 
 const WB_MIGRATION_KEY = "fransk-wb-migration";
-const WB_MIGRATION_VERSION = 5;
+const WB_MIGRATION_VERSION = 6;
 
 const LEGACY_CATS_MIGRATION = new Set([
   "Andre ord", "Hilsener", "Tid", "Verden og natur", "Politikk og samfunn",
@@ -225,11 +225,23 @@ function runWordBankMigrations(words) {
   }
 
   if (version < 5) {
-    // Fix words with goal:"core" that belong to a non-core goal based on VOCAB_CAT_MAP
     const CAT_TO_GOAL = { "Tour de France": "tdf" };
     result = result.map(w => {
       if (w.goal && w.goal !== "core") return w;
       const cat = VOCAB_CAT_MAP[w.fr];
+      const correctGoal = cat ? CAT_TO_GOAL[cat] : null;
+      if (!correctGoal) return w;
+      return { ...w, goal: correctGoal };
+    });
+    saveWords(result);
+  }
+
+  if (version < 6) {
+    // Also check stored w.cat for words missing from VOCAB_CAT_MAP (e.g. manually imported)
+    const CAT_TO_GOAL = { "Tour de France": "tdf" };
+    result = result.map(w => {
+      if (w.goal && w.goal !== "core") return w;
+      const cat = w.cat || VOCAB_CAT_MAP[w.fr];
       const correctGoal = cat ? CAT_TO_GOAL[cat] : null;
       if (!correctGoal) return w;
       return { ...w, goal: correctGoal };

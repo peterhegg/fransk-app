@@ -719,6 +719,8 @@ export const VOCAB_CAT_MAP = {
   "vie": "Følelser og identitet",
   "problème": "Kommunikasjon og tanker",
   "attaque": "Tour de France",
+  "maillot jaune": "Tour de France", "maillot à pois": "Tour de France",
+  "maillot blanc": "Tour de France",
   "attaquer": "Tour de France", "bidon": "Tour de France",
   "capitaine de route": "Tour de France", "casque": "Tour de France",
   "chaîne": "Tour de France", "commissaire": "Tour de France",
