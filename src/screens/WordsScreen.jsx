@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, VOCAB_LIST } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, VOCAB_LIST, VOCAB_CAT_MAP } from "../constants.js";
 import { getWordTier } from "../utils.jsx";
 import { STATIC_VOCAB } from "../static_vocab.js";
 import BottomNav from "../components/BottomNav.jsx";
 import WordDetailModal, { getCatForWord } from "../components/WordDetailModal.jsx";
+
+const CAT_TO_GOAL = { "Tour de France": "tdf" };
 
 const CUSTOM_CATS_KEY = "fransk-custom-cats";
 
@@ -209,8 +211,10 @@ export default function WordsScreen({ words, setWords, onBack, onClearWords, scr
           const importedCat = catMatch ? catMatch[1].trim() : null;
           if (catMatch) rest = rest.slice(0, catMatch.index).trim();
           const goalMatch = rest.match(/\[goal:([^\]]+)\]\s*$/);
-          const importedGoal = goalMatch ? goalMatch[1].trim() : "core";
           if (goalMatch) rest = rest.slice(0, goalMatch.index).trim();
+          const importedGoal = goalMatch
+            ? goalMatch[1].trim()
+            : (importedCat ? (CAT_TO_GOAL[importedCat] || CAT_TO_GOAL[VOCAB_CAT_MAP[fr]] || "core") : "core");
           const ptsMatch = rest.match(/\[pts:([\d.]+)\]\s*$/);
           const importedPoints = ptsMatch ? parseFloat(ptsMatch[1]) : null;
           if (ptsMatch) rest = rest.slice(0, ptsMatch.index).trim();
