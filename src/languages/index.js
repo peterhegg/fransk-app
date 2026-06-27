@@ -5,10 +5,12 @@
 // (wired up in a later phase).
 import { useState, useCallback } from "react";
 import fr from "./fr.js";
+import deCH from "./de-ch.js";
 
-// id → LangConfig. Add Swiss German ("de-CH") here when its module lands.
+// id → LangConfig.
 export const LANGUAGES = {
   fr,
+  "de-CH": deCH,
 };
 
 export const DEFAULT_LANG = "fr";

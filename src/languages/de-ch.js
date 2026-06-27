@@ -1,0 +1,178 @@
+// ── Swiss-German language module (de-CH) ────────────────────────────────
+// Schweizer Hochdeutsch for a Norwegian beginner. Tutor: Klaus Müller (with
+// Regula as the alternate persona). Theme: anthracite + amber. The TARGET
+// word lives in the `fr` field throughout (see de_static_vocab.js for why),
+// so every exercise screen works unchanged.
+//
+// HARD RULE everywhere: never ß — always "ss" (Strasse, Fussball, gross).
+import { VOCAB_CAT_ORDER } from "../constants.js";
+import { DE_STATIC_VOCAB } from "../de_static_vocab.js";
+
+// Always-known basics — excluded from AI vocab generation, like French VOCAB_LIST.
+export const DE_VOCAB_LIST = [
+  // Hilsener
+  { fr: "Grüezi", no: "hei / god dag", phonetic: "gryetsi" },
+  { fr: "Guten Tag", no: "god dag", phonetic: "gutən tak" },
+  { fr: "Guten Morgen", no: "god morgen", phonetic: "gutən mårgən" },
+  { fr: "Merci", no: "takk", phonetic: "mærsi" },
+  { fr: "bitte", no: "vær så snill / vær så god", phonetic: "bitə" },
+  { fr: "ja", no: "ja", phonetic: "ja" },
+  { fr: "nein", no: "nei", phonetic: "nain" },
+  { fr: "Entschuldigung", no: "unnskyld", phonetic: "æntsjuldigung" },
+  // Pronomen
+  { fr: "ich", no: "jeg", phonetic: "ikj" },
+  { fr: "du", no: "du", phonetic: "du" },
+  { fr: "er", no: "han", phonetic: "ær" },
+  { fr: "sie", no: "hun / de", phonetic: "si" },
+  { fr: "es", no: "det", phonetic: "æs" },
+  { fr: "wir", no: "vi", phonetic: "vir" },
+  { fr: "ihr", no: "dere", phonetic: "ir" },
+  // Tallord
+  { fr: "eins", no: "en", phonetic: "ains" },
+  { fr: "zwei", no: "to", phonetic: "tsvai" },
+  { fr: "drei", no: "tre", phonetic: "drai" },
+  { fr: "vier", no: "fire", phonetic: "fir" },
+  { fr: "fünf", no: "fem", phonetic: "fynf" },
+  { fr: "sechs", no: "seks", phonetic: "sæks" },
+  { fr: "sieben", no: "sju", phonetic: "sibən" },
+  { fr: "acht", no: "åtte", phonetic: "akt" },
+  { fr: "neun", no: "ni", phonetic: "noin" },
+  { fr: "zehn", no: "ti", phonetic: "tsen" },
+];
+
+// Learning bolker — first three only (see project memory). Targets are
+// aspirational seeds; runtime API expands via vocabGenPrompt, like French.
+export const DE_VOCAB_GOALS = [
+  { id: "kern",   label: "Kjernen i tysk",        desc: "Hilsener, pronomen, kjerneverb og basissubstantiv",         target: 300 },
+  { id: "alltag", label: "Hverdagssituasjoner",   desc: "Mat, butikk, transport og daglig rutine — på sveitsisk vis", target: 200 },
+  { id: "sport",  label: "Sport og fritid",       desc: "Idrett, lagspill og friluftsliv i sveitsisk kontekst",       target: 150 },
+];
+
+export const DE_ORDMESTER_GOALS = [
+  { target: 150, reward: "Vinylplate" },
+  { target: 300, reward: "Vinylplate" },
+  { target: 450, reward: "Vinylplate" },
+  { target: 600, reward: "Tur til Sveits" },
+];
+
+// Starter grammar topics (same shape as French GRAMMAR_TOPICS).
+export const DE_GRAMMAR_TOPICS = [
+  {
+    id: "sein",
+    title: "sein — å være",
+    subtitle: "Grunnleggende bøying",
+    description: "Det viktigste verbet på tysk. Uregelrett — må pugges.",
+    pairs: [
+      { fr: "ich bin", no: "jeg er", phonetic: "ikj bin" },
+      { fr: "du bist", no: "du er", phonetic: "du bist" },
+      { fr: "er ist", no: "han er", phonetic: "ær ist" },
+      { fr: "sie ist", no: "hun er", phonetic: "si ist" },
+      { fr: "wir sind", no: "vi er", phonetic: "vir sint" },
+      { fr: "ihr seid", no: "dere er", phonetic: "ir sait" },
+      { fr: "sie sind", no: "de er", phonetic: "si sint" },
+    ],
+  },
+  {
+    id: "haben",
+    title: "haben — å ha",
+    subtitle: "Grunnleggende bøying",
+    description: "Brukes også til å lage fortid (Perfekt) på tysk.",
+    pairs: [
+      { fr: "ich habe", no: "jeg har", phonetic: "ikj habə" },
+      { fr: "du hast", no: "du har", phonetic: "du hast" },
+      { fr: "er hat", no: "han har", phonetic: "ær hat" },
+      { fr: "sie hat", no: "hun har", phonetic: "si hat" },
+      { fr: "wir haben", no: "vi har", phonetic: "vir habən" },
+      { fr: "ihr habt", no: "dere har", phonetic: "ir hapt" },
+      { fr: "sie haben", no: "de har", phonetic: "si habən" },
+    ],
+  },
+  {
+    id: "artikel",
+    title: "Artikler — der, die, das",
+    subtitle: "Kjønn og artikler",
+    description: "Tyske substantiv har tre kjønn: hankjønn (der), hunkjønn (die) og intetkjønn (das). Kjønnet må pugges sammen med ordet. Bestemt flertall er alltid die.",
+    pairs: [
+      { fr: "der Mann", no: "mannen (hankjønn)", phonetic: "der man" },
+      { fr: "die Frau", no: "kvinnen (hunkjønn)", phonetic: "di frau" },
+      { fr: "das Kind", no: "barnet (intetkjønn)", phonetic: "das kind" },
+      { fr: "die Kinder", no: "barna (flertall)", phonetic: "di kindər" },
+    ],
+  },
+  {
+    id: "praesens",
+    title: "Presens — regelrette verb",
+    subtitle: "Endinger i nåtid",
+    description: "Regelrette verb får faste endinger på stammen: -e, -st, -t, -en, -t, -en. Eksempel: machen (å gjøre).",
+    pairs: [
+      { fr: "ich mache", no: "jeg gjør", phonetic: "ikj makhə" },
+      { fr: "du machst", no: "du gjør", phonetic: "du makst" },
+      { fr: "er macht", no: "han gjør", phonetic: "ær makt" },
+      { fr: "wir machen", no: "vi gjør", phonetic: "vir makhən" },
+      { fr: "ihr macht", no: "dere gjør", phonetic: "ir makt" },
+      { fr: "sie machen", no: "de gjør", phonetic: "si makhən" },
+    ],
+  },
+];
+
+// Newspaper / cultural context for the tutor (replaces Houellebecq/Paris).
+const DE_BOOK_EXCERPTS = [
+  { book: "NZZ", hint: "En enkel nyhetssetning", text: "Das Wetter in der Schweiz ist heute schön." },
+  { book: "NZZ", hint: "Om hverdagen", text: "Viele Menschen fahren mit dem Velo zur Arbeit." },
+  { book: "Tages-Anzeiger", hint: "Sport i Sveits", text: "Der Verein hat das Spiel am Samstag gewonnen." },
+  { book: "Blick", hint: "Om fjellene", text: "Im Winter liegt viel Schnee auf den Bergen." },
+];
+
+// Interim Swiss-German tutor prompt. Phase 3d replaces this with the full
+// Klaus persona prompt.
+const DE_SYSTEM_PROMPT = `Du er Klaus Müller, en tålmodig sveitsisk tysktutor for en norsk nybegynner (A1/A2) med dysleksi.
+
+KOMMUNIKASJON:
+- Norsk som hovedspråk — innfør gradvis mer tysk i takt med fremgang
+- Skriv ALLTID sveitsisk standardtysk: aldri ß, alltid "ss" (Strasse, Fussball, gross)
+- Bruk sveitsiske ord der det er naturlig: Grüezi, Velo, Natel, Billett, Glace
+- Forklar grammatikk gjennom eksempler, ikke lange regler
+- Kort, oppmuntrende tilbakemelding
+
+UTTALE:
+- Skriv fonetisk uttale på norsk i parentes etter nye ord: Grüezi (gryetsi)
+- Minn eleven på å si ordene høyt
+
+KONTEKST: Bruk sveitsiske aviser (NZZ, Tages-Anzeiger, Blick) og sveitsisk hverdag, sport og natur som tema.`;
+
+export function vocabGenPrompt(activeGoal, knownWords) {
+  return `Generate 10 new Swiss Standard German (Schweizer Hochdeutsch) vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. CRITICAL: never use ß — always write "ss" (Strasse, Fussball, gross). Prefer Swiss everyday words (Helvetisms) where natural: Velo, Natel, Billett, Perron, Glace, Poulet, Rüebli, Gipfeli, Zmorge/Zmittag/Znacht, Spital, parkieren. Do NOT include these already-known words: ${[...knownWords].join(", ")}. Return a JSON array only — no markdown. Nouns: use the BASE FORM capitalised, WITHOUT article (e.g. "Hund" not "der Hund"); put the article in forms. For each word include inflected forms. Format: [{"fr":"Hund","no":"hunden","p":"hund","forms":[["der Hund","n"],["die Hunde","np"]]},{"fr":"machen","no":"å gjøre","p":"makhən","forms":[["ich mache","pr"],["wir machen","pr"],["sie machen","pr"],["ich habe gemacht","pc"],["ich machte","imp"],["mach!","impv"],["gemacht","pp"]]}]. Codes: pr=Präsens, pc=Perfekt, imp=Präteritum, f=Futur, impv=Imperativ, pp=Partizip, n=Nomen, np=Nomen Plural. Use phonetic spelling in Norwegian (ü→y, ö→ø, ä→æ, z→ts, w→v, sch→sj, ch→kh/kj, ei→ai). Fixed phrases or adverbs: forms:[].`;
+}
+
+const deCH = {
+  id: "de-CH",
+  label: "Sveitsertysk",
+  flag: "🇨🇭",
+
+  locale: "de-CH",
+  dateLocale: "de-CH",
+  storagePrefix: "sveitsertysk",
+  themeAttr: "de-CH",
+
+  tutor: {
+    defaultPersona: "klaus",
+    personas: [
+      { id: "klaus", label: "Klaus", gender: "m" },
+      { id: "regula", label: "Regula", gender: "f" },
+    ],
+  },
+
+  systemPrompt: DE_SYSTEM_PROMPT,
+  bookExcerpts: DE_BOOK_EXCERPTS,
+  vocabGenPrompt,
+
+  goals: DE_VOCAB_GOALS,
+  ordmesterGoals: DE_ORDMESTER_GOALS,
+  vocabList: DE_VOCAB_LIST,
+  vocabCatOrder: VOCAB_CAT_ORDER,
+  vocabCatMap: {},
+  staticVocab: DE_STATIC_VOCAB,
+  grammarTopics: DE_GRAMMAR_TOPICS,
+};
+
+export default deCH;
