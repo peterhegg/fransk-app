@@ -40,12 +40,14 @@ export const DE_VOCAB_LIST = [
   { fr: "zehn", no: "ti", phonetic: "tsen" },
 ];
 
-// Learning bolker — first three only (see project memory). Targets are
-// aspirational seeds; runtime API expands via vocabGenPrompt, like French.
+// Learning bolker — mirror the French goals exactly: same ids, same order,
+// same targets, so the structure is identical across languages and the
+// static-vocab keys (core/everyday/tdf) map straight to each goal.
+// Only labels/descriptions are phrased for the German learner.
 export const DE_VOCAB_GOALS = [
-  { id: "kern",   label: "Kjernen i tysk",        desc: "Hilsener, pronomen, kjerneverb og basissubstantiv",         target: 300 },
-  { id: "alltag", label: "Hverdagssituasjoner",   desc: "Mat, butikk, transport og daglig rutine — på sveitsisk vis", target: 200 },
-  { id: "sport",  label: "Sport og fritid",       desc: "Idrett, lagspill og friluftsliv i sveitsisk kontekst",       target: 150 },
+  { id: "core",     label: "Grunnleggende tysk", desc: "Funksjonsord, pronomen, kjerneverb og basissubstantiv", target: 400 },
+  { id: "everyday", label: "Hverdagssituasjoner", desc: "Bestilling av mat og drikke på restaurant, café og bar", target: 200 },
+  { id: "tdf",      label: "Tour de France",      desc: "Etapper, felt, tid og avstand – lukket domene",         target: 200 },
 ];
 
 export const DE_ORDMESTER_GOALS = [
