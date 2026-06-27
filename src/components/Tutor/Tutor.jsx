@@ -27,9 +27,15 @@ const EMOTIONS = [
 
 const ACCESSORIES = ['pipe', 'espresso', 'book', 'pen', 'cigarette', 'baguette'];
 
+// Each persona declares its visual traits. hair/glasses/beard are looked up
+// in the part libraries below; older entries omit them and fall back to
+// gender defaults, so Henri/Simone render exactly as before.
 const PERSONAS = {
-  henri:  { label: 'Henri',  gender: 'm', tagline: 'din lærer' },
-  simone: { label: 'Simone', gender: 'f', tagline: 'din lærer' },
+  henri:  { label: 'Henri',  gender: 'm', lang: 'fr',    tagline: 'din lærer', hair: 'henri',  glasses: 'halfmoon', beard: null },
+  simone: { label: 'Simone', gender: 'f', lang: 'fr',    tagline: 'din lærer', hair: 'simone', glasses: 'halfmoon', beard: null },
+  // Swiss-German tutors — see KLAUS_REGULA.md (Präzise Wärme).
+  klaus:  { label: 'Klaus',  gender: 'm', lang: 'de-CH', tagline: 'din lærer', hair: 'klaus',  glasses: 'round',    beard: 'short' },
+  regula: { label: 'Regula', gender: 'f', lang: 'de-CH', tagline: 'din lærer', hair: 'regula', glasses: 'round',    beard: null },
 };
 
 // Per-emotion mapping. Subtle is the goal — most states differ only in
@@ -87,6 +93,22 @@ const Glasses = () => (
     {/* temple tips */}
     <path d="M30 54 L26 52" />
     <path d="M70 54 L74 52" />
+  </>
+);
+
+// Full round modernist frames (Klaus / Regula). The eyes sit WITHIN the
+// lenses — engaged and present, the opposite of looking over half-moons.
+// The bridge arches high above the nose so the Romanesque ridge stays clear.
+const GlassesRound = () => (
+  <>
+    {/* lenses — slightly soft circles centred on the eyes */}
+    <circle cx="38" cy="47" r="7.2" />
+    <circle cx="62" cy="47" r="7.2" />
+    {/* bridge — small arch riding over the nose */}
+    <path d="M45.4 45 Q50 42 54.6 45" />
+    {/* temple tips toward the ears */}
+    <path d="M30.8 46 L26 44" />
+    <path d="M69.2 46 L74 44" />
   </>
 );
 
@@ -174,6 +196,46 @@ const HairSimone = () => (
     <path d="M52 17 Q57 14 60 19" opacity="0.55" />
     {/* tiny earring dot */}
     <circle cx="27" cy="52" r="0.9" fill="currentColor" stroke="none" />
+  </>
+);
+
+// Hair: Klaus — short, neatly side-parted. A tighter band than Henri's
+// romantic sweep, with a single combed part line on the left. Swiss-tidy.
+const HairKlaus = () => (
+  <>
+    <path d="M28 40 C29 27 38 19 50 19 C62 19 71 27 72 40
+             C70 33 63 29 50 29 C40 29 32 32 28 40 Z" />
+    {/* side part — comb line falling from the crown */}
+    <path d="M45 21 Q49 26 49 33" opacity="0.6" />
+  </>
+);
+
+// Hair: Regula — architectural chin-length bob. The crown band continues
+// down each side to jaw level, framing the face. A high chignon's opposite.
+const HairRegula = () => (
+  <>
+    <path d="M28 41 C28 28 38 21 50 21 C62 21 72 28 72 41
+             C70 33 62 30 50 30 C38 30 30 33 28 41 Z" />
+    {/* sides falling to the jaw */}
+    <path d="M28 41 C25 51 26 61 30 68" />
+    <path d="M72 41 C75 51 74 61 70 68" />
+    {/* centre part */}
+    <path d="M50 21 L50 29" opacity="0.55" />
+  </>
+);
+
+// Short trimmed beard (Klaus) — hugs the jaw, neat as a clipped hedge.
+// Drawn under the chin line; light hatching for a groomed texture.
+const BeardShort = () => (
+  <>
+    <path d="M34 62 C34 72 40 78 50 78 C60 78 66 72 66 62" />
+    <path d="M40 75 Q50 80 60 75" opacity="0.7" />
+    <g opacity="0.45" strokeWidth="0.8">
+      <path d="M40 70 L41 73" />
+      <path d="M46 72 L46 75" />
+      <path d="M54 72 L54 75" />
+      <path d="M60 70 L59 73" />
+    </g>
   </>
 );
 
@@ -356,8 +418,14 @@ const Tutor = ({
   style,
 }) => {
   const e = EXPR[emotion] || EXPR.idle;
-  const isF = (PERSONAS[persona] || PERSONAS.henri).gender === 'f';
+  const p = PERSONAS[persona] || PERSONAS.henri;
+  const isF = p.gender === 'f';
   const neck = isF ? 'turtle' : 'shirt';
+
+  // Resolve visual traits, falling back to gender defaults for older personas.
+  const HAIR = { henri: HairHenri, simone: HairSimone, klaus: HairKlaus, regula: HairRegula };
+  const Hair = HAIR[p.hair] || (isF ? HairSimone : HairHenri);
+  const RoundGlasses = p.glasses === 'round';
 
   // viewBox + height by crop
   const vb = crop === 'face' ? '0 0 100 100'
@@ -376,8 +444,9 @@ const Tutor = ({
       {/* head */}
       <HeadPath />
       <Ears />
-      {isF ? <HairSimone /> : <HairHenri />}
-      <Glasses />
+      <Hair />
+      {p.beard === 'short' && <BeardShort />}
+      {RoundGlasses ? <GlassesRound /> : <Glasses />}
       <Brows kind={e.brows} />
       <Eyes look={e.look} />
       <Nose />
