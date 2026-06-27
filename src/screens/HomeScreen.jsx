@@ -10,6 +10,7 @@ import BottomNav from "../components/BottomNav.jsx";
 import { IcoArrow, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
+import LanguagePicker from "../components/LanguagePicker.jsx";
 import WordDetailModal from "../components/WordDetailModal.jsx";
 
 const MODE_IMAGES = {
@@ -852,7 +853,7 @@ function ConfettiBlast({ streak, onDone }) {
   );
 }
 
-export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange }) {
+export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange, langId, onLangChange }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -1070,7 +1071,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", paddingTop: 14 }}>
             <ThemeToggle />
-            <div style={{ width: 36, height: 36, borderRadius: 99, overflow: "hidden", background: "linear-gradient(90deg,#0055A4 33%,#fff 33% 67%,#EF4135 67%)", border: "1.5px solid var(--cream)", flexShrink: 0 }} />
+            <LanguagePicker langId={langId || "fr"} setLang={onLangChange} />
           </div>
         </div>
 

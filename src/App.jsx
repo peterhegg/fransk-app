@@ -52,6 +52,7 @@ import SudokuScreen from "./screens/SudokuScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
+import { useLang } from "./languages/index.js";
 
 function TranslateIcon() {
   return (
@@ -97,6 +98,7 @@ export default function App() {
   const [exerciseRounds, setExerciseRounds] = useState(() => loadUserProfile().exerciseRounds || 5);
   const [autoPlay, setAutoPlay] = useState(() => loadUserProfile().autoPlay ?? false);
   const toggleAutoPlay = () => setAutoPlay(prev => { const next = !prev; saveUserProfile({ ...loadUserProfile(), autoPlay: next }); return next; });
+  const [, setLang, langId] = useLang();
   const [tutorPrefs, updateTutorPrefs] = useTutorPrefs();
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem("fransk-tutor-prefs"));
   const [streakLost, setStreakLost] = useState(() => wasStreakTaptShownToday() ? 0 : checkStreakBroken());
@@ -1098,7 +1100,7 @@ export default function App() {
     <>
       {streakLost > 0 && <StreakTaptModal lostStreak={streakLost} onClose={() => setStreakLost(0)} />}
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={(id) => { launchSrcRef.current = "home"; startMode(id); }} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setBankScreen("bank")} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} {...navProps} />
+      <HomeScreen words={words} setWords={setWords} grammarWords={grammarWords} streak={streak} sessionMsgs={sessionMsgs} onStart={(id) => { launchSrcRef.current = "home"; startMode(id); }} noWordsMsg={noWordsMsg} dagensLoading={dagensLoading} isOnline={isOnline} offlineBanner={offlineBanner} onShowWords={() => setBankScreen("bank")} onProfileSave={p => { setExerciseRounds(p.exerciseRounds || 5); setAutoPlay(p.autoPlay ?? false); }} tutorPrefs={tutorPrefs} onTutorPrefsChange={updateTutorPrefs} langId={langId} onLangChange={setLang} {...navProps} />
     </>
   );
 }
