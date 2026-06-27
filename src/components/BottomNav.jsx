@@ -29,8 +29,8 @@ export default function BottomNav({ screen, showWords, onNav }) {
   const GLOSE_SCREENS = new Set(["glose", "ordoversettelse", "flervalg", "si-ordet", "dagens-glose", "dagens-grammatikk", "grammatikk-ovelse", "oversett-grammatikken", "grammatikk-flervalg", "oversett-setningen"]);
   const activeId = showWords ? "words"
     : screen === "home" ? "home"
-    : GLOSE_SCREENS.has(screen) ? "glose"
-    : (screen === "chat" || screen === "voice") ? "fri"
+    : (screen === "ovelser" || GLOSE_SCREENS.has(screen)) ? "glose"
+    : (screen === "snakk" || screen === "chat" || screen === "voice" || screen === "rollespill") ? "fri"
     : null;
 
   const tabs = [

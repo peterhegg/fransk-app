@@ -71,7 +71,7 @@
   --bg:             #f4ecdc;
   --text:           #1c1816;
   --text-subtle:    #6b5e54;
-  --text-muted:     #a89a8a;
+  --text-muted:     #7a6b5a;
   --border:         rgba(28, 24, 22, 0.10);
   --nav-bg:         rgba(244, 236, 220, 0.85);
   --app-bg:         repeating-linear-gradient(180deg, transparent 0, transparent 27px, rgba(28,24,22,0.05) 27px, rgba(28,24,22,0.05) 28px), #f4ecdc;
@@ -102,7 +102,16 @@
   --color-streak:         #c69838;
   --color-info:           #2e6be6;
   --color-info-bg:        rgba(46, 107, 230, 0.10);
+  --color-sentence:       #FF8C42;
+  --color-sentence-bg:    rgba(255, 140, 66, 0.10);
+  --color-positive:       #00b894;
+  --color-positive-bg:    rgba(0, 184, 148, 0.10);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Hub layout ────────────────────────────────────────────────── */
+  --touch-min:        44px;
+  --hub-row-height:   56px;
+  --hub-icon-size:    40px;
 }
 
 /* ── Dark mode (French midnight) ─────────────────────────────────── */
@@ -144,6 +153,10 @@
   --color-streak:         #e8b86d;
   --color-info:           #818cf8;
   --color-info-bg:        rgba(129, 140, 248, 0.16);
+  --color-sentence:       #FF8C42;
+  --color-sentence-bg:    rgba(255, 140, 66, 0.14);
+  --color-positive:       #00c896;
+  --color-positive-bg:    rgba(0, 200, 150, 0.12);
   /* Restore warm palette overridden by :root light-mode values */
   --cream:          #e6d3a8;
   --cream-deep:     #c9b78d;
@@ -293,3 +306,83 @@ body {
 .stagger > *:nth-child(3){animation-delay:180ms}.stagger > *:nth-child(4){animation-delay:250ms}
 .stagger > *:nth-child(5){animation-delay:320ms}.stagger > *:nth-child(6){animation-delay:390ms}
 .stagger > *:nth-child(7){animation-delay:460ms}.stagger > *:nth-child(8){animation-delay:530ms}
+
+/* ── Hub screens (OvelserScreen + SnakkScreen) ───────────────────── */
+
+/* Full-width tappable row — øvelse-liste i Øv-hub */
+.hub-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  min-height: var(--hub-row-height);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-body);
+  transition: background var(--duration-fast) ease;
+}
+.hub-row:active { background: var(--accent-bg); transform: scale(0.995); }
+.hub-row:last-child { border-bottom: none; }
+
+/* Ikon-boks i hub-row */
+.hub-row-icon {
+  flex-shrink: 0;
+  width: var(--hub-icon-size);
+  height: var(--hub-icon-size);
+  border-radius: var(--radius-md);
+  background: var(--accent-bg);
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+/* Seksjonsoverskrift i hub */
+.hub-section-title {
+  padding: var(--space-5) var(--space-6) var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: var(--line-height-tight);
+}
+
+/* "Anbefalt nå"-kort — featured øvelse øverst i Øv-hub */
+.hub-featured {
+  margin: var(--space-4) var(--space-6) var(--space-2);
+  border-radius: var(--radius-card);
+  background: var(--accent-bg);
+  border: 1px solid rgba(184, 48, 42, 0.20);
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  cursor: pointer;
+  min-height: var(--touch-min);
+  transition: transform var(--duration-fast) ease, background var(--duration-normal) ease;
+}
+[data-theme="dark"] .hub-featured { border-color: rgba(46, 107, 230, 0.25); }
+.hub-featured:active { transform: scale(0.99); background: var(--accent-bg); }
+
+/* Valg-kort i Snakk-hub — 3 store valg */
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  margin: 0 var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  min-height: 80px;
+  cursor: pointer;
+  text-align: left;
+  width: calc(100% - var(--space-6) * 2);
+  font-family: var(--font-body);
+  transition: transform var(--duration-fast) ease, background var(--duration-normal) ease, border-color var(--duration-normal) ease;
+}
+.choice-card:active { transform: scale(0.98); background: var(--accent-bg); border-color: var(--accent); }

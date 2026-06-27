@@ -7,7 +7,7 @@ import { MODES, DAGENS_GLOSE_KEY, GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, 
 import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID } from "../utils.jsx";
 import { PROXY_URL } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
-import { IcoGrid, IcoSwap, IcoList, IcoMic as IcoMicSvg, IcoPen, IcoChat as IcoChatSvg, IcoSpeak, IcoArrow, IcoFlame, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
+import { IcoArrow, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
 import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import WordDetailModal from "../components/WordDetailModal.jsx";
@@ -438,7 +438,7 @@ function ActivityModal({ streak, onClose }) {
   );
 }
 
-function TodaysAnswersModal({ onClose }) {
+function TodaysAnswersModal({ onClose, todayAnswers, dailyGoal, todaySentences, sentenceGoal }) {
   const entries = loadTodaysWordAnswers();
 
   const wordMap = {};
@@ -463,6 +463,39 @@ function TodaysAnswersModal({ onClose }) {
         ) : (
           <div style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 2 }}>Ingen svar registrert ennå i dag</div>
         )}
+      </div>
+
+      <div style={{ padding: "0 24px 12px", flexShrink: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-subtle)", marginBottom: 4 }}>
+            <span>Ord svart</span>
+            <span style={{ color: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--text)" }}>{todayAnswers}/{dailyGoal}{todayAnswers >= dailyGoal ? " ✓" : ""}</span>
+          </div>
+          <div style={{ height: 4, background: "var(--border)", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / dailyGoal) * 100)}%`, background: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--sage)", borderRadius: 2 }} />
+          </div>
+        </div>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-subtle)", marginBottom: 4 }}>
+            <span>✍️ Setninger</span>
+            <span style={{ color: todaySentences >= sentenceGoal ? "#FF8C42" : "var(--text)" }}>{todaySentences}/{sentenceGoal}{todaySentences >= sentenceGoal ? " ✓" : ""}</span>
+          </div>
+          <div style={{ height: 4, background: "var(--border)", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${Math.min(100, (todaySentences / sentenceGoal) * 100)}%`, background: todaySentences >= sentenceGoal ? "#FF8C42" : "rgba(255,140,66,0.55)", borderRadius: 2 }} />
+          </div>
+        </div>
+        {todayAnswers < dailyGoal && (() => {
+          const now = new Date();
+          const midnight = new Date(now); midnight.setHours(24, 0, 0, 0);
+          const ms = midnight - now;
+          const h = Math.floor(ms / 3600000);
+          const m = Math.floor((ms % 3600000) / 60000);
+          const urgent = h < 2;
+          const warn = h < 6;
+          const color = urgent ? "#ef4444" : warn ? "#f59e0b" : "var(--text-subtle)";
+          const label = h > 0 ? `${h}t ${m}m igjen` : `${m}m igjen`;
+          return <div style={{ fontSize: 12, color, fontWeight: urgent ? 700 : 400 }}>⏱ {label} av dagen</div>;
+        })()}
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "4px 16px 8px", scrollbarWidth: "none" }}>
@@ -684,88 +717,6 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
   );
 }
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-const GLOSE_ITEMS = [
-  { id: "glose",           label: "Øv",              sub: "Glosekort med repetisjon",        Icon: IcoGrid,    img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
-  { id: "ordoversettelse", label: "Ordoversettelse", sub: "Skriv oversettelse, begge veier", Icon: IcoSwap,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
-  { id: "flervalg",        label: "Flervalg",        sub: "Velg riktig svar, 0,25 pt/rett",  Icon: IcoList,    img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
-  { id: "si-ordet",        label: "Si ordet",        sub: "Hør og øv på uttalen",            Icon: IcoMicSvg,  img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
-  { id: "glose-tier-0",   label: `Øv: ${cap(MASTERY_LABELS[0])}`,                                      sub: `Kun ord du ikke har lært ennå`,                                   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
-  { id: "glose-tier-1-2", label: `Øv: ${cap(MASTERY_LABELS[1])} – ${cap(MASTERY_LABELS[2])}`,          sub: `Ord du kjenner litt, men ikke behersker`,                         Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
-  { id: "glose-tier-3-4", label: `Øv: ${cap(MASTERY_LABELS[3])} – ${cap(MASTERY_LABELS[4])}`,          sub: `Ord du kan godt — vedlikehold og mestre`,                         Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop" },
-];
-
-const SPILL_ITEMS = [
-  { id: "memory-match",       label: "Memory",           sub: "Match norsk og fransk — 8 par",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
-  { id: "tidspress",          label: "Tidspress",        sub: "Oversett flest mulig på 60 sek",  Icon: IcoFlame,  img: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&q=70&auto=format&fit=crop" },
-  { id: "lyttedetektiv",      label: "Lyttedetektiv",    sub: "Hør og velg riktig svar",         Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&q=70&auto=format&fit=crop" },
-  { id: "bygg-setningen",     label: "Bygg setningen",   sub: "Sett ordene i riktig rekkefølge", Icon: IcoPen,    img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop" },
-  { id: "kategorisortering",  label: "Kategorisortering",sub: "Sorter ord i riktig kategori",    Icon: IcoList,   img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
-  { id: "ordstokken",         label: "Ordstokken",       sub: "Stav det franske ordet",          Icon: IcoSwap,   img: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=400&q=70&auto=format&fit=crop" },
-  { id: "rollespill",        label: "Rollespill",        sub: "Snakk med Pierre i ulike situasjoner", Icon: IcoSpeak,  img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
-  { id: "kryssord",          label: "Kryssord",          sub: "Fyll inn franske ord fra ordbanken",   Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=70&auto=format&fit=crop" },
-  { id: "historiediktat",    label: "Historiediktat",    sub: "Hør historien, fyll inn ordene",       Icon: IcoMicSvg, img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=70&auto=format&fit=crop" },
-  { id: "sudoku",            label: "Tallsudoku",         sub: "Sudoku — skriv tallene på fransk",    Icon: IcoGrid,   img: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=70&auto=format&fit=crop" },
-];
-
-const GRAMMATIKK_ITEMS = [
-  { id: "grammatikk-teori",      label: "Grammatikkteori",        sub: "Lær teorien bak reglene",          Icon: IcoArrow,    img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
-  { id: "grammatikk-ovelse",     label: "Grammatikkøvelse",      sub: "Repeter lærte regler",             Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
-  { id: "artikkel-ovelse",       label: "Artikkeltest",          sub: "Øv på le / la / les / l'",         Icon: IcoPen,      img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=70&auto=format&fit=crop" },
-  { id: "bøying-ovelse",         label: "Bøyingstest",           sub: "Skriv riktig bøyingsform",         Icon: IcoPen,      img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
-  { id: "boyningstabell",        label: "Bøyningstabellen",      sub: "Lær og test hele paradigmet",      Icon: IcoList,     img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=70&auto=format&fit=crop" },
-  { id: "oversett-grammatikken", label: "Oversett grammatikken", sub: "Skriv oversettelse av grammatikk", Icon: IcoSwap,     img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400&q=70&auto=format&fit=crop" },
-  { id: "grammatikk-flervalg",   label: "Grammatikkflervalg",    sub: "Flervalg på grammatikk",           Icon: IcoList,     img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop" },
-  { id: "oversett-setningen",    label: "Oversett setningen",    sub: "AI-lager setninger fra ordbanken", Icon: IcoSwap,     img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&auto=format&fit=crop" },
-  { id: "generert-flervalg",     label: "Generert flervalg",     sub: "AI-lager flervalg, begge retninger", Icon: IcoList,   img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&q=70&auto=format&fit=crop" },
-  { id: "si-setningen",          label: "Si setningen!",         sub: "Hør og si hele setningen høyt",    Icon: IcoMicSvg,  img: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=70&auto=format&fit=crop" },
-  { id: "teksthjelp",            label: "Teksthjelpen",          sub: "Lim inn eller spør om tekst",      Icon: IcoChatSvg, img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=70&auto=format&fit=crop" },
-  { id: "fri",                   label: "Spørfritt",             sub: "Snakk med Pierre",                 Icon: IcoSpeak,   img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop" },
-];
-
-function TaskSection({ title, items, onStart }) {
-  return (
-    <div style={{ padding: "0 0 28px" }}>
-      <div style={{ padding: "4px 22px 10px", display: "flex", alignItems: "baseline" }}>
-        <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 22, letterSpacing: "-0.4px", color: "var(--text)" }}>{title}</h2>
-      </div>
-      <div style={{ display: "flex", gap: 12, padding: "0 22px 4px", overflowX: "auto", scrollbarWidth: "none" }}>
-        {items.map(item => (
-          <TaskCard key={item.id} item={item} onStart={onStart} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TaskCard({ item, onStart }) {
-  return (
-    <button onClick={() => onStart(item.id)} style={{
-      flex: "0 0 auto", width: 200, height: 160, borderRadius: 18, overflow: "hidden",
-      position: "relative", border: "none", padding: 0, cursor: "pointer",
-      boxShadow: "var(--shadow-md)", transition: "transform 0.18s ease",
-    }}
-    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; }}
-    onMouseLeave={e => { e.currentTarget.style.transform = ""; }}>
-      <img src={item.img} alt={item.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.78) 100%)" }} />
-      <div style={{
-        position: "absolute", top: 12, left: 12, width: 32, height: 32, borderRadius: 10,
-        background: "rgba(0,0,0,0.42)", backdropFilter: "blur(8px)",
-        border: "1px solid rgba(255,255,255,0.12)",
-        display: "grid", placeItems: "center", color: "var(--cream)",
-      }}>
-        <item.Icon size={15} stroke="var(--cream)" sw={1.6} />
-      </div>
-      <div style={{ position: "absolute", left: 12, right: 12, bottom: 12 }}>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 500, color: "#fff", letterSpacing: "-0.2px", lineHeight: 1.2, marginBottom: 2 }}>{item.label}</div>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.70)", lineHeight: 1.3 }}>{item.sub}</div>
-      </div>
-    </button>
-  );
-}
-
 function ConfettiBlast({ streak, onDone }) {
   const [alive, setAlive] = useState(true);
 
@@ -901,50 +852,7 @@ function ConfettiBlast({ streak, onDone }) {
   );
 }
 
-function GroupPickerSheet({ groups, selected, onChange, onClose, wordCounts }) {
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.45)", backdropFilter: "blur(4px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "var(--surface-solid)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", boxShadow: "0 -4px 32px rgba(0,0,0,0.4)", maxHeight: "70dvh", display: "flex", flexDirection: "column", overflowX: "hidden", width: "100%" }}>
-        <div style={{ width: 36, height: 4, background: "var(--border)", borderRadius: 99, margin: "0 auto 18px" }} />
-        <div style={{ fontSize: 13, letterSpacing: 2, textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 12, fontFamily: "var(--font-body)" }}>Velg gruppe</div>
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {[{ id: null, label: "Alle grupper", count: wordCounts.total }].concat(groups.map(g => ({ ...g, count: wordCounts[g.id] || 0 }))).map(g => {
-            const active = selected === g.id;
-            return (
-              <button key={g.id ?? "_all"} onClick={() => { onChange(g.id); onClose(); }}
-                style={{ width: "100%", background: active ? "rgba(230,211,168,0.12)" : "none", border: `1px solid ${active ? "rgba(230,211,168,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "var(--font-body)", textAlign: "left" }}>
-                <span style={{ fontSize: 14, color: active ? "var(--cream)" : "var(--text)", fontWeight: active ? 600 : 400 }}>{g.label}</span>
-                <span style={{ fontSize: 12, color: "var(--text-subtle)" }}>{g.count} ord</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GroupButton({ groups, selected, onChange, wordCounts }) {
-  const [open, setOpen] = useState(false);
-  if (!groups.length) return null;
-  const label = selected ? (groups.find(g => g.id === selected)?.label || "Gruppe") : "Alle grupper";
-  return (
-    <>
-      <div style={{ padding: "0 22px 20px" }}>
-        <button onClick={() => setOpen(true)}
-          style={{ background: selected ? "rgba(230,211,168,0.1)" : "none", border: `1px solid ${selected ? "rgba(230,211,168,0.4)" : "var(--border)"}`, borderRadius: 10, padding: "7px 14px", cursor: "pointer", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "var(--text-subtle)" }}>Gruppe</span>
-          <span style={{ fontSize: 13, color: selected ? "var(--cream)" : "var(--text)", fontWeight: selected ? 600 : 400 }}>{label}</span>
-          <span style={{ fontSize: 10, color: "var(--text-muted)" }}>▾</span>
-        </button>
-      </div>
-      {open && <GroupPickerSheet groups={groups} selected={selected} onChange={onChange} onClose={() => setOpen(false)} wordCounts={wordCounts} />}
-    </>
-  );
-}
-
-export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange, gloseGroup, onGloseGroupChange, gramGroup, onGramGroupChange }) {
+export default function HomeScreen({ words, setWords, grammarWords, streak, sessionMsgs, onStart, noWordsMsg, dagensLoading, isOnline, offlineBanner, screen, showWords, onNav, onShowWords, onProfileSave, tutorPrefs, onTutorPrefsChange }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -1304,25 +1212,10 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
               <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 4 }}>Svar i dag</div>
             </div>
             <div>
-              <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 6 }}>
+              <div style={{ height: 3, background: "var(--border)", borderRadius: 2, overflow: "hidden", marginTop: 6 }}>
                 <div style={{ height: "100%", width: `${Math.min(100, (todayAnswers / dailyGoal) * 100)}%`, background: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--sage)", borderRadius: 2, transition: "width 0.3s ease" }} />
               </div>
               <div style={{ fontSize: 10, color: todayAnswers >= dailyGoal ? "var(--cream)" : "var(--text-muted)", marginTop: 2 }}>{todayAnswers}/{dailyGoal}{todayAnswers >= dailyGoal ? " ✓" : ""}</div>
-              <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", marginTop: 5 }}>
-                <div style={{ height: "100%", width: `${Math.min(100, (todaySentences / sentenceGoal) * 100)}%`, background: todaySentences >= sentenceGoal ? "#FF8C42" : "rgba(255,140,66,0.55)", borderRadius: 2, transition: "width 0.3s ease" }} />
-              </div>
-              <div style={{ fontSize: 10, color: todaySentences >= sentenceGoal ? "#FF8C42" : "var(--text-muted)", marginTop: 2 }}>✍️ {todaySentences}/{sentenceGoal}{todaySentences >= sentenceGoal ? " ✓" : ""}</div>
-              {todayAnswers < dailyGoal && (() => {
-                const midnight = new Date(now); midnight.setHours(24, 0, 0, 0);
-                const ms = midnight - now;
-                const h = Math.floor(ms / 3600000);
-                const m = Math.floor((ms % 3600000) / 60000);
-                const urgent = h < 2;
-                const warn = h < 6;
-                const color = urgent ? "#ef4444" : warn ? "#f59e0b" : "var(--text-muted)";
-                const label = h > 0 ? `${h}t ${m}m igjen` : `${m}m igjen`;
-                return <div style={{ fontSize: 10, color, marginTop: 2, fontWeight: urgent ? 700 : 400 }}>⏱ {label}</div>;
-              })()}
             </div>
           </button>
         </div>
@@ -1408,33 +1301,6 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
           );
         })()}
 
-        {/* Gloser */}
-        {(() => {
-          const gloseGroups = VOCAB_GOALS.filter(g => words.some(w => (w.goal || "core") === g.id));
-          const gloseCounts = { total: words.length, ...Object.fromEntries(gloseGroups.map(g => [g.id, words.filter(w => (w.goal || "core") === g.id).length])) };
-          return (
-            <>
-              <TaskSection title="Gloser" items={GLOSE_ITEMS} onStart={onStart} />
-              <GroupButton groups={gloseGroups} selected={gloseGroup} onChange={onGloseGroupChange} wordCounts={gloseCounts} />
-            </>
-          );
-        })()}
-
-        {/* Grammatikk */}
-        {(() => {
-          const gramGroups = GRAMMAR_TOPICS.filter(t => grammarWords.some(w => w.topicId === t.id));
-          const gramCounts = { total: grammarWords.length, ...Object.fromEntries(gramGroups.map(t => [t.id, grammarWords.filter(w => w.topicId === t.id).length])) };
-          return (
-            <>
-              <TaskSection title="Grammatikk" items={GRAMMATIKK_ITEMS} onStart={onStart} />
-              <GroupButton groups={gramGroups} selected={gramGroup} onChange={onGramGroupChange} wordCounts={gramCounts} />
-            </>
-          );
-        })()}
-
-        {/* Spill */}
-        <TaskSection title="Spillarena" items={SPILL_ITEMS} onStart={onStart} />
-
         {/* Læringsmål */}
         <div onClick={() => setGoalOrderOpen(true)} style={{ margin: "0 22px 16px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "16px 18px", cursor: "pointer" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1493,7 +1359,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
       )}
       {confettiActive && <ConfettiBlast streak={streak} onDone={() => setConfettiActive(false)} />}
       {activityOpen && <ActivityModal streak={streak} onClose={() => setActivityOpen(false)} />}
-      {svarOpen && <TodaysAnswersModal onClose={() => setSvarOpen(false)} />}
+      {svarOpen && <TodaysAnswersModal onClose={() => setSvarOpen(false)} todayAnswers={todayAnswers} dailyGoal={dailyGoal} todaySentences={todaySentences} sentenceGoal={sentenceGoal} />}
       {profileOpen && (
         <UserProfileModal
           onClose={() => setProfileOpen(false)}
