@@ -167,6 +167,114 @@
   --mustard:        #c8783a;
 }
 
+/* ── Sveitsertysk: lys modus (kjølig grå + amber) ─────────────────
+   Applied by useLang() setting data-lang="de-CH" on <html>.
+   Overrides: accent → amber, bg → ingeniørgrå, grid-bakgrunn.
+   Henri/Simone-fargene (--cream, --cream-deep) remappes til amber
+   slik at Tutor-stroken og alle kremsemantiske farger er konsistente.
+   ─────────────────────────────────────────────────────────────────── */
+[data-lang="de-CH"] {
+  --color-primary:       #d4862a;
+  --color-primary-light: #e09a40;
+  --color-primary-dark:  #a8651a;
+  --color-primary-mid:   #c8781e;
+
+  --color-bg:            #eeece9;
+  --color-text:          #1c1f26;
+  --color-card:          #f8f7f5;
+  --color-border:        rgba(28, 31, 38, 0.09);
+
+  --accent:         #d4862a;
+  --accent-light:   #e09a40;
+  --accent-bg:      rgba(212, 134, 42, 0.09);
+  --surface:        rgba(248, 247, 245, 0.70);
+  --surface-solid:  #f8f7f5;
+  --bg:             #eeece9;
+  --text:           #1c1f26;
+  --text-subtle:    #5e5c64;
+  --text-muted:     #7a7880;
+  --border:         rgba(28, 31, 38, 0.09);
+  --nav-bg:         rgba(238, 236, 233, 0.88);
+
+  /* Sveitsisk ingeniørpapir: subtilt rutenett (27 px celle) */
+  --app-bg:
+    repeating-linear-gradient(0deg,   transparent 0, transparent 26px, rgba(28,31,38,0.045) 26px, rgba(28,31,38,0.045) 27px),
+    repeating-linear-gradient(90deg,  transparent 0, transparent 26px, rgba(28,31,38,0.045) 26px, rgba(28,31,38,0.045) 27px),
+    #eeece9;
+
+  /* Amber-palet — erstatter de franske --cream-*-variablene */
+  --cream:          #d4862a;
+  --cream-deep:     #a8651a;
+  --terra:          #d4862a;
+  --mustard:        #c8781e;
+  --sage:           #3a6a4a;
+  --forest:         #3a6a4a;
+  --amber:          #d4a060;
+
+  --color-streak:   #d4862a;
+  --shadow-sm:      0 1px 0 rgba(28,31,38,0.06), 0 6px 14px -8px rgba(28,31,38,0.10);
+  --shadow-md:      0 2px 4px rgba(28,31,38,0.06), 0 10px 24px rgba(28,31,38,0.13);
+  --shadow-card:    0 1px 0 rgba(28,31,38,0.06), 0 6px 14px -8px rgba(28,31,38,0.10);
+}
+
+/* ── Sveitsertysk: mørk modus (dyp antrasitt + amber) ─────────────── */
+[data-lang="de-CH"][data-theme="dark"] {
+  --color-primary:       #e09436;
+  --color-primary-light: #eeaa52;
+  --color-primary-dark:  #b87020;
+  --color-primary-mid:   #d4882c;
+
+  --color-bg:            #141720;
+  --color-text:          #e8e4dc;
+  --color-card:          #1c1f26;
+  --color-border:        rgba(255, 255, 255, 0.07);
+
+  --accent:         #e09436;
+  --accent-light:   #eeaa52;
+  --accent-bg:      rgba(224, 148, 54, 0.15);
+  --surface:        #1c1f26;
+  --surface-solid:  #1c1f26;
+  --bg:             #141720;
+  --text:           #e8e4dc;
+  --text-subtle:    rgba(232, 228, 220, 0.50);
+  --text-muted:     rgba(232, 228, 220, 0.30);
+  --border:         rgba(255, 255, 255, 0.07);
+  --nav-bg:         rgba(20, 23, 32, 0.97);
+
+  /* Mørkt ingeniørrutenett */
+  --app-bg:
+    repeating-linear-gradient(0deg,   transparent 0, transparent 26px, rgba(255,255,255,0.028) 26px, rgba(255,255,255,0.028) 27px),
+    repeating-linear-gradient(90deg,  transparent 0, transparent 26px, rgba(255,255,255,0.028) 26px, rgba(255,255,255,0.028) 27px),
+    #141720;
+
+  --cream:          #e09436;
+  --cream-deep:     #c8781e;
+  --terra:          #e09436;
+  --mustard:        #d4882c;
+  --sage:           #9eb8a4;
+  --forest:         #4a8060;
+  --amber:          #d4a574;
+
+  --color-streak:   #e8b050;
+
+  --shadow-sm:      0 2px 16px rgba(0,0,0,0.55);
+  --shadow-md:      0 6px 28px rgba(0,0,0,0.65);
+  --shadow-card:    0 2px 16px rgba(0,0,0,0.55);
+  --shadow-card-hover: 0 10px 36px rgba(0,0,0,0.80);
+  --on-accent:      #1c1f26;
+
+  --color-success-bg:     rgba(0, 200, 150, 0.14);
+  --color-success-border: rgba(0, 200, 150, 0.50);
+  --color-error-bg:       rgba(240, 138, 117, 0.14);
+  --color-error-border:   rgba(240, 138, 117, 0.48);
+  --color-info:           #818cf8;
+  --color-info-bg:        rgba(129, 140, 248, 0.15);
+  --color-sentence:       #FF8C42;
+  --color-sentence-bg:    rgba(255, 140, 66, 0.13);
+  --color-positive:       #00c896;
+  --color-positive-bg:    rgba(0, 200, 150, 0.11);
+}
+
 /* ── Base ────────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
