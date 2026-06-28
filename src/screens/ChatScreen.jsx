@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN, BOOK_EXCERPTS, SESSION_KEY } from "../constants.js";
+import { PROXY_URL, APP_TOKEN, SESSION_KEY } from "../constants.js";
+import { BOOK_EXCERPTS } from "../content.js";
 import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine, buildSystemPrompt, loadUserProfile, getActiveGoal, loadGoalOrder } from "../utils.jsx";
 import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
 import { tutorVisible } from "../hooks/useTutorPrefs.js";

@@ -33,11 +33,14 @@ export function getActiveLang() {
 export function useLang() {
   const [langId, setLangId] = useState(loadActiveLangId);
   const setLang = useCallback((id) => {
-    if (!LANGUAGES[id]) return;
+    if (!LANGUAGES[id] || id === loadActiveLangId()) return;
     try {
       localStorage.setItem(ACTIVE_LANG_KEY, id);
     } catch {}
     setLangId(id);
+    // Full reload so the localStorage namespace, document theme and all
+    // in-memory state re-initialise cleanly for the new language.
+    if (typeof window !== "undefined") window.location.reload();
   }, []);
   return [LANGUAGES[langId], setLang, langId];
 }

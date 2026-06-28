@@ -53,6 +53,7 @@ import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
 import { useLang } from "./languages/index.js";
+import { vocabGenPrompt } from "./content.js";
 
 function TranslateIcon() {
   return (
@@ -383,10 +384,10 @@ export default function App() {
           body: JSON.stringify({
             model: "claude-haiku-4-5-20251001",
             max_tokens: 400,
-            system: "You are a French vocabulary generator. Respond only with a valid JSON array, no markdown.",
+            system: "You are a vocabulary generator. Respond only with a valid JSON array, no markdown.",
             messages: [{
               role: "user",
-              content: `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${[...knownFr].join(", ")}. Return a JSON array only — no markdown. Use BASE FORM without article for nouns (e.g. "maison" not "la maison"). For each word include its inflected forms. Format: [{"fr":"maison","no":"huset","p":"mæzå","forms":[["la maison","n"],["les maisons","np"]]},{"fr":"parler","no":"å snakke","p":"parlæ","forms":[["je parle","pr"],["nous parlons","pr"],["ils parlent","pr"],["j'ai parlé","pc"],["je parlais","imp"],["je parlerai","f"],["parle","impv"],["parlé","pp"]]}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Adjectives: include adj-f/adj-mp/adj-fp forms. Fixed phrases or adverbs: forms:[].`,
+              content: vocabGenPrompt(activeGoal, knownFr),
             }],
           }),
         });

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { shuffle, logGameSession } from "../utils.jsx";
-import { VOCAB_CAT_MAP } from "../constants.js";
+import { VOCAB_CAT_MAP } from "../content.js";
 import BottomNav from "../components/BottomNav.jsx";
 
 const MIN_WORDS_PER_CAT = 3;

@@ -2,21 +2,51 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
 import { saveTutorPrefs } from "../hooks/useTutorPrefs.js";
+import { getActiveLang } from "../languages/index.js";
 
-const NAMES_F = [
-  { key: "simone", label: "Simone", persona: "simone", desc: "Stille, lest, tålmodig." },
-  { key: "colette", label: "Colette", persona: "simone", desc: "Varm, direkte, morsom." },
-  { key: "marguerite", label: "Marguerite", persona: "simone", desc: "Tankefull, presis, rolig." },
-  { key: "camille", label: "Camille", persona: "simone", desc: "Ung, nysgjerrig, energisk." },
-];
-const NAMES_M = [
-  { key: "henri", label: "Henri", persona: "henri", desc: "Litterær, tålmodig, røyker pipe." },
-  { key: "antoine", label: "Antoine", persona: "henri", desc: "Entusiastisk, grundig, detaljorientert." },
-  { key: "marcel", label: "Marcel", persona: "henri", desc: "Filosofisk, rolig, eftertenksom." },
-  { key: "jean-paul", label: "Jean-Paul", persona: "henri", desc: "Ironisk, skarp, engasjert." },
-];
+// Tutor name sets per language. The `persona` on each entry is that language's
+// figure for the given gender (resolved below from the language's personas).
+const NAME_SETS = {
+  fr: {
+    f: [
+      { key: "simone", label: "Simone", desc: "Stille, lest, tålmodig." },
+      { key: "colette", label: "Colette", desc: "Varm, direkte, morsom." },
+      { key: "marguerite", label: "Marguerite", desc: "Tankefull, presis, rolig." },
+      { key: "camille", label: "Camille", desc: "Ung, nysgjerrig, energisk." },
+    ],
+    m: [
+      { key: "henri", label: "Henri", desc: "Litterær, tålmodig, røyker pipe." },
+      { key: "antoine", label: "Antoine", desc: "Entusiastisk, grundig, detaljorientert." },
+      { key: "marcel", label: "Marcel", desc: "Filosofisk, rolig, eftertenksom." },
+      { key: "jean-paul", label: "Jean-Paul", desc: "Ironisk, skarp, engasjert." },
+    ],
+  },
+  "de-CH": {
+    f: [
+      { key: "regula", label: "Regula", desc: "Rolig, presis, varm." },
+      { key: "vreni", label: "Vreni", desc: "Jordnær, direkte, humoristisk." },
+      { key: "heidi", label: "Heidi", desc: "Lys, oppmuntrende, tålmodig." },
+      { key: "bea", label: "Bea", desc: "Skarp, energisk, nysgjerrig." },
+    ],
+    m: [
+      { key: "klaus", label: "Klaus", desc: "Professor, presis, glad i grammatikk." },
+      { key: "beat", label: "Beat", desc: "Avslappet, vennlig, grundig." },
+      { key: "urs", label: "Urs", desc: "Stillferdig, metodisk, tålmodig." },
+      { key: "hans", label: "Hans", desc: "Varm, fortellerglad, engasjert." },
+    ],
+  },
+};
 
 export default function OnboardingScreen({ onDone }) {
+  const lang = getActiveLang();
+  const personaFor = (g) => (lang.tutor.personas.find(p => p.gender === g) || {}).id;
+  const fPersona = personaFor("f");
+  const mPersona = personaFor("m");
+  const set = NAME_SETS[lang.id] || NAME_SETS.fr;
+  // Attach the resolved persona to each name entry.
+  const NAMES_F = set.f.map(n => ({ ...n, persona: fPersona }));
+  const NAMES_M = set.m.map(n => ({ ...n, persona: mPersona }));
+
   const [selected, setSelected] = useState(NAMES_M[0]);
 
   const handleConfirm = () => {
@@ -43,7 +73,7 @@ export default function OnboardingScreen({ onDone }) {
         L'ATELIER · LÆREREN DIN
       </div>
       <h1 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400, fontSize: 26, margin: "6px 0 4px", color: "var(--text)" }}>
-        Hvem skal lære deg fransk?
+        Hvem skal lære deg {lang.label.toLowerCase()}?
       </h1>
       <div style={{ fontSize: 13, color: "rgba(232,237,245,0.6)", marginBottom: 22, lineHeight: 1.5 }}>
         Du kan endre dette når som helst i innstillinger.
@@ -55,7 +85,7 @@ export default function OnboardingScreen({ onDone }) {
         padding: 18, display: "flex", alignItems: "center", gap: 16, marginBottom: 18,
       }}>
         <div style={{ color: "var(--accent, #5a9af0)", flexShrink: 0 }}>
-          <TutorAnimated persona={selected.persona} emotion="dignified" accessory={selected.persona === "henri" ? "pipe" : "book"} crop="bust" size={84} title={selected.label} />
+          <TutorAnimated persona={selected.persona} emotion="dignified" accessory={selected.persona === "henri" ? "pipe" : "book"} crop="bust" size={84} title={selected.label} key={selected.key} />
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>VALGT</div>
@@ -76,7 +106,7 @@ export default function OnboardingScreen({ onDone }) {
               color: isSel ? "#7db0f5" : "rgba(232,237,245,0.78)",
             }}>
               <div style={{ color: isSel ? "#7db0f5" : "rgba(232,237,245,0.55)", display: "flex", justifyContent: "center", marginBottom: 4 }}>
-                <Tutor persona="simone" emotion="idle" crop="face" size={36} title="" />
+                <Tutor persona={fPersona} emotion="idle" crop="face" size={36} title="" />
               </div>
               <div style={{ fontSize: 12 }}>{n.label}</div>
             </button>
@@ -96,7 +126,7 @@ export default function OnboardingScreen({ onDone }) {
               color: isSel ? "#7db0f5" : "rgba(232,237,245,0.78)",
             }}>
               <div style={{ color: isSel ? "#7db0f5" : "rgba(232,237,245,0.55)", display: "flex", justifyContent: "center", marginBottom: 4 }}>
-                <Tutor persona="henri" emotion="idle" crop="face" size={36} title="" />
+                <Tutor persona={mPersona} emotion="idle" crop="face" size={36} title="" />
               </div>
               <div style={{ fontSize: 12 }}>{n.label}</div>
             </button>

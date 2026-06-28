@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY, VOCAB_CAT_ORDER, VOCAB_LIST, VOCAB_CAT_MAP } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, WORDS_KEY, MASTERY_POINTS, DAGENS_GLOSE_KEY } from "../constants.js";
+import { VOCAB_CAT_ORDER, VOCAB_LIST, VOCAB_CAT_MAP, STATIC_VOCAB } from "../content.js";
 import { getWordTier } from "../utils.jsx";
-import { STATIC_VOCAB } from "../static_vocab.js";
 import BottomNav from "../components/BottomNav.jsx";
 import WordDetailModal, { getCatForWord } from "../components/WordDetailModal.jsx";
 

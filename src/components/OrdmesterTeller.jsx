@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ORDMESTER_GOALS } from "../constants.js";
+import { ORDMESTER_GOALS } from "../content.js";
 import { loadOrdmesterGoals, loadMasteryLog, touchMasteryCount, getMasteryMidpoint, todayStr } from "../utils.jsx";
 
 function getGoals() {

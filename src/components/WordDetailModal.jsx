@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { MASTERY_COLORS, MASTERY_LABELS, MASTERY_POINTS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS } from "../constants.js";
+import { MASTERY_COLORS, MASTERY_LABELS, MASTERY_POINTS } from "../constants.js";
+import { VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS } from "../content.js";
 import { getWordTier } from "../utils.jsx";
 
 function speakFr(text) {

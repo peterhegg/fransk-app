@@ -2,7 +2,7 @@ import BottomNav from "../components/BottomNav.jsx";
 import GroupButton from "../components/GroupPicker.jsx";
 import { IcoArrow } from "../components/Icons.jsx";
 import { HUB_SECTIONS } from "../exercises.jsx";
-import { VOCAB_GOALS, GRAMMAR_TOPICS } from "../constants.js";
+import { VOCAB_GOALS, GRAMMAR_TOPICS } from "../content.js";
 
 // Øv hub — the full exercise library, grouped by skill.
 // Top-level nav destination (no back button — switch tabs via BottomNav).

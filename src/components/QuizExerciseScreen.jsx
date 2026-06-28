@@ -1,6 +1,7 @@
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import { useRef, useState, useEffect } from "react";
-import { GRAMMAR_TOPICS, PROXY_URL, APP_TOKEN } from "../constants.js";
+import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { GRAMMAR_TOPICS } from "../content.js";
 import { loadUserProfile } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";

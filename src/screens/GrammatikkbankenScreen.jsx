@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, MASTERY_POINTS, GRAMMAR_TOPICS } from "../constants.js";
+import { MASTERY_LABELS, MASTERY_COLORS, SR_INTERVALS, MASTERY_POINTS } from "../constants.js";
+import { GRAMMAR_TOPICS } from "../content.js";
 import { getWordTier } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
