@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { logDailyAnswer, logGameSession, loadUserProfile } from "../utils.jsx";
+import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, LoadingState, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 import AiFeedback from "../components/AiFeedback.jsx";
@@ -130,13 +131,24 @@ function buildCrossword(candidates) {
   return { grid: trimmed, words: numberedWords };
 }
 
-function pickWords(bankWords) {
+const ARTICLE_RE_CW = {
+  fr:      /^(le |la |les |l'|un |une )/i,
+  "de-CH": /^(der |die |das |ein |eine )/i,
+};
+const WORD_CHAR_RE_CW = {
+  fr:      /^[a-záàâäéèêëíìîïóòôöúùûüç]+$/,
+  "de-CH": /^[a-zäöüß]+$/,
+};
+
+function pickWords(bankWords, langId) {
+  const articleRe = ARTICLE_RE_CW[langId] || ARTICLE_RE_CW.fr;
+  const wordCharRe = WORD_CHAR_RE_CW[langId] || WORD_CHAR_RE_CW.fr;
   const candidates = bankWords
     .map(w => {
-      const fr = (w.fr || "").replace(/^(le |la |les |l'|un |une )/i, "").trim().toLowerCase();
+      const fr = (w.fr || "").replace(articleRe, "").trim().toLowerCase();
       return { fr, no: w.no || "" };
     })
-    .filter(w => w.fr.length >= 3 && w.fr.length <= 10 && !/\s/.test(w.fr) && /^[a-záàâäéèêëíìîïóòôöúùûüç]+$/.test(w.fr));
+    .filter(w => w.fr.length >= 3 && w.fr.length <= 10 && !/\s/.test(w.fr) && wordCharRe.test(w.fr));
 
   const seen = new Set();
   const unique = [];
@@ -150,6 +162,7 @@ function pickWords(bankWords) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function KryssordScreen({ words, onBack, isOnline, screen, showWords, onNav, onGameComplete }) {
+  const langId = getActiveLang().id;
   const [crossword, setCrossword] = useState(null);
   const [typed, setTyped]         = useState({});   // wordId → string (what user typed so far)
   const [selected, setSelected]   = useState(null); // wordId
@@ -159,10 +172,10 @@ export default function KryssordScreen({ words, onBack, isOnline, screen, showWo
   const inputRef = useRef(null);
 
   const generate = useCallback(() => {
-    const candidates = pickWords(words);
+    const candidates = pickWords(words, langId);
     if (candidates.length < 3) { setEmptyBank(true); return; }
     let cw = buildCrossword(candidates);
-    if (!cw) cw = buildCrossword(pickWords(words));
+    if (!cw) cw = buildCrossword(pickWords(words, langId));
     if (!cw) { setEmptyBank(true); return; }
     setCrossword(cw);
     setTyped({});

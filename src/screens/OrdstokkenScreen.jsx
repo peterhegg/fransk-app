@@ -1,18 +1,32 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { shuffle, logGameSession, logSentenceAnswer } from "../utils.jsx";
+import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 
 const ROUNDS = 10;
 const MIN_LEN = 4;
 const MAX_LEN = 11;
 
-function getBase(fr) {
-  return fr.replace(/^(le |la |les |l')/i, "").trim();
+const ARTICLE_RE = {
+  fr:     /^(le |la |les |l'|un |une )/i,
+  "de-CH": /^(der |die |das |ein |eine )/i,
+};
+const WORD_CHAR_RE = {
+  fr:     /^[a-záàâäéèêëíìîïóòôöúùûüç]+$/,
+  "de-CH": /^[a-zäöüß]+$/,
+};
+
+function getBase(fr, langId) {
+  return fr.replace(ARTICLE_RE[langId] || ARTICLE_RE.fr, "").trim();
 }
 
-function eligible(word) {
-  const base = getBase(word.fr);
-  return !base.includes(" ") && !base.includes("/") && base.length >= MIN_LEN && base.length <= MAX_LEN;
+function eligible(word, langId) {
+  const base = getBase(word.fr, langId);
+  return (
+    !base.includes(" ") && !base.includes("/") &&
+    base.length >= MIN_LEN && base.length <= MAX_LEN &&
+    (WORD_CHAR_RE[langId] || WORD_CHAR_RE.fr).test(base.toLowerCase())
+  );
 }
 
 function scramble(word) {
@@ -26,12 +40,12 @@ function scramble(word) {
   return result;
 }
 
-function buildRounds(words) {
-  const pool = words.filter(eligible);
+function buildRounds(words, langId) {
+  const pool = words.filter(w => eligible(w, langId));
   if (pool.length < 3) return null;
   const chosen = shuffle(pool).slice(0, ROUNDS);
   return chosen.map((w, i) => {
-    const base = getBase(w.fr);
+    const base = getBase(w.fr, langId);
     return {
       id: i,
       word: w,
@@ -42,8 +56,9 @@ function buildRounds(words) {
 }
 
 export default function OrdstokkenScreen({ words, grammarWords, onBack, speak, speaking, screen, showWords, onNav }) {
+  const langId = getActiveLang().id;
   const allWords = [...words, ...(grammarWords || [])];
-  const [rounds] = useState(() => buildRounds(allWords));
+  const [rounds] = useState(() => buildRounds(allWords, langId));
   const [idx, setIdx] = useState(0);
   const [placed, setPlaced] = useState([]); // letter ids in order
   const [checked, setChecked] = useState(false);
