@@ -4,7 +4,7 @@ import { tutorVisible } from "../hooks/useTutorPrefs.js";
 import { usePushSubscription } from "../hooks/usePushSubscription.js";
 import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
-import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, speechLocale, dateLocale, greeting } from "../content.js";
+import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, speechLocale, dateLocale, greeting, brand, modeImages as MODE_IMAGES, goalImages } from "../content.js";
 import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID } from "../utils.jsx";
 import { PROXY_URL } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
@@ -14,14 +14,7 @@ import ThemeToggle from "../components/ThemeToggle.jsx";
 import LanguagePicker from "../components/LanguagePicker.jsx";
 import WordDetailModal from "../components/WordDetailModal.jsx";
 
-const MODE_IMAGES = {
-  "dagens-glose":      "https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=700&q=70&auto=format&fit=crop",
-  "glose":             "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=70&auto=format&fit=crop",
-  "dagens-grammatikk": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=70&auto=format&fit=crop",
-  "grammatikk-ovelse": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=70&auto=format&fit=crop",
-  "teksthjelp":        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=70&auto=format&fit=crop",
-  "fri":               "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=70&auto=format&fit=crop",
-};
+// MODE_IMAGES now comes from the active language (imported above).
 
 const GOAL_IMAGES = {
   "core":        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=700&q=70&auto=format&fit=crop",
@@ -946,7 +939,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const activeWordCount = wordCountByGoal[activeGoal.id] || 0;
   const pct = Math.min(100, (activeWordCount / activeGoal.target) * 100);
 
-  const todaysGloseImg = GOAL_IMAGES[activeGoal?.id] || MODE_IMAGES["dagens-glose"];
+  const todaysGloseImg = (goalImages && goalImages[activeGoal?.id]) || GOAL_IMAGES[activeGoal?.id] || MODE_IMAGES["dagens-glose"];
 
   const grammarDoneToday = (() => {
     const log = loadActivityLog();
@@ -1059,7 +1052,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
         {/* Header */}
         <div style={{ padding: "52px 22px 12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: 3.4, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 6, fontWeight: 400, opacity: 0.85 }}>L'Atelier</div>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: 3.4, textTransform: "uppercase", color: "var(--cream-deep)", marginBottom: 6, fontWeight: 400, opacity: 0.85 }}>{brand}</div>
             <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 34, letterSpacing: "-0.7px", color: "var(--text)", lineHeight: 1.05 }}>
               {frenchGreeting()}, {profile.name}
             </h1>

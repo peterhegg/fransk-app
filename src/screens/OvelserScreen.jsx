@@ -2,7 +2,7 @@ import BottomNav from "../components/BottomNav.jsx";
 import GroupButton from "../components/GroupPicker.jsx";
 import { IcoArrow } from "../components/Icons.jsx";
 import { HUB_SECTIONS } from "../exercises.jsx";
-import { VOCAB_GOALS, GRAMMAR_TOPICS } from "../content.js";
+import { VOCAB_GOALS, GRAMMAR_TOPICS, brand } from "../content.js";
 
 // Øv hub — the full exercise library, grouped by skill.
 // Top-level nav destination (no back button — switch tabs via BottomNav).
@@ -24,7 +24,7 @@ export default function OvelserScreen({ onStart, words = [], grammarWords = [], 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ padding: "22px 24px 6px", flexShrink: 0 }}>
-        <div style={{ fontSize: 9, letterSpacing: 2.4, textTransform: "uppercase", color: "var(--cream)", marginBottom: 4 }}>L'Atelier</div>
+        <div style={{ fontSize: 9, letterSpacing: 2.4, textTransform: "uppercase", color: "var(--cream)", marginBottom: 4 }}>{brand}</div>
         <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 30, letterSpacing: "-0.5px", color: "var(--text)" }}>Øv</h1>
         <div style={{ fontSize: 13, color: "var(--text-subtle)", marginTop: 2 }}>Velg en øvelse</div>
       </div>

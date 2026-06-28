@@ -70,7 +70,7 @@ export default function OnboardingScreen({ onDone }) {
       }}
     >
       <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(232,237,245,0.5)", marginBottom: 6 }}>
-        L'ATELIER · LÆREREN DIN
+        {lang.brand} · LÆREREN DIN
       </div>
       <h1 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400, fontSize: 26, margin: "6px 0 4px", color: "var(--text)" }}>
         Hvem skal lære deg {lang.label.toLowerCase()}?

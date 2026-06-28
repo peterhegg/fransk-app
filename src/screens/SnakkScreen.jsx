@@ -1,6 +1,7 @@
 import BottomNav from "../components/BottomNav.jsx";
 import { IcoArrow } from "../components/Icons.jsx";
 import { CONVERSATION_CHOICES } from "../exercises.jsx";
+import { brand } from "../content.js";
 
 // Snakk hub — pick a conversation mode with the tutor.
 // Top-level nav destination, so it lands on a choice rather than jumping
@@ -9,7 +10,7 @@ export default function SnakkScreen({ onStart, ...navProps }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ padding: "22px 24px 6px", flexShrink: 0 }}>
-        <div style={{ fontSize: 9, letterSpacing: 2.4, textTransform: "uppercase", color: "var(--cream)", marginBottom: 4 }}>L'Atelier</div>
+        <div style={{ fontSize: 9, letterSpacing: 2.4, textTransform: "uppercase", color: "var(--cream)", marginBottom: 4 }}>{brand}</div>
         <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontWeight: 500, fontSize: 30, letterSpacing: "-0.5px", color: "var(--text)" }}>Snakk</h1>
         <div style={{ fontSize: 13, color: "var(--text-subtle)", marginTop: 2 }}>Velg hvordan du vil øve</div>
       </div>

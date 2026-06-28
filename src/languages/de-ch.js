@@ -191,6 +191,25 @@ const deCH = {
   id: "de-CH",
   label: "Sveitsertysk",
   flag: "🇨🇭",
+  brand: "Das Atelier",
+
+  // Decorative card backgrounds — Swiss alpine imagery (verified to load).
+  modeImages: {
+    "dagens-glose":      "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=700&q=70&auto=format&fit=crop",
+    "glose":             "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?w=400&q=70&auto=format&fit=crop",
+    "dagens-grammatikk": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=70&auto=format&fit=crop",
+    "grammatikk-ovelse": "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=400&q=70&auto=format&fit=crop",
+    "teksthjelp":        "https://images.unsplash.com/photo-1605540436563-5bca919ae766?w=400&q=70&auto=format&fit=crop",
+    "fri":               "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?w=400&q=70&auto=format&fit=crop",
+  },
+
+  // Per-goal hero image on the home "Dagens" card (overrides the French
+  // GOAL_IMAGES defaults for the three Swiss-German bolker).
+  goalImages: {
+    "core":     "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=700&q=70&auto=format&fit=crop",
+    "everyday": "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?w=700&q=70&auto=format&fit=crop",
+    "tdf":      "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=700&q=70&auto=format&fit=crop",
+  },
 
   locale: "de-CH",
   dateLocale: "de-CH",

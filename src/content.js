@@ -26,3 +26,6 @@ export const dateLocale = L.dateLocale;
 export const formLabels = L.formLabels;         // form-code → label, language-specific
 export const langCode = L.id;                   // BCP47-ish for lang="" attributes
 export const greeting = L.greeting;             // (hour) → time-of-day greeting
+export const brand = L.brand;                   // app brand label per language
+export const modeImages = L.modeImages;         // home-screen card backgrounds
+export const goalImages = L.goalImages;         // per-goal hero image override (optional)
