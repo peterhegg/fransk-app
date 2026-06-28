@@ -3,47 +3,62 @@ import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile, logGameSession, logDailyAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, CountPill, GameResult, LoadingState, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
+import { getActiveLang } from "../languages/index.js";
 
-const SCENARIOS = [
-  { id: "restaurant", label: "På restaurant",    icon: "🍽️", desc: "Bestill mat og drikke",          role: "a friendly French waiter at a cozy Parisian bistro" },
-  { id: "kafe",       label: "På kafeen",         icon: "☕", desc: "Bestill kaffe og et lite måltid", role: "a French café waiter in a Parisian café" },
-  { id: "butikk",     label: "I butikken",         icon: "🛍️", desc: "Kjøp klær eller suvenirer",     role: "a helpful French boutique shopkeeper" },
-  { id: "tog",        label: "På togstasjonen",    icon: "🚂", desc: "Kjøp billett, finn rett tog",    role: "a French train station clerk at Gare du Nord" },
-  { id: "hotell",     label: "På hotellet",        icon: "🏨", desc: "Sjekk inn og få hjelp",          role: "a friendly French hotel receptionist" },
-  { id: "marked",     label: "På markedet",        icon: "🥖", desc: "Kjøp brød, ost og frukt",        role: "a French market vendor selling bread, cheese and produce" },
-];
+const SCENARIOS_BY_LANG = {
+  fr: [
+    { id: "restaurant", label: "På restaurant",    icon: "🍽️", desc: "Bestill mat og drikke",          role: "a friendly French waiter at a cozy Parisian bistro" },
+    { id: "kafe",       label: "På kafeen",         icon: "☕", desc: "Bestill kaffe og et lite måltid", role: "a French café waiter in a Parisian café" },
+    { id: "butikk",     label: "I butikken",        icon: "🛍️", desc: "Kjøp klær eller suvenirer",      role: "a helpful French boutique shopkeeper" },
+    { id: "tog",        label: "På togstasjonen",   icon: "🚂", desc: "Kjøp billett, finn rett tog",     role: "a French train station clerk at Gare du Nord" },
+    { id: "hotell",     label: "På hotellet",       icon: "🏨", desc: "Sjekk inn og få hjelp",           role: "a friendly French hotel receptionist" },
+    { id: "marked",     label: "På markedet",       icon: "🥖", desc: "Kjøp brød, ost og frukt",         role: "a French market vendor selling bread, cheese and produce" },
+  ],
+  "de-CH": [
+    { id: "restaurant", label: "På restaurant",    icon: "🍽️", desc: "Bestill mat og drikke",          role: "a friendly Swiss German-speaking waiter at a cozy Zurich Beizli" },
+    { id: "kafe",       label: "På kafeen",         icon: "☕", desc: "Bestill kaffe og et lite måltid", role: "a Swiss German café server in a Zurich Kaffeehaus" },
+    { id: "butikk",     label: "I butikken",        icon: "🛍️", desc: "Kjøp klær eller suvenirer",      role: "a helpful Swiss German shopkeeper" },
+    { id: "tog",        label: "På togstasjonen",   icon: "🚂", desc: "Kjøp billett, finn rett tog",     role: "a Swiss German train station clerk at Zürich HB" },
+    { id: "hotell",     label: "På hotellet",       icon: "🏨", desc: "Sjekk inn og få hjelp",           role: "a friendly Swiss German-speaking hotel receptionist" },
+    { id: "marked",     label: "På markedet",       icon: "🥖", desc: "Kjøp brød, ost og frukt",         role: "a Swiss German market vendor selling Zopf, Gruyère and seasonal produce" },
+  ],
+};
+function getScenarios(langId) { return SCENARIOS_BY_LANG[langId] || SCENARIOS_BY_LANG.fr; }
+
+const FALLBACK_OPTIONS_BY_LANG = {
+  fr:      [{ fr: "Je comprends.", no: "Jeg forstår." }, { fr: "D'accord, merci.", no: "Greit, takk." }, { fr: "Pouvez-vous répéter?", no: "Kan du gjenta?" }],
+  "de-CH": [{ fr: "Ich verstehe.", no: "Jeg forstår." }, { fr: "Gut, danke.", no: "Greit, takk." },      { fr: "Können Sie das wiederholen?", no: "Kan du gjenta?" }],
+};
+function getFallback(langId) { return FALLBACK_OPTIONS_BY_LANG[langId] || FALLBACK_OPTIONS_BY_LANG.fr; }
 
 const MAX_TURNS = 6;
 
-function systemPrompt(scenario, profile, words) {
+function systemPrompt(scenario, profile, words, lang) {
   const vocabList = words && words.length > 0
     ? words.map(w => w.fr).join(", ")
     : null;
 
-  return `You are a French conversation partner playing the role of ${scenario.role}. You help a Norwegian ${profile.level || "A1/A2"} learner${profile.dysleksi ? " with dyslexia" : ""} practice real French.
+  return `You are a ${lang.nameEn} conversation partner playing the role of ${scenario.role}. You help a Norwegian ${profile.level || "A1/A2"} learner${profile.dysleksi ? " with dyslexia" : ""} practice real ${lang.nameEn}.
 
 RULES:
-- Your French replies must be short and simple (A1/A2, max 1-2 sentences).
+- Your ${lang.nameEn} replies must be short and simple (A1/A2, max 1-2 sentences).
 - Always include a Norwegian translation of your reply.
 - Always give exactly 3 response options the learner can say. Options must be realistic for the scenario, at A1/A2 level, and meaningfully different from each other. Use vocabulary from the student's word list where possible.
 - Only set done:true after the conversation has had ${MAX_TURNS} full exchanges. Never before.
 
 ALWAYS respond with valid JSON only — no markdown, no explanation:
-{"reply_fr":"Bonjour! Vous désirez?","reply_no":"Hei! Hva ønsker du?","options":[{"fr":"Je voudrais un café, s'il vous plaît.","no":"Jeg vil gjerne ha en kaffe, takk."},{"fr":"Qu'est-ce que vous recommandez?","no":"Hva anbefaler du?"},{"fr":"Avez-vous du thé?","no":"Har dere te?"}],"done":false}
+{"reply_fr":"[${lang.nameEn} greeting]","reply_no":"[Norwegian translation]","options":[{"fr":"[option 1 in ${lang.nameEn}]","no":"[Norwegian]"},{"fr":"[option 2 in ${lang.nameEn}]","no":"[Norwegian]"},{"fr":"[option 3 in ${lang.nameEn}]","no":"[Norwegian]"}],"done":false}
 
 When done (after ${MAX_TURNS} exchanges):
 {"done":true,"score":4,"comment":"Norwegian feedback in 2-3 sentences. Mention what went well and one thing to improve.","corrections":["Specific mistake if any, in Norwegian — or leave array empty"]}
 
-Score is 1–6 (Norwegian dice). Be encouraging.${vocabList ? `\n\nSTUDENT'S VOCABULARY — use these words and their natural inflections. Basic grammatical words (articles, prepositions, être, avoir) are always fine:\n${vocabList}` : ""}`;
+Score is 1–6 (Norwegian dice). Be encouraging.${vocabList ? `\n\nSTUDENT'S VOCABULARY — use these words and their natural inflections. Basic grammatical words (articles, prepositions, common verbs) are always fine:\n${vocabList}` : ""}`;
 }
 
-const FALLBACK_OPTIONS = [
-  { fr: "Je comprends.", no: "Jeg forstår." },
-  { fr: "D'accord, merci.", no: "Greit, takk." },
-  { fr: "Pouvez-vous répéter?", no: "Kan du gjenta?" },
-];
-
 export default function RollespillScreen({ words, onBack, speak, screen, showWords, onNav, onGameComplete }) {
+  const lang      = getActiveLang();
+  const SCENARIOS = getScenarios(lang.id);
+  const FALLBACK_OPTIONS = getFallback(lang.id);
   const [phase, setPhase]           = useState("select");
   const [scenario, setScenario]     = useState(null);
   const [messages, setMessages]     = useState([]);
@@ -66,7 +81,7 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
       body: JSON.stringify({
         max_tokens: 600,
-        system: systemPrompt(sc, profile, words),
+        system: systemPrompt(sc, profile, words, lang),
         messages: history,
       }),
     });
@@ -279,7 +294,7 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
                 value={freeText}
                 onChange={e => setFreeText(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && freeText.trim()) { pickOption({ fr: freeText.trim(), no: "" }); setFreeText(""); } }}
-                placeholder="eller skriv selv på fransk…"
+                placeholder={`eller skriv selv på ${lang.label.toLowerCase()}…`}
                 style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "11px 14px", fontSize: 13, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none" }}
                 autoComplete="off" autoCorrect="off" spellCheck={false}
               />
