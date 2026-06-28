@@ -23,19 +23,23 @@ if (langId !== DEFAULT_LANG && typeof window !== "undefined" && window.localStor
   const ns = langId + ":";
   const nk = (k) => (GLOBAL_KEYS.has(k) ? k : ns + k);
 
-  const wrapped = {
-    getItem: (k) => real.getItem(nk(k)),
-    setItem: (k, v) => real.setItem(nk(k), v),
-    removeItem: (k) => real.removeItem(nk(k)),
-    clear: () => real.clear(),
-    key: (i) => real.key(i),
-    get length() { return real.length; },
-  };
+  // A Proxy over the real Storage: getItem/setItem/removeItem are namespaced,
+  // everything else (length, key, clear, enumeration) passes through to the
+  // real object — so Object.keys/for-in still behave like a real Storage.
+  const proxy = new Proxy(real, {
+    get(target, prop) {
+      if (prop === "getItem") return (k) => target.getItem(nk(k));
+      if (prop === "setItem") return (k, v) => target.setItem(nk(k), v);
+      if (prop === "removeItem") return (k) => target.removeItem(nk(k));
+      const v = target[prop];
+      return typeof v === "function" ? v.bind(target) : v;
+    },
+  });
 
   try {
     Object.defineProperty(window, "localStorage", {
       configurable: true,
-      get() { return wrapped; },
+      get() { return proxy; },
     });
   } catch {
     // If the host forbids redefining window.localStorage, isolation is lost

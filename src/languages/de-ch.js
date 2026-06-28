@@ -7,6 +7,7 @@
 // HARD RULE everywhere: never ß — always "ss" (Strasse, Fussball, gross).
 import { VOCAB_CAT_ORDER } from "../constants.js";
 import { DE_STATIC_VOCAB } from "../de_static_vocab.js";
+import { DE_VOCAB_CAT_MAP } from "../de_vocab_cat_map.js";
 
 // Always-known basics — excluded from AI vocab generation, like French VOCAB_LIST.
 export const DE_VOCAB_LIST = [
@@ -228,7 +229,7 @@ const deCH = {
   ordmesterGoals: DE_ORDMESTER_GOALS,
   vocabList: DE_VOCAB_LIST,
   vocabCatOrder: VOCAB_CAT_ORDER,
-  vocabCatMap: {},
+  vocabCatMap: DE_VOCAB_CAT_MAP,
   staticVocab: DE_STATIC_VOCAB,
   grammarTopics: DE_GRAMMAR_TOPICS,
 };
