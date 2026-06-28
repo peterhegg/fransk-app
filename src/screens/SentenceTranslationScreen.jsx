@@ -282,7 +282,7 @@ export default function SentenceTranslationScreen({
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
         <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
-          Oversett til fransk
+          Oversett til {lang.label.toLowerCase()}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px", textAlign: "center", width: "100%", maxWidth: 360, boxShadow: "var(--shadow-md)" }}>
@@ -297,7 +297,7 @@ export default function SentenceTranslationScreen({
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && submit()}
               onFocus={handleFocus}
-              placeholder="Skriv den franske setningen her..."
+              placeholder={`Skriv den ${lang.label.toLowerCase()} setningen her...`}
               className="input-glow"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "14px 16px", outline: "none", textAlign: "center" }}
             />

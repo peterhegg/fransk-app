@@ -211,7 +211,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
           padding: "20px 22px", textAlign: "left", cursor: "pointer",
         }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 500, color: "var(--cream)", marginBottom: 4 }}>🇳🇴 → 🇫🇷 Fra norsk</div>
-          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Se den norske setningen, bygg den franske.</div>
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Se den norske setningen, bygg den {lang.label.toLowerCase()}.</div>
         </button>
 
         <button onClick={() => chooseDirection("fr-no")} className="press" style={{
@@ -220,7 +220,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
           padding: "20px 22px", textAlign: "left", cursor: "pointer",
         }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 500, color: "var(--text)", marginBottom: 4 }}>🇫🇷 → 🇳🇴 Fra fransk</div>
-          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Se den franske setningen, bygg den norske.</div>
+          <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.6 }}>Se den {lang.label.toLowerCase()} setningen, bygg den norske.</div>
         </button>
       </div>
       {nav}
@@ -276,7 +276,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
       {/* Source prompt */}
       <div style={{ padding: "0 20px 16px" }}>
         <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "var(--font-body)", marginBottom: 8 }}>
-          {buildFrench ? "Bygg på fransk:" : "Bygg på norsk:"}
+          {buildFrench ? `Bygg på ${lang.label.toLowerCase()}:` : "Bygg på norsk:"}
         </div>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.2px", lineHeight: 1.4 }}>

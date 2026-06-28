@@ -232,7 +232,7 @@ export default function GenerertFlervalgScreen({
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: 20 }}>
         <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>
-          {current?.direction === "fr-no" ? "Oversett til norsk" : "Oversett til fransk"}
+          {current?.direction === "fr-no" ? "Oversett til norsk" : `Oversett til ${lang.label.toLowerCase()}`}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px", textAlign: "center", width: "100%", maxWidth: 360, boxShadow: "var(--shadow-md)" }}>
