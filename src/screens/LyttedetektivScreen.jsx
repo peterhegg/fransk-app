@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { shuffle, getQuizOptions, logGameSession, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, GameResult, LoadingState, OptionButton, AudioButton, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 
@@ -15,6 +16,7 @@ function levelInstructions(level) {
 }
 
 async function fetchListeningSentences(words, grammarWords) {
+  const lang = getActiveLang();
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
   const sample = shuffle([...allWords]).slice(0, 40);
@@ -22,9 +24,9 @@ async function fetchListeningSentences(words, grammarWords) {
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
   const count = 8;
-  const prompt = `Du lager norske lytteøvelser for en ${lvl}-elev i fransk. ORDBANK: ${wordList}
+  const prompt = `Du lager norske lytteøvelser for en ${lvl}-elev i ${lang.label.toLowerCase()}. ORDBANK: ${wordList}
 
-Lag ${count} korte franske setninger (${levelInstructions(lvl)}).
+Lag ${count} korte ${lang.label.toLowerCase()} setninger (${levelInstructions(lvl)}).
 
 For HVER setning: lag 3 norske feilalternativer som er MINIMALE VARIASJONER av den riktige oversettelsen.
 
@@ -49,7 +51,7 @@ Svar KUN med JSON-array, ingen markdown:
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1200,
-      system: "You are a French language teacher. Respond only with a valid JSON array, no markdown.",
+      system: `You are a ${lang.nameEn} language teacher. Respond only with a valid JSON array, no markdown.`,
       messages: [{ role: "user", content: prompt }],
     }),
   });

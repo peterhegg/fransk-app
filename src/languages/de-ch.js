@@ -190,6 +190,7 @@ export function vocabGenPrompt(activeGoal, knownWords) {
 const deCH = {
   id: "de-CH",
   label: "Sveitsertysk",
+  nameEn: "Swiss German",
   flag: "🇨🇭",
   brand: "Das Atelier",
 

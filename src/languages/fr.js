@@ -55,6 +55,7 @@ export function vocabGenPrompt(activeGoal, knownWords) {
 const fr = {
   id: "fr",
   label: "Fransk",
+  nameEn: "French",
   flag: "🇫🇷",
   brand: "L'Atelier",
 

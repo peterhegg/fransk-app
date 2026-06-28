@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { shuffle, logGameSession, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, GameResult, LoadingState, Chip, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
 import AiFeedback from "../components/AiFeedback.jsx";
@@ -14,6 +15,7 @@ function levelInstructions(level) {
 }
 
 async function fetchBuildSentences(words, grammarWords, direction = "no-fr") {
+  const lang = getActiveLang();
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
   const sample = shuffle([...allWords]).slice(0, 30);
@@ -23,14 +25,14 @@ async function fetchBuildSentences(words, grammarWords, direction = "no-fr") {
   const count = 7;
   const buildFrench = direction === "no-fr";
 
-  const prompt = `French sentence-building exercise for Norwegian ${lvl} learner${profile.dysleksi ? " (dyslexia)" : ""}.
+  const prompt = `${lang.nameEn} sentence-building exercise for Norwegian ${lvl} learner${profile.dysleksi ? " (dyslexia)" : ""}.
 WORDS: ${wordList}
 Make ${count} sentences (${levelInstructions(lvl)}).
 ${buildFrench
-  ? `The learner is shown the Norwegian sentence and builds the FRENCH translation. For each sentence add 2-3 FRENCH distractor words: wrong conjugations, wrong gender forms, or near-synonyms that don't fit. Example: if sentence uses "est", add "sont" or "était"; if "grande" add "grand" or "gros".`
-  : `The learner is shown the French sentence and builds the NORWEGIAN translation. For each sentence add 2-3 NORWEGIAN distractor words: wrong inflections or near-synonyms that don't fit the sentence. Example: if sentence uses "spiser", add "spiste" or "drikker".`}
+  ? `The learner is shown the Norwegian sentence and builds the ${lang.nameEn.toUpperCase()} translation. For each sentence add 2-3 ${lang.nameEn.toUpperCase()} distractor words: wrong conjugations, wrong gender forms, or near-synonyms that don't fit.`
+  : `The learner is shown the ${lang.nameEn} sentence and builds the NORWEGIAN translation. For each sentence add 2-3 NORWEGIAN distractor words: wrong inflections or near-synonyms that don't fit the sentence. Example: if sentence uses "spiser", add "spiste" or "drikker".`}
 JSON only, no markdown:
-[{"no":"Norwegian sentence","fr":"French sentence","distractors":["wrong1","wrong2","wrong3"]}]`;
+[{"no":"Norwegian sentence","fr":"${lang.nameEn} sentence","distractors":["wrong1","wrong2","wrong3"]}]`;
 
   const attempt = async () => {
     const res = await fetch(PROXY_URL, {
@@ -74,6 +76,7 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
   const [score, setScore] = useState(0);
   const dragRef = useRef(null);
 
+  const lang = getActiveLang();
   const buildFrench = direction === "no-fr";
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
 
@@ -347,8 +350,8 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
               isOnline={isOnline}
               resetKey={`bygg-${idx}`}
               buildPrompt={() => buildFrench
-                ? `Norsk elev bygde en fransk setning feil.\nNorsk: "${current?.no}"\nKorrekt fransk: "${current?.fr}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — feil ordstilling, bøying eller ordvalg for akkurat denne setningen. Gi én huskeregel knyttet til strukturen her.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
-                : `Norsk elev oversatte en fransk setning til norsk feil.\nFransk: "${current?.fr}"\nKorrekt norsk: "${current?.no}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt med oversettelsen — feil ordstilling, bøying eller ordvalg. Gi én huskeregel knyttet til denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`}
+                ? `Norsk elev bygde en ${lang.label.toLowerCase()} setning feil.\nNorsk: "${current?.no}"\nKorrekt ${lang.label.toLowerCase()}: "${current?.fr}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — feil ordstilling, bøying eller ordvalg for akkurat denne setningen. Gi én huskeregel knyttet til strukturen her.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
+                : `Norsk elev oversatte en ${lang.label.toLowerCase()} setning til norsk feil.\n${lang.label}: "${current?.fr}"\nKorrekt norsk: "${current?.no}"\nEleven bygde: "${builtSentence}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt med oversettelsen — feil ordstilling, bøying eller ordvalg. Gi én huskeregel knyttet til denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`}
             />
           </div>
         )}

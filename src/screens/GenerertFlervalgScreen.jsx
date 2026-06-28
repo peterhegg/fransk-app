@@ -2,6 +2,7 @@ import { SpeakButton } from "../components/AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
+import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 
 function levelInstructions(level) {
@@ -17,6 +18,7 @@ function levelInstructions(level) {
 }
 
 function buildPrompt(words, grammarWords) {
+  const lang = getActiveLang();
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
   const sample = shuffle([...allWords]).slice(0, 40);
@@ -26,14 +28,17 @@ function buildPrompt(words, grammarWords) {
   const lvl = profile.level || "A1/A2";
   const lvlInstr = levelInstructions(lvl);
   const n = Math.min(6, count);
-  return `Lag ${n} franske flervalgsoppgaver for norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
+  const funcWords = lang.id === "de-CH"
+    ? "ich/du/er/sie/es/wir/ihr/sie/der/die/das/ein/eine/und/in/ist/sind/bin/hat/haben/nicht/kein"
+    : "je/tu/il/elle/nous/vous/ils/elles/le/la/les/l'/un/une/des/du/de/et/à/en/dans/est/sont/suis/a/ont/ne/pas";
+  return `Lag ${n} ${lang.label.toLowerCase()} flervalgsoppgaver for norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
-ORD (bruk KUN disse + funksjonsord: je/tu/il/elle/nous/vous/ils/elles/le/la/les/l'/un/une/des/du/de/et/à/en/dans/est/sont/suis/a/ont/ne/pas):
+ORD (bruk KUN disse + funksjonsord: ${funcWords}):
 ${wordList}
 
 Nivå (${lvl}): ${lvlInstr}
 
-Ca. halvparten type A (norsk→fransk) og halvparten type B (fransk→norsk).
+Ca. halvparten type A (norsk→${lang.label.toLowerCase()}) og halvparten type B (${lang.label.toLowerCase()}→norsk).
 Alternativene MÅ være nesten identiske — kun ett ord forskjell (pronomen, artikkel, verbform eller preposisjon).
 
 Svar KUN som JSON-array:
@@ -90,7 +95,7 @@ export default function GenerertFlervalgScreen({
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 2500,
-          system: "You are a French exercise generator. Respond only with a valid JSON array, no markdown.",
+          system: `You are a ${getActiveLang().nameEn} exercise generator. Respond only with a valid JSON array, no markdown.`,
           messages: [{ role: "user", content: prompt }],
         }),
       });

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { speechLocale, voicePrefix } from "../content.js";
+import { getActiveLang } from "../languages/index.js";
 import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logSentenceAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameResult, LoadingState, Dock, PrimaryButton, GhostButton, Waveform, AudioButton } from "../components/GameUI.jsx";
@@ -16,6 +17,7 @@ function normalize(str) {
 }
 
 async function fetchStory(words, profile) {
+  const lang = getActiveLang();
   const goal = getActiveGoal(words, loadGoalOrder());
   const sampleWords = words
     .slice()
@@ -24,8 +26,8 @@ async function fetchStory(words, profile) {
     .map(w => w.fr)
     .join(", ");
 
-  const system = `You are a French language teacher creating dictation exercises for a Norwegian A1/A2 learner${profile.dysleksi ? " with dyslexia" : ""}.`;
-  const prompt = `Write a short French story (4–5 sentences, 50–70 words total) at A1/A2 level. Topic: ${goal.label}. Try to use some of these words where they fit naturally: ${sampleWords}.
+  const system = `You are a ${lang.nameEn} language teacher creating dictation exercises for a Norwegian A1/A2 learner${profile.dysleksi ? " with dyslexia" : ""}.`;
+  const prompt = `Write a short ${lang.nameEn} story (4–5 sentences, 50–70 words total) at A1/A2 level. Topic: ${goal.label}. Try to use some of these words where they fit naturally: ${sampleWords}.
 
 Then select 5–7 important words (nouns, verbs, adjectives — not articles or short particles) to blank out.
 
@@ -73,6 +75,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, isOnline, s
   const [playing, setPlaying] = useState(false);
   const inputRefs = useRef([]);
   const profile = loadUserProfile();
+  const lang = getActiveLang();
 
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
 
@@ -383,7 +386,7 @@ export default function HistoriediktatScreen({ words, onBack, speak, isOnline, s
                 .map(x => `riktig "${x.ans}" — eleven skrev "${x.typed}"`)
                 .join("; ");
               const lvl = profile.level || "A1/A2";
-              return `Norsk ${lvl}-elev gjorde en fransk diktatøvelse og fylte inn noen ord feil.\nHistorie: "${story.full}"\nFeil: ${wrongList}\n\nForklar på norsk (2-3 korte setninger) SPESIFIKT hva som er galt med stavingen eller bøyingen for akkurat disse ordene. Gi én huskeregel.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+              return `Norsk ${lvl}-elev gjorde en ${lang.label.toLowerCase()} diktatøvelse og fylte inn noen ord feil.\nHistorie: "${story.full}"\nFeil: ${wrongList}\n\nForklar på norsk (2-3 korte setninger) SPESIFIKT hva som er galt med stavingen eller bøyingen for akkurat disse ordene. Gi én huskeregel.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
             }}
           />
         )}

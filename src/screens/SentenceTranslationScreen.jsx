@@ -2,6 +2,7 @@ import { SpeakButton } from "../components/AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
+import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 
 function levelInstructions(level) {
@@ -17,6 +18,7 @@ function levelInstructions(level) {
 }
 
 function buildSentencePrompt(words, grammarWords) {
+  const lang = getActiveLang();
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
   const sample = shuffle([...allWords]).slice(0, 40);
@@ -25,14 +27,14 @@ function buildSentencePrompt(words, grammarWords) {
   const profile = loadUserProfile();
   const lvl = profile.level || "A1/A2";
   const lvlInstr = levelInstructions(lvl);
-  return `Du er en fransktutor som lager oversettelsesoppgaver for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
+  return `Du er en ${lang.label.toLowerCase()}-tutor som lager oversettelsesoppgaver for en norsk ${lvl}-elev${profile.dysleksi ? " med dysleksi" : ""}.
 
-ORDBANK (bruk KUN disse franske ordene + konjugerte former + funksjonsord): ${wordList}
+ORDBANK (bruk KUN disse ${lang.label.toLowerCase()} ordene + konjugerte former + funksjonsord): ${wordList}
 
-Lag nøyaktig ${count} norske setninger som eleven skal oversette til fransk.
+Lag nøyaktig ${count} norske setninger som eleven skal oversette til ${lang.label.toLowerCase()}.
 
 NIVÅKRAV (${lvl}): ${lvlInstr}
-- Naturlige, korrekte norske og franske setninger
+- Naturlige, korrekte norske og ${lang.label.toLowerCase()} setninger
 - Varier setningstyper (påstand, spørsmål, negasjon)
 
 Svar KUN med en gyldig JSON-array, ingen markdown:
@@ -128,7 +130,7 @@ export default function SentenceTranslationScreen({
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 600,
-          system: "You are a French sentence generator. Respond only with a valid JSON array, no markdown.",
+          system: `You are a ${getActiveLang().nameEn} sentence generator. Respond only with a valid JSON array, no markdown.`,
           messages: [{ role: "user", content: prompt }],
         }),
       });
@@ -157,6 +159,7 @@ export default function SentenceTranslationScreen({
 
   const fetchAiHint = async (noSentence, frSentence, userInput, wordDiff) => {
     if (!isOnline) return;
+    const lang = getActiveLang();
     hintAbortRef.current?.abort();
     const controller = new AbortController();
     hintAbortRef.current = controller;
@@ -170,10 +173,10 @@ export default function SentenceTranslationScreen({
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 250,
-          system: "You are a French tutor. Respond only with a valid JSON object, no markdown.",
+          system: `You are a ${lang.nameEn} tutor. Respond only with a valid JSON object, no markdown.`,
           messages: [{ role: "user", content: (() => {
             const profile = loadUserProfile();
-            return `Norsk ${profile.level || "A1/A2"}-elev oversatte en setning feil.\nNorsk: "${noSentence}"\nKorrekt fransk: "${frSentence}"\nEleven svarte: "${userInput}"${wordDiff ? `\nFeil: ${wordDiff}` : ""}\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt for akkurat disse ordene — ikke generelle regler. Gi én huskeregel knyttet til akkurat disse ordene/strukturen i denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
+            return `Norsk ${profile.level || "A1/A2"}-elev oversatte en setning feil.\nNorsk: "${noSentence}"\nKorrekt ${lang.label.toLowerCase()}: "${frSentence}"\nEleven svarte: "${userInput}"${wordDiff ? `\nFeil: ${wordDiff}` : ""}\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt for akkurat disse ordene — ikke generelle regler. Gi én huskeregel knyttet til akkurat disse ordene/strukturen i denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
           })() }],
         }),
       });
