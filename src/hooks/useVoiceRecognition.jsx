@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { speechLocale } from "../content.js";
 
 export function useVoiceRecognition() {
   const [status, setStatus] = useState("idle");
@@ -18,7 +19,7 @@ export function useVoiceRecognition() {
     if (!SR) { setStatus("unsupported"); return; }
 
     const r = new SR();
-    r.lang = "fr-FR";
+    r.lang = speechLocale;
     r.continuous = continuous;
     r.interimResults = true;
     r.maxAlternatives = 5;

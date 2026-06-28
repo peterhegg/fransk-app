@@ -68,6 +68,9 @@ const fr = {
   // Maps to [data-lang="fr"] in design-system.css (themed in a later phase).
   themeAttr: "fr",
 
+  // Time-of-day greeting shown on the home screen.
+  greeting: (h) => (h >= 5 && h < 17 ? "Bonjour" : h >= 17 ? "Bonsoir" : "Bonne nuit"),
+
   // Tutor — personas live in Tutor.jsx (PERSONAS); this picks the default.
   tutor: {
     defaultPersona: "henri",

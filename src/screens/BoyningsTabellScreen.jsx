@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import BottomNav from "../components/BottomNav.jsx";
 import { logDailyAnswer, logGrammarSession } from "../utils.jsx";
+import { formLabels } from "../content.js";
 
-const FORM_TYPE_LABELS = {
+// French defaults; the active language may override (e.g. German tenses + komp/sup).
+const FORM_TYPE_LABELS = formLabels || {
   n: "Singulier",
   np: "Pluriel",
   "adj-f": "Féminin",
@@ -17,7 +19,8 @@ const FORM_TYPE_LABELS = {
   pp: "Participe passé",
 };
 
-const TYPE_ORDER = ["n", "np", "adj-f", "adj-mp", "adj-fp", "pr", "pc", "imp", "f", "c", "impv", "pp"];
+// komp/sup are German adjective forms; harmless extras for French (no such forms).
+const TYPE_ORDER = ["n", "np", "adj-f", "adj-mp", "adj-fp", "komp", "sup", "pr", "pc", "imp", "f", "c", "impv", "pp"];
 
 function groupForms(forms) {
   const byType = {};

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { speechLocale, voicePrefix } from "../content.js";
 import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logSentenceAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameResult, LoadingState, Dock, PrimaryButton, GhostButton, Waveform, AudioButton } from "../components/GameUI.jsx";
@@ -104,11 +105,11 @@ export default function HistoriediktatScreen({ words, onBack, speak, isOnline, s
     if (!story) return;
     setPlaying(true);
     const utt = new SpeechSynthesisUtterance(story.full);
-    utt.lang = "fr-FR";
+    utt.lang = speechLocale;
     utt.rate = 0.78;
-    const frVoice = window.speechSynthesis.getVoices().find(v => v.lang === "fr-FR")
-                 || window.speechSynthesis.getVoices().find(v => v.lang.startsWith("fr"));
-    if (frVoice) utt.voice = frVoice;
+    const voice = window.speechSynthesis.getVoices().find(v => v.lang === speechLocale)
+               || window.speechSynthesis.getVoices().find(v => v.lang.startsWith(voicePrefix));
+    if (voice) utt.voice = voice;
     utt.onend = () => setPlaying(false);
     utt.onerror = () => setPlaying(false);
     window.speechSynthesis.cancel();

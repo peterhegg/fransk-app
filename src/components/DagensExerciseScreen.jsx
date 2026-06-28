@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import BottomNav from "./BottomNav.jsx";
 import { checkQuizAnswer, shuffle } from "../utils.jsx";
+import { langCode } from "../content.js";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import Tutor, { TutorAnimated } from "./Tutor/Tutor.jsx";
@@ -108,8 +109,8 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
                 autoFocus />
               <input value={frInput} onChange={e => setFrInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && noInput.trim() && submit()}
-                placeholder="Skriv det franske ordet…" className="input-glow"
-                lang="fr"
+                placeholder="Skriv ordet…" className="input-glow"
+                lang={langCode}
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 15, padding: "11px 14px", outline: "none", textAlign: "center" }} />
               <button onClick={submit} disabled={!noInput.trim() || !frInput.trim()} className="btn-shine"
                 style={{ background: "var(--cream)", opacity: noInput.trim() && frInput.trim() ? 1 : 0.4, border: "none", borderRadius: 12, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "600", fontSize: 14, padding: "12px", cursor: noInput.trim() && frInput.trim() ? "pointer" : "default" }}>
@@ -311,8 +312,8 @@ export default function DagensExerciseScreen({
           <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
             <input value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && onSubmit()}
-              placeholder={isReverse ? "Skriv det franske ordet..." : "Skriv norsk oversettelse..."}
-              lang={isReverse ? "fr" : "no"}
+              placeholder={isReverse ? "Skriv ordet..." : "Skriv norsk oversettelse..."}
+              lang={isReverse ? langCode : "no"}
               className="input-glow"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
               autoFocus />

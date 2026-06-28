@@ -1,6 +1,7 @@
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
 import { MASTERY_POINTS } from "../constants.js";
+import { langCode } from "../content.js";
 import { shuffle, getQuizOptions, checkQuizAnswer, getDue, updateWordPoints, incrementAnswerCount, scheduleNext, logDailyAnswer, logVocabSession, logWordAnswer, loadAnswerCount, touchStreak, selectExerciseWords, getWordTier } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "./PointsBadge.jsx";
@@ -171,8 +172,8 @@ export default function TranslationExerciseScreen({
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && submit()}
               onFocus={handleFocus}
-              placeholder={isReverse ? "Skriv på fransk..." : "Skriv norsk oversettelse..."}
-              lang={isReverse ? "fr" : "no"}
+              placeholder={isReverse ? "Skriv på målspråket..." : "Skriv norsk oversettelse..."}
+              lang={isReverse ? langCode : "no"}
               className="input-glow"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text)", fontFamily: "var(--font-body)", fontSize: 16, padding: "14px 16px", outline: "none", textAlign: "center" }}
             />

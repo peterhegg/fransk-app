@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { speechLocale, voicePrefix } from "../content.js";
 
 export function useSpeechSynthesis() {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -19,12 +20,12 @@ export function useSpeechSynthesis() {
     // Chrome Android needs a brief pause after cancel before speak works
     setTimeout(() => {
       const utt = new SpeechSynthesisUtterance(text);
-      utt.lang = "fr-FR";
+      utt.lang = speechLocale;
       utt.rate = rate;
 
-      const frVoice = voicesRef.current.find(v => v.lang === "fr-FR")
-                   || voicesRef.current.find(v => v.lang.startsWith("fr"));
-      if (frVoice) utt.voice = frVoice;
+      const voice = voicesRef.current.find(v => v.lang === speechLocale)
+                 || voicesRef.current.find(v => v.lang.startsWith(voicePrefix));
+      if (voice) utt.voice = voice;
 
       // Fallback if onend never fires (Chrome/Safari bug)
       const wordsPerSec = 2.5 * rate;

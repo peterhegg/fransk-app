@@ -6,6 +6,7 @@ import {
   shuffle,
 } from "../utils.jsx";
 import { MASTERY_POINTS, PROXY_URL, APP_TOKEN } from "../constants.js";
+import { langCode } from "../content.js";
 import BottomNav from "../components/BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "../components/PointsBadge.jsx";
 import { AutoPlayToggle, SpeakButton } from "../components/AudioControls.jsx";
@@ -215,7 +216,7 @@ export default function DagensRettelseScreen({
             onKeyDown={e => { if (e.key === "Enter") { if (!checked) submit(); else next(); } }}
             onFocus={() => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300)}
             placeholder={hint}
-            lang={isReverse ? "fr" : "no"}
+            lang={isReverse ? langCode : "no"}
             disabled={checked}
             style={{
               flex: 1, padding: "13px 16px", borderRadius: 12,

@@ -20,5 +20,9 @@ export const STATIC_VOCAB = L.staticVocab;
 export const GRAMMAR_TOPICS = L.grammarTopics;
 export const vocabGenPrompt = L.vocabGenPrompt;
 export const systemPromptFor = L.systemPromptFor;
-export const speechLocale = L.locale;
+export const speechLocale = L.locale;          // e.g. "fr-FR" / "de-CH"
+export const voicePrefix = L.locale.split("-")[0]; // e.g. "fr" / "de"
 export const dateLocale = L.dateLocale;
+export const formLabels = L.formLabels;         // form-code → label, language-specific
+export const langCode = L.id;                   // BCP47-ish for lang="" attributes
+export const greeting = L.greeting;             // (hour) → time-of-day greeting

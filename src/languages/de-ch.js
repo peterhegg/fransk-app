@@ -196,6 +196,12 @@ const deCH = {
   storagePrefix: "sveitsertysk",
   themeAttr: "de-CH",
 
+  greeting: (h) =>
+    h >= 5 && h < 11 ? "Guete Morge"
+    : h >= 11 && h < 17 ? "Grüezi"
+    : h >= 17 && h < 22 ? "Guete Abig"
+    : "Gueti Nacht",
+
   tutor: {
     defaultPersona: "klaus",
     personas: [
@@ -208,6 +214,15 @@ const deCH = {
   systemPromptFor,
   bookExcerpts: DE_BOOK_EXCERPTS,
   vocabGenPrompt,
+
+  // Form-code → Norwegian label (German tense names). komp/sup are the
+  // adjective forms used in de_static_vocab.js.
+  formLabels: {
+    n: "Entall", np: "Flertall",
+    v: "Infinitiv", pr: "Presens", pc: "Perfekt", imp: "Preteritum",
+    f: "Futur", c: "Konjunktiv II", impv: "Imperativ", pp: "Partisipp",
+    komp: "Komparativ", sup: "Superlativ",
+  },
 
   goals: DE_VOCAB_GOALS,
   ordmesterGoals: DE_ORDMESTER_GOALS,

@@ -53,7 +53,7 @@ import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
 import { useLang } from "./languages/index.js";
-import { vocabGenPrompt } from "./content.js";
+import { vocabGenPrompt, speechLocale, voicePrefix } from "./content.js";
 
 function TranslateIcon() {
   return (
@@ -322,11 +322,11 @@ export default function App() {
       .trim();
     if (!clean) return;
     const utt = new SpeechSynthesisUtterance(clean);
-    utt.lang = "fr-FR";
+    utt.lang = speechLocale;
     utt.rate = rate;
-    const frVoice = voicesRef.current.find(v => v.lang === "fr-FR")
-                 || voicesRef.current.find(v => v.lang.startsWith("fr"));
-    if (frVoice) utt.voice = frVoice;
+    const voice = voicesRef.current.find(v => v.lang === speechLocale)
+               || voicesRef.current.find(v => v.lang.startsWith(voicePrefix));
+    if (voice) utt.voice = voice;
     utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
     utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
     speakingRef.current = true; setSpeaking(true);

@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { MASTERY_COLORS, MASTERY_LABELS, MASTERY_POINTS } from "../constants.js";
-import { VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS } from "../content.js";
+import { VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS, speechLocale, formLabels } from "../content.js";
 import { getWordTier } from "../utils.jsx";
 
 function speakFr(text) {
   window.speechSynthesis?.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = "fr-FR";
+  utt.lang = speechLocale;
   utt.rate = 0.9;
   window.speechSynthesis?.speak(utt);
 }
 
-const FORM_LABELS = {
+// French defaults; the active language may override (e.g. German tenses).
+const FORM_LABELS = formLabels || {
   n: "Entall", np: "Flertall",
   v: "Infinitiv", pr: "Presens", pc: "Passé composé", imp: "Imperfekt",
   f: "Futur", c: "Kondisjonalis", impv: "Imperativ", pp: "Partisipp",

@@ -4,7 +4,7 @@ import { tutorVisible } from "../hooks/useTutorPrefs.js";
 import { usePushSubscription } from "../hooks/usePushSubscription.js";
 import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
-import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS } from "../content.js";
+import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, speechLocale, dateLocale, greeting } from "../content.js";
 import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID } from "../utils.jsx";
 import { PROXY_URL } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
@@ -76,10 +76,7 @@ const MODE_SHORT = {
 };
 
 function frenchGreeting() {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 17) return "Bonjour";
-  if (h >= 17) return "Bonsoir";
-  return "Bonne nuit";
+  return greeting(new Date().getHours());
 }
 
 const getCat = (w) => w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
@@ -87,7 +84,7 @@ const getCat = (w) => w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
 function speakFr(text) {
   window.speechSynthesis?.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = "fr-FR";
+  utt.lang = speechLocale;
   utt.rate = 0.9;
   window.speechSynthesis?.speak(utt);
 }
@@ -1067,7 +1064,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
               {frenchGreeting()}, {profile.name}
             </h1>
             <div style={{ marginTop: 4, fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 13, color: "var(--text-subtle)" }}>
-              {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+              {new Date().toLocaleDateString(dateLocale, { weekday: "long", day: "numeric", month: "long" })}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", paddingTop: 14 }}>

@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { touchStreak, shuffle, checkQuizAnswer, updateWordPoints, logWordAnswer, loadAnswerCount, saveWords, loadUserProfile } from "../utils.jsx";
+import { langCode, formLabels } from "../content.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { AutoPlayToggle } from "../components/AudioControls.jsx";
 import AiFeedback from "../components/AiFeedback.jsx";
 
 const ARTICLE_OPTIONS = ["le", "la", "les", "l'"];
 
-const FORM_TYPE_LABELS = {
+const FORM_TYPE_LABELS = formLabels || {
   pr: "Présent", pc: "Passé composé", imp: "Imparfait",
   f: "Futur", c: "Conditionnel", impv: "Impératif", pp: "Participe passé",
 };
@@ -330,7 +331,7 @@ export function ConjugationExerciseScreen({ words, grammarWords = [], setWords, 
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && submit()}
               placeholder={`Skriv ${FORM_TYPE_LABELS[card.formType]?.toLowerCase() || "bøyingsform"}…`}
-              lang="fr"
+              lang={langCode}
               style={{ background: "var(--surface)", border: "2px solid var(--border)", borderRadius: 14, color: "var(--text)", fontFamily: "var(--font-display)", fontSize: 18, fontStyle: "italic", padding: "16px 18px", outline: "none", width: "100%", boxSizing: "border-box", textAlign: "center" }}
             />
             <button onClick={submit} disabled={!input.trim()} style={{ background: input.trim() ? "var(--cream)" : "var(--bg)", border: "none", borderRadius: 14, color: input.trim() ? "var(--bg)" : "var(--text-subtle)", fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 15, padding: "14px", cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s" }}>
