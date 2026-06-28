@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { logDailyAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { PrimaryButton, GhostButton } from "../components/GameUI.jsx";
+import { getActiveLang } from "../languages/index.js";
 
 // ── Persistence ───────────────────────────────────────────────────────────────
 const SAVE_KEY = "sudoku-save";
@@ -9,21 +10,38 @@ function saveGame(s) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); 
 function loadSave() { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch { return null; } }
 function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch {} }
 
-// ── French number ranges ──────────────────────────────────────────────────────
-const RANGES = [
-  { id: "1-9",     label: "1–9",     desc: "un, deux, trois…",       base: 1,   words: ["un","deux","trois","quatre","cinq","six","sept","huit","neuf"] },
-  { id: "11-19",   label: "11–19",   desc: "onze, douze…",            base: 11,  words: ["onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"] },
-  { id: "21-29",   label: "21–29",   desc: "vingt et un…",            base: 21,  words: ["vingt et un","vingt-deux","vingt-trois","vingt-quatre","vingt-cinq","vingt-six","vingt-sept","vingt-huit","vingt-neuf"] },
-  { id: "31-39",   label: "31–39",   desc: "trente et un…",           base: 31,  words: ["trente et un","trente-deux","trente-trois","trente-quatre","trente-cinq","trente-six","trente-sept","trente-huit","trente-neuf"] },
-  { id: "41-49",   label: "41–49",   desc: "quarante et un…",         base: 41,  words: ["quarante et un","quarante-deux","quarante-trois","quarante-quatre","quarante-cinq","quarante-six","quarante-sept","quarante-huit","quarante-neuf"] },
-  { id: "51-59",   label: "51–59",   desc: "cinquante et un…",        base: 51,  words: ["cinquante et un","cinquante-deux","cinquante-trois","cinquante-quatre","cinquante-cinq","cinquante-six","cinquante-sept","cinquante-huit","cinquante-neuf"] },
-  { id: "61-69",   label: "61–69",   desc: "soixante et un…",         base: 61,  words: ["soixante et un","soixante-deux","soixante-trois","soixante-quatre","soixante-cinq","soixante-six","soixante-sept","soixante-huit","soixante-neuf"] },
-  { id: "71-79",   label: "71–79",   desc: "soixante et onze…",       base: 71,  words: ["soixante et onze","soixante-douze","soixante-treize","soixante-quatorze","soixante-quinze","soixante-seize","soixante-dix-sept","soixante-dix-huit","soixante-dix-neuf"] },
-  { id: "81-89",   label: "81–89",   desc: "quatre-vingt-un…",        base: 81,  words: ["quatre-vingt-un","quatre-vingt-deux","quatre-vingt-trois","quatre-vingt-quatre","quatre-vingt-cinq","quatre-vingt-six","quatre-vingt-sept","quatre-vingt-huit","quatre-vingt-neuf"] },
-  { id: "91-99",   label: "91–99",   desc: "quatre-vingt-onze…",      base: 91,  words: ["quatre-vingt-onze","quatre-vingt-douze","quatre-vingt-treize","quatre-vingt-quatorze","quatre-vingt-quinze","quatre-vingt-seize","quatre-vingt-dix-sept","quatre-vingt-dix-huit","quatre-vingt-dix-neuf"] },
-  { id: "10-90",   label: "10–90",   desc: "dix, vingt, trente…",      base: 10,  step: 10,  words: ["dix","vingt","trente","quarante","cinquante","soixante","soixante-dix","quatre-vingts","quatre-vingt-dix"] },
-  { id: "100-900", label: "100–900", desc: "cent, deux cents…",        base: 100, step: 100, words: ["cent","deux cents","trois cents","quatre cents","cinq cents","six cents","sept cents","huit cents","neuf cents"] },
-];
+// ── Number ranges by language ─────────────────────────────────────────────────
+const RANGES_BY_LANG = {
+  fr: [
+    { id: "1-9",     label: "1–9",     desc: "un, deux, trois…",       base: 1,   words: ["un","deux","trois","quatre","cinq","six","sept","huit","neuf"] },
+    { id: "11-19",   label: "11–19",   desc: "onze, douze…",            base: 11,  words: ["onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"] },
+    { id: "21-29",   label: "21–29",   desc: "vingt et un…",            base: 21,  words: ["vingt et un","vingt-deux","vingt-trois","vingt-quatre","vingt-cinq","vingt-six","vingt-sept","vingt-huit","vingt-neuf"] },
+    { id: "31-39",   label: "31–39",   desc: "trente et un…",           base: 31,  words: ["trente et un","trente-deux","trente-trois","trente-quatre","trente-cinq","trente-six","trente-sept","trente-huit","trente-neuf"] },
+    { id: "41-49",   label: "41–49",   desc: "quarante et un…",         base: 41,  words: ["quarante et un","quarante-deux","quarante-trois","quarante-quatre","quarante-cinq","quarante-six","quarante-sept","quarante-huit","quarante-neuf"] },
+    { id: "51-59",   label: "51–59",   desc: "cinquante et un…",        base: 51,  words: ["cinquante et un","cinquante-deux","cinquante-trois","cinquante-quatre","cinquante-cinq","cinquante-six","cinquante-sept","cinquante-huit","cinquante-neuf"] },
+    { id: "61-69",   label: "61–69",   desc: "soixante et un…",         base: 61,  words: ["soixante et un","soixante-deux","soixante-trois","soixante-quatre","soixante-cinq","soixante-six","soixante-sept","soixante-huit","soixante-neuf"] },
+    { id: "71-79",   label: "71–79",   desc: "soixante et onze…",       base: 71,  words: ["soixante et onze","soixante-douze","soixante-treize","soixante-quatorze","soixante-quinze","soixante-seize","soixante-dix-sept","soixante-dix-huit","soixante-dix-neuf"] },
+    { id: "81-89",   label: "81–89",   desc: "quatre-vingt-un…",        base: 81,  words: ["quatre-vingt-un","quatre-vingt-deux","quatre-vingt-trois","quatre-vingt-quatre","quatre-vingt-cinq","quatre-vingt-six","quatre-vingt-sept","quatre-vingt-huit","quatre-vingt-neuf"] },
+    { id: "91-99",   label: "91–99",   desc: "quatre-vingt-onze…",      base: 91,  words: ["quatre-vingt-onze","quatre-vingt-douze","quatre-vingt-treize","quatre-vingt-quatorze","quatre-vingt-quinze","quatre-vingt-seize","quatre-vingt-dix-sept","quatre-vingt-dix-huit","quatre-vingt-dix-neuf"] },
+    { id: "10-90",   label: "10–90",   desc: "dix, vingt, trente…",     base: 10,  step: 10,  words: ["dix","vingt","trente","quarante","cinquante","soixante","soixante-dix","quatre-vingts","quatre-vingt-dix"] },
+    { id: "100-900", label: "100–900", desc: "cent, deux cents…",       base: 100, step: 100, words: ["cent","deux cents","trois cents","quatre cents","cinq cents","six cents","sept cents","huit cents","neuf cents"] },
+  ],
+  "de-CH": [
+    { id: "1-9",     label: "1–9",     desc: "eins, zwei, drei…",       base: 1,   words: ["eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun"] },
+    { id: "11-19",   label: "11–19",   desc: "elf, zwölf…",              base: 11,  words: ["elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"] },
+    { id: "21-29",   label: "21–29",   desc: "einundzwanzig…",           base: 21,  words: ["einundzwanzig","zweiundzwanzig","dreiundzwanzig","vierundzwanzig","fünfundzwanzig","sechsundzwanzig","siebenundzwanzig","achtundzwanzig","neunundzwanzig"] },
+    { id: "31-39",   label: "31–39",   desc: "einunddreissig…",          base: 31,  words: ["einunddreissig","zweiunddreissig","dreiunddreissig","vierunddreissig","fünfunddreissig","sechsunddreissig","siebenunddreissig","achtunddreissig","neununddreissig"] },
+    { id: "41-49",   label: "41–49",   desc: "einundvierzig…",           base: 41,  words: ["einundvierzig","zweiundvierzig","dreiundvierzig","vierundvierzig","fünfundvierzig","sechsundvierzig","siebenundvierzig","achtundvierzig","neunundvierzig"] },
+    { id: "51-59",   label: "51–59",   desc: "einundfünfzig…",           base: 51,  words: ["einundfünfzig","zweiundfünfzig","dreiundfünfzig","vierundfünfzig","fünfundfünfzig","sechsundfünfzig","siebenundfünfzig","achtundfünfzig","neunundfünfzig"] },
+    { id: "61-69",   label: "61–69",   desc: "einundsechzig…",           base: 61,  words: ["einundsechzig","zweiundsechzig","dreiundsechzig","vierundsechzig","fünfundsechzig","sechsundsechzig","siebenundsechzig","achtundsechzig","neunundsechzig"] },
+    { id: "71-79",   label: "71–79",   desc: "einundsiebzig…",           base: 71,  words: ["einundsiebzig","zweiundsiebzig","dreiundsiebzig","vierundsiebzig","fünfundsiebzig","sechsundsiebzig","siebenundsiebzig","achtundsiebzig","neunundsiebzig"] },
+    { id: "81-89",   label: "81–89",   desc: "einundachtzig…",           base: 81,  words: ["einundachtzig","zweiundachtzig","dreiundachtzig","vierundachtzig","fünfundachtzig","sechsundachtzig","siebenundachtzig","achtundachtzig","neunundachtzig"] },
+    { id: "91-99",   label: "91–99",   desc: "einundneunzig…",           base: 91,  words: ["einundneunzig","zweiundneunzig","dreiundneunzig","vierundneunzig","fünfundneunzig","sechsundneunzig","siebenundneunzig","achtundneunzig","neunundneunzig"] },
+    { id: "10-90",   label: "10–90",   desc: "zehn, zwanzig…",           base: 10,  step: 10,  words: ["zehn","zwanzig","dreissig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"] },
+    { id: "100-900", label: "100–900", desc: "hundert, zweihundert…",    base: 100, step: 100, words: ["hundert","zweihundert","dreihundert","vierhundert","fünfhundert","sechshundert","siebenhundert","achthundert","neunhundert"] },
+  ],
+};
+function getRanges(langId) { return RANGES_BY_LANG[langId] || RANGES_BY_LANG.fr; }
 
 // ── Sudoku puzzles ────────────────────────────────────────────────────────────
 const PUZZLES = [
@@ -169,6 +187,7 @@ function computeConflicts(board) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameComplete }) {
+  const RANGES = getRanges(getActiveLang().id);
   const [difficulty, setDifficulty] = useState("middels");
   const [rangeId, setRangeId]       = useState(null);
   const [puzzleIdx, setPuzzleIdx]   = useState(0);
