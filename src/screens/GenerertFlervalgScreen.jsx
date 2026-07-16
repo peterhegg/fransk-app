@@ -60,6 +60,7 @@ function FlervalgIcon({ size = 18, opacity = 1 }) {
 export default function GenerertFlervalgScreen({
   words, grammarWords, isOnline, onBack, speak, speaking, screen, showWords, onNav,
 }) {
+  const lang = getActiveLang();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [questions, setQuestions] = useState([]);
@@ -103,7 +104,8 @@ export default function GenerertFlervalgScreen({
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\[[\s\S]*\]/);
       if (match) {
-        const parsed = JSON.parse(match[0]);
+        let parsed;
+        try { parsed = JSON.parse(match[0]); } catch { setLoading(false); setError("parse"); return; }
         if (Array.isArray(parsed) && parsed.length) {
           const prepared = parsed
             .filter(q => {

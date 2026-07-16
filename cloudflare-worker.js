@@ -1,6 +1,6 @@
 const PROD_ORIGIN = "https://peterhegg.github.io";
 const LOCKED_MODEL = "claude-sonnet-4-6";
-const MAX_TOKENS_LIMIT = 1000;
+const MAX_TOKENS_LIMIT = 3000;
 const MAX_MESSAGES = 20;
 const MAX_CONTENT_LENGTH = 4000;
 const MAX_SYSTEM_LENGTH = 6000;
