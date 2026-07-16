@@ -352,7 +352,7 @@ export default function KryssordScreen({ words, onBack, isOnline, screen, showWo
                   setSelected(next?.id ?? null);
                 }
               }}
-              placeholder={`Skriv på fransk…`}
+              placeholder={`Skriv på ${getActiveLang().label.toLowerCase()}…`}
               style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "11px 14px", fontSize: 15, color: "var(--text)", fontFamily: "var(--font-body)", outline: "none" }}
               autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck={false}
             />

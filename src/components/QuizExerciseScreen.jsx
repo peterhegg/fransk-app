@@ -26,7 +26,10 @@ export default function QuizExerciseScreen({
   const [aiHintLoading, setAiHintLoading] = useState(false);
   const hintAbortRef = useRef(null);
 
-  useEffect(() => { setFireworksDone(false); setTierPopDone(false); setMestretDone(false); setAiHint(null); setAiHintLoading(false); }, [card?.fr, card?.reverse]);
+  useEffect(() => {
+    hintAbortRef.current?.abort();
+    setFireworksDone(false); setTierPopDone(false); setMestretDone(false); setAiHint(null); setAiHintLoading(false);
+  }, [card?.fr, card?.reverse]);
 
   const requestHint = () => {
     if (!card || !isOnline || aiHintLoading || aiHint) return;

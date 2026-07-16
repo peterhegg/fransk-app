@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile, logGameSession, logDailyAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
@@ -74,11 +74,18 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
 
   const profile = loadUserProfile();
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
+  const abortRef = useRef(null);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const callClaude = async (history, sc) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+      signal: controller.signal,
       body: JSON.stringify({
         max_tokens: 600,
         system: systemPrompt(sc, profile, words, lang),
@@ -113,6 +120,7 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
       setPhase("play");
       speak(parsed.reply_fr, 0.85);
     } catch (e) {
+      if (e.name === "AbortError") return;
       setLoadErrorMsg(e?.message || "Ukjent feil");
       setLoadError(true);
     }
@@ -148,7 +156,8 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
         setTurn(t => t + 1);
         speak(replyFr, 0.85);
       }
-    } catch {
+    } catch (e) {
+      if (e.name === "AbortError") return;
       setApiHistory(newHistory);
       setOptions(FALLBACK_OPTIONS);
     }

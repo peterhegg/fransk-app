@@ -15,7 +15,7 @@ function levelInstructions(level) {
   return "8-12 ord. Bruk passé composé, imparfait og enkle konjunksjoner.";
 }
 
-async function fetchListeningSentences(words, grammarWords) {
+async function fetchListeningSentences(words, grammarWords, signal) {
   const lang = getActiveLang();
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
@@ -48,6 +48,7 @@ Svar KUN med JSON-array, ingen markdown:
   const res = await fetch(PROXY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+    signal,
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1200,
@@ -86,6 +87,9 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
   const [loadError, setLoadError] = useState(false);
   const lockedRef = useRef(false);
   const hasSpokenRef = useRef(false);
+  const abortRef = useRef(null);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
   const current = rounds[idx] || null;
@@ -119,13 +123,16 @@ export default function LyttedetektivScreen({ words, grammarWords, onBack, speak
     if (!isOnline) { setLoadError(true); return; }
     setGameMode("setning");
     setPhase("loading");
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      const sentences = await fetchListeningSentences(words, grammarWords || []);
+      const sentences = await fetchListeningSentences(words, grammarWords || [], controller.signal);
       if (!sentences || sentences.length < 4) { setLoadError(true); setPhase("mode"); return; }
       const chosen = shuffle(sentences).slice(0, ROUNDS);
       setRounds(chosen.map(s => buildSentenceRound(s)));
       setPhase("play");
-    } catch {
+    } catch (err) {
+      if (err.name === "AbortError") return;
       setLoadError(true);
       setPhase("mode");
     }

@@ -50,7 +50,7 @@ import KryssordScreen from "./screens/KryssordScreen.jsx";
 import HistoriediktatScreen from "./screens/HistoriediktatScreen.jsx";
 import SudokuScreen from "./screens/SudokuScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
-import { useTutorPrefs, loadTutorPrefs } from "./hooks/useTutorPrefs.js";
+import { useTutorPrefs, loadTutorPrefs, KEY as TUTOR_PREFS_KEY } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
 import { useLang } from "./languages/index.js";
 import { vocabGenPrompt, speechLocale, voicePrefix } from "./content.js";
@@ -101,7 +101,7 @@ export default function App() {
   const toggleAutoPlay = () => setAutoPlay(prev => { const next = !prev; saveUserProfile({ ...loadUserProfile(), autoPlay: next }); return next; });
   const [, setLang, langId] = useLang();
   const [tutorPrefs, updateTutorPrefs] = useTutorPrefs();
-  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem("fransk-tutor-prefs"));
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(TUTOR_PREFS_KEY));
   const [streakLost, setStreakLost] = useState(() => wasStreakTaptShownToday() ? 0 : checkStreakBroken());
   const [dagensPointsInfo, setDagensPointsInfo] = useState(null);
   const [glosePointsInfo, setGlosePointsInfo] = useState(null);
@@ -870,7 +870,7 @@ export default function App() {
 
   // --- Routing ---
   if (showOnboarding) return (
-    <OnboardingScreen onDone={() => setShowOnboarding(false)} />
+    <OnboardingScreen onDone={(newPrefs) => { updateTutorPrefs(newPrefs); setShowOnboarding(false); }} />
   );
 
   if (bankScreen === "bank") return (

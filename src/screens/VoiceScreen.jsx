@@ -20,6 +20,8 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
     estimatedLevel,
     startListening,
     stopListening,
+    interruptSpeaking,
+    stopAll,
     reset,
   } = useConversation();
 
@@ -29,10 +31,14 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history, currentCorrection]);
 
+  // Stop mic/TTS when navigating away mid-conversation — otherwise they keep
+  // running detached from the unmounted screen.
+  useEffect(() => stopAll, []);
+
   const handleOrbClick = () => {
     if (status === "idle" || status === "error") startListening();
     else if (status === "listening") stopListening();
-    else if (status === "speaking")  stopListening();
+    else if (status === "speaking")  interruptSpeaking();
   };
 
   return (

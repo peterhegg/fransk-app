@@ -302,7 +302,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
 
         <div style={{ padding: "0 22px 12px" }}>
           <div style={{ fontSize: 13, color: "var(--text-subtle)", fontFamily: "var(--font-body)", lineHeight: 1.7, marginBottom: 14 }}>
-            Velg tallrekke og vanskelighetsgrad. Skriv tallene på fransk.
+            Velg tallrekke og vanskelighetsgrad. Skriv tallene på {getActiveLang().label.toLowerCase()}.
           </div>
 
           {/* Difficulty tabs */}
@@ -465,7 +465,7 @@ export default function SudokuScreen({ onBack, screen, showWords, onNav, onGameC
           {selected !== null ? (
             <>
               <div style={{ fontSize: 12, color: "var(--text-subtle)", fontFamily: "var(--font-body)", textAlign: "center" }}>
-                Skriv et tall ({range?.label}) på fransk:
+                Skriv et tall ({range?.label}) på {getActiveLang().label.toLowerCase()}:
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <input

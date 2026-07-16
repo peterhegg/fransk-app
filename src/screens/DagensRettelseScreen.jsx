@@ -42,11 +42,13 @@ export default function DagensRettelseScreen({
   const [aiHint, setAiHint] = useState(null);
   const [aiHintLoading, setAiHintLoading] = useState(false);
   const inputRef = useRef(null);
+  const hintAbortRef = useRef(null);
 
   const isReverse = !!card?.reverse;
   const total = stats.correct + stats.wrong + queue.length;
 
   useEffect(() => {
+    hintAbortRef.current?.abort();
     setAiHint(null); setAiHintLoading(false);
   }, [card?.fr, card?.reverse]);
 
@@ -70,7 +72,9 @@ export default function DagensRettelseScreen({
 
   const requestHint = () => {
     if (!card || !PROXY_URL || aiHintLoading || aiHint) return;
+    hintAbortRef.current?.abort();
     const controller = new AbortController();
+    hintAbortRef.current = controller;
     setAiHintLoading(true);
     const question = isReverse ? `"${card.no}" (norsk → fransk)` : `"${card.fr}" (fransk → norsk)`;
     const correct = isReverse ? card.fr : card.no;

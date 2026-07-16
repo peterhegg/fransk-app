@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { shuffle, logGameSession, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { getActiveLang } from "../languages/index.js";
@@ -14,7 +14,7 @@ function levelInstructions(level) {
   return "7-10 ord. Passé composé og enkle konjunksjoner.";
 }
 
-async function fetchBuildSentences(words, grammarWords, direction = "no-fr") {
+async function fetchBuildSentences(words, grammarWords, direction = "no-fr", signal) {
   const lang = getActiveLang();
   const allWords = [...words, ...grammarWords];
   if (!allWords.length) return null;
@@ -38,6 +38,7 @@ JSON only, no markdown:
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+      signal,
       body: JSON.stringify({
         max_tokens: 1000,
         system: "Respond only with a valid JSON array. No markdown, no explanation.",
@@ -52,8 +53,8 @@ JSON only, no markdown:
     return Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : null;
   };
 
-  try { return await attempt(); } catch { /* fall through */ }
-  try { return await attempt(); } catch { return null; }
+  try { return await attempt(); } catch (err) { if (err.name === "AbortError") throw err; }
+  try { return await attempt(); } catch (err) { if (err.name === "AbortError") throw err; return null; }
 }
 
 function tokenize(fr) {
@@ -75,24 +76,29 @@ export default function ByggSetningenScreen({ words, grammarWords, onBack, speak
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState(0);
   const dragRef = useRef(null);
+  const abortRef = useRef(null);
 
   const lang = getActiveLang();
   const buildFrench = direction === "no-fr";
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   async function load(dir) {
     setPhase("loading");
     setSentences([]);
     setIdx(0);
     setScore(0);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      const result = await fetchBuildSentences(words, grammarWords || [], dir);
+      const result = await fetchBuildSentences(words, grammarWords || [], dir, controller.signal);
       if (!result || result.length < 2) { setPhase("error"); return; }
       setSentences(result);
       initRound(result, 0, dir);
       setPhase("play");
-    } catch {
-      setPhase("error");
+    } catch (err) {
+      if (err.name !== "AbortError") setPhase("error");
     }
   }
 

@@ -73,10 +73,6 @@ const fr = {
   locale: "fr-FR",
   dateLocale: "fr-FR",
 
-  // localStorage namespace. French KEEPS the legacy "fransk" prefix so the
-  // user's existing progress survives the multi-language refactor untouched.
-  storagePrefix: "fransk",
-
   // Maps to [data-lang="fr"] in design-system.css (themed in a later phase).
   themeAttr: "fr",
 

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-const KEY = "fransk-tutor-prefs";
+export const KEY = "fransk-tutor-prefs";
 
 const DEFAULTS = {
   tutorPersona: "henri",

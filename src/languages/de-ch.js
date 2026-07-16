@@ -214,7 +214,6 @@ const deCH = {
 
   locale: "de-CH",
   dateLocale: "de-CH",
-  storagePrefix: "sveitsertysk",
   themeAttr: "de-CH",
 
   greeting: (h) =>

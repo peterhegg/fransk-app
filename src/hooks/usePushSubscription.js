@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
+import { loadUserProfile } from "../utils.jsx";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 const STORAGE_KEY = "fransk-push-enabled";
@@ -25,8 +26,7 @@ export function usePushSubscription() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
-      let scheduledTime = "20:00";
-      try { const p = JSON.parse(localStorage.getItem("fransk-user-profile") || "{}"); scheduledTime = p.pushTime || "20:00"; } catch {}
+      const scheduledTime = loadUserProfile().pushTime || "20:00";
       await fetch(`${PROXY_URL}/push/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },

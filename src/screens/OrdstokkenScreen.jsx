@@ -206,7 +206,7 @@ export default function OrdstokkenScreen({ words, grammarWords, onBack, speak, s
       <div style={{ padding: "0 20px 20px" }}>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 22, padding: "24px 20px", textAlign: "center" }}>
           <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "var(--font-body)", marginBottom: 10 }}>
-            Stav det franske ordet for…
+            Stav ordet på {getActiveLang().label.toLowerCase()} for…
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.3px" }}>
             {current?.word.no.split("/")[0].trim()}

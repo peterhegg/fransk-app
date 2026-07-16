@@ -108,6 +108,7 @@ export default function SentenceTranslationScreen({
   const inputRef = useRef(null);
   const abortRef = useRef(null);
   const hintAbortRef = useRef(null);
+  const lang = getActiveLang();
 
   useEffect(() => {
     const allWords = [...(words || []), ...(grammarWords || [])];
@@ -139,8 +140,9 @@ export default function SentenceTranslationScreen({
       const match = text.match(/\[[\s\S]*\]/);
       if (match) {
         const parsed = JSON.parse(match[0]);
-        if (Array.isArray(parsed) && parsed.length) {
-          setSentences(parsed.filter(s => s.no && s.fr));
+        const valid = Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : [];
+        if (valid.length) {
+          setSentences(valid);
           setLoading(false);
           return;
         }
@@ -159,7 +161,6 @@ export default function SentenceTranslationScreen({
 
   const fetchAiHint = async (noSentence, frSentence, userInput, wordDiff) => {
     if (!isOnline) return;
-    const lang = getActiveLang();
     hintAbortRef.current?.abort();
     const controller = new AbortController();
     hintAbortRef.current = controller;

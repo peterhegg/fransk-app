@@ -89,6 +89,20 @@ export function useConversation() {
     stopRec();
   }, [stopRec]);
 
+  // Lets the UI interrupt Pierre mid-sentence (unlike stopListening, which
+  // only stops speech recognition — irrelevant while status is "speaking").
+  const interruptSpeaking = useCallback(() => {
+    stopSpeaking();
+    setStatus("idle");
+  }, [stopSpeaking]);
+
+  // Unmount cleanup: stop the underlying engines only — no state updates,
+  // since the component driving them is already gone.
+  const stopAll = useCallback(() => {
+    stopRec();
+    stopSpeaking();
+  }, [stopRec, stopSpeaking]);
+
   const reset = useCallback(() => {
     if (historyRef.current.length > 0) logVoiceSession();
     stopSpeaking();
@@ -106,6 +120,8 @@ export function useConversation() {
     estimatedLevel,
     startListening,
     stopListening,
+    interruptSpeaking,
+    stopAll,
     reset,
   };
 }

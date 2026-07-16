@@ -2,6 +2,9 @@
   "name": "sprakappen",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +17,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.2",
-    "gh-pages": "^6.1.1",
     "vite": "^8.0.13",
     "vite-plugin-pwa": "^1.3.0"
   }

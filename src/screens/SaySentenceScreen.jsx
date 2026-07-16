@@ -131,8 +131,9 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
       const match = text.match(/\[[\s\S]*\]/);
       if (match) {
         const parsed = JSON.parse(match[0]);
-        if (Array.isArray(parsed) && parsed.length) {
-          setSentences(parsed.filter(s => s.no && s.fr));
+        const valid = Array.isArray(parsed) ? parsed.filter(s => s.no && s.fr) : [];
+        if (valid.length) {
+          setSentences(valid);
           setLoading(false);
           return;
         }

@@ -15,6 +15,7 @@ export default defineConfig({
         name: "L'Atelier",
         short_name: "L'Atelier",
         description: "Lær fransk på din måte",
+        lang: "no",
         theme_color: "#2e6be6",
         background_color: "#091526",
         display: "standalone",

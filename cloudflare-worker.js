@@ -1,5 +1,6 @@
 const PROD_ORIGIN = "https://peterhegg.github.io";
 const LOCKED_MODEL = "claude-sonnet-4-6";
+const ALLOWED_MODELS = new Set(["claude-haiku-4-5-20251001", "claude-sonnet-4-6"]);
 const MAX_TOKENS_LIMIT = 3000;
 const MAX_MESSAGES = 20;
 const MAX_CONTENT_LENGTH = 4000;
@@ -30,8 +31,14 @@ Réponds UNIQUEMENT avec du JSON valide, sans markdown :
 ou si aucune correction :
 {"reply":"ta réponse en français","correction":null}`;
 
+// Oslo-local calendar date, not UTC — otherwise the daily budget/IP limit
+// resets at 01:00-02:00 Norwegian time instead of local midnight.
+function osloDateStr() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Oslo" }).format(new Date());
+}
+
 function todayKey() {
-  return `budget:${new Date().toISOString().slice(0, 10)}`;
+  return `budget:${osloDateStr()}`;
 }
 
 async function checkBudget(env) {
@@ -55,7 +62,7 @@ async function checkRateLimit(env, ip) {
 }
 
 async function checkDailyIPLimit(env, ip) {
-  const key = `daily:${ip}:${new Date().toISOString().slice(0, 10)}`;
+  const key = `daily:${ip}:${osloDateStr()}`;
   const count = parseInt((await env.RATE_LIMIT_KV.get(key)) || "0");
   if (count >= DAILY_IP_LIMIT) return false;
   await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 90000 });
@@ -256,10 +263,19 @@ async function handlePushUnsubscribe(body, env, corsHeaders) {
   return new Response("OK", { status: 200, headers: corsHeaders });
 }
 
-// ── Scheduled handler (runs at 20:00 UTC = 22:00 Norway) ─────────────────
+// ── Scheduled handler (runs hourly; matches each subscriber's local hour) ──
+
+// Subscribers pick an hour in Norwegian local time (e.g. "20:00"). The cron
+// fires every hour in UTC, so we resolve the current Oslo-local hour here to
+// stay correct across the DST transition instead of hardcoding an offset.
+function currentOsloHourLabel() {
+  const hh = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Oslo", hour: "2-digit", hour12: false }).format(new Date());
+  return `${hh}:00`;
+}
 
 async function sendStreakReminders(env) {
   if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) return;
+  const nowLabel = currentOsloHourLabel();
   const list = await env.RATE_LIMIT_KV.list({ prefix: "push:sub:" });
   const payload = {
     title: "L'Atelier",
@@ -271,7 +287,9 @@ async function sendStreakReminders(env) {
     if (!raw) continue;
     try {
       const sub = JSON.parse(raw);
-      await sendPush(sub, payload, env);
+      if ((sub.scheduledTime || "20:00") !== nowLabel) continue;
+      const res = await sendPush(sub, payload, env);
+      if (res.status === 404 || res.status === 410) await env.RATE_LIMIT_KV.delete(key.name);
     } catch (e) {
       console.error("Push failed for", key.name, e);
     }
@@ -283,7 +301,7 @@ async function sendStreakReminders(env) {
 async function handleWidgetSync(body, env, corsHeaders) {
   const { uuid, streak, todayAnswers, dailyGoal, dagensDone } = body || {};
   if (!uuid || !/^[a-f0-9]{24}$/.test(uuid)) {
-    return new Response("Bad request", { status: 400, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: "Bad request" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
   const data = {
     streak: Math.max(0, parseInt(streak) || 0),
@@ -420,6 +438,19 @@ export default {
       return new Response(JSON.stringify({ error: "Invalid token" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Routes that never call the Anthropic API — dispatch before budget/rate
+    // gating so they can't be blocked by AI usage limits that don't apply to them.
+    if (pathname === "/push/subscribe") return handlePushSubscribe(body, env, corsHeaders);
+    if (pathname === "/push/unsubscribe") return handlePushUnsubscribe(body, env, corsHeaders);
+    if (pathname === "/widget/sync") return handleWidgetSync(body, env, corsHeaders);
+
     if (!await checkBudget(env)) {
       return new Response(JSON.stringify({ error: "Daily budget reached. Try again tomorrow." }), {
         status: 429,
@@ -429,37 +460,26 @@ export default {
 
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
     if (!await checkRateLimit(env, ip)) {
-      return new Response("Too Many Requests", {
+      return new Response(JSON.stringify({ error: "Too Many Requests" }), {
         status: 429,
-        headers: { ...corsHeaders, "Retry-After": "60" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
       });
     }
 
     if (!await checkDailyIPLimit(env, ip)) {
-      return new Response("Daily limit reached for this IP. Try again tomorrow.", {
+      return new Response(JSON.stringify({ error: "Daily limit reached for this IP. Try again tomorrow." }), {
         status: 429,
-        headers: { ...corsHeaders, "Retry-After": "86400" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "86400" },
       });
     }
 
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return new Response("Invalid JSON", { status: 400, headers: corsHeaders });
-    }
-
-    // Route dispatch
-    if (pathname === "/push/subscribe") return handlePushSubscribe(body, env, corsHeaders);
-    if (pathname === "/push/unsubscribe") return handlePushUnsubscribe(body, env, corsHeaders);
-    if (pathname === "/widget/sync") return handleWidgetSync(body, env, corsHeaders);
     if (pathname === "/voice") {
       return handleVoice(body, env, corsHeaders);
     }
 
     // Default: general Claude proxy
     const safeBody = {
-      model: LOCKED_MODEL,
+      model: ALLOWED_MODELS.has(body.model) ? body.model : LOCKED_MODEL,
       max_tokens: Math.min(
         Number.isInteger(body.max_tokens) ? body.max_tokens : 800,
         MAX_TOKENS_LIMIT
@@ -478,7 +498,7 @@ export default {
     };
 
     if (safeBody.messages.length === 0) {
-      return new Response("Bad Request", { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Bad Request" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     let response;

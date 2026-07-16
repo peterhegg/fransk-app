@@ -109,14 +109,24 @@ export function getQuizOptions(card, bank = [], isReverse = false) {
 }
 
 // --- Date ---
-export function todayStr() { return new Date().toISOString().split("T")[0]; }
+// Local calendar date (not UTC), so day boundaries match the user's actual
+// midnight instead of flipping at 01:00-02:00 Norwegian time.
+function dateStr(offsetDays = 0) {
+  const d = new Date(Date.now() + offsetDays * 86400000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+export function todayStr() { return dateStr(0); }
 
 // --- Storage ---
+// French-only helpers (articles, sentence patterns) — no-op for other
+// languages so they can't misfire against non-French vocab.
 function stripFrArticle(fr) {
+  if (getActiveLang().id !== "fr") return fr;
   return fr.replace(/^(le |la |les |l')/i, "").trim();
 }
 
 function stripPhoneticArticle(p) {
+  if (getActiveLang().id !== "fr") return p;
   return p.replace(/^(lə |la |læ |l'|l )/i, "").trim();
 }
 
@@ -178,10 +188,16 @@ const SENTENCE_ENTRIES = new Set([
 ]);
 
 function isSentenceLike(fr) {
+  if (getActiveLang().id !== "fr") return false;
   return /^(Je|Tu|Il|Elle|Nous|Vous|Ils|Elles)\s.+\s/i.test(fr);
 }
 
 function runWordBankMigrations(words) {
+  // These migrations fix up legacy French vocab data (French articles, sentence
+  // entries, VOCAB_CAT_MAP keys are all French words) — never run them for
+  // other languages, or they silently corrupt that language's word bank
+  // (e.g. injecting the French word "à" into a German word bank).
+  if (getActiveLang().id !== "fr") return words;
   const version = parseInt(localStorage.getItem(WB_MIGRATION_KEY) || "0");
   if (version >= WB_MIGRATION_VERSION) return words;
 
@@ -301,16 +317,16 @@ export function checkStreakBroken() {
   if (!s.lastDate || s.current <= 1) return 0;
   const today = todayStr();
   if (s.lastDate === today) return 0;
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const yesterday = dateStr(-1);
   if (s.lastDate === yesterday) return 0;
   return s.current;
 }
 
 export function touchStreak() {
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
   const s = loadStreak();
   if (s.lastDate === today) return s.current;
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const yesterday = dateStr(-1);
   const continuing = s.lastDate === yesterday;
   const current = continuing ? s.current + 1 : 1;
   const startDate = continuing ? (s.startDate || s.lastDate || today) : today;
@@ -492,8 +508,7 @@ export function getMasteryMidpoint(masteredCount) {
   let lastKnown = null;
   const counts = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000);
-    const date = d.toISOString().split("T")[0];
+    const date = dateStr(-i);
     let count = null;
     if (date === today) { count = masteredCount; }
     else {
@@ -570,7 +585,7 @@ function logWordError(fr, no, phonetic) {
     const entry = store[fr] || { fr, no: no || "", phonetic: phonetic || "", errors: {} };
     entry.errors[today] = (entry.errors[today] || 0) + 1;
     // prune keys older than 15 days
-    const cutoff = new Date(Date.now() - 15 * 86400000).toISOString().split("T")[0];
+    const cutoff = dateStr(-15);
     Object.keys(entry.errors).forEach(d => { if (d < cutoff) delete entry.errors[d]; });
     store[fr] = entry;
     localStorage.setItem(WORD_ERRORS_KEY, JSON.stringify(store));
@@ -580,7 +595,7 @@ function logWordError(fr, no, phonetic) {
 export function loadWorstWords(n = 5, days = 10) {
   try {
     const store = JSON.parse(localStorage.getItem(WORD_ERRORS_KEY) || "{}");
-    const cutoff = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
+    const cutoff = dateStr(-days);
     return Object.values(store)
       .map(entry => {
         const total = Object.entries(entry.errors)

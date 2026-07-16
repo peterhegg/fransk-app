@@ -13,8 +13,16 @@
 // namespace is fixed for the page lifetime.
 import { loadActiveLangId, DEFAULT_LANG } from "./languages/index.js";
 
-// Keys that must stay global (shared across all languages).
-const GLOBAL_KEYS = new Set(["sprakappen-lang", "theme"]);
+// Keys that must stay global (shared across all languages) — these are
+// device/person-level concepts, not per-language state, so they must not be
+// silently reset or duplicated when the active language changes.
+const GLOBAL_KEYS = new Set([
+  "sprakappen-lang",
+  "theme",
+  "fransk-widget-uuid",   // one home-screen widget per device, not per language
+  "fransk-push-enabled",  // one physical push subscription per device
+  "fransk-user-profile",  // name, dysleksi, daily goal, push time, etc.
+]);
 
 const langId = loadActiveLangId();
 

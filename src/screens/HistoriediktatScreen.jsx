@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { speechLocale, voicePrefix } from "../content.js";
 import { getActiveLang } from "../languages/index.js";
@@ -16,7 +16,7 @@ function normalize(str) {
     .replace(/[^a-z]/g, "");
 }
 
-async function fetchStory(words, profile) {
+async function fetchStory(words, profile, signal) {
   const lang = getActiveLang();
   const goal = getActiveGoal(words, loadGoalOrder());
   const sampleWords = words
@@ -43,6 +43,7 @@ Rules:
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
+      signal,
       body: JSON.stringify({
         max_tokens: 900,
         system,
@@ -74,23 +75,29 @@ export default function HistoriediktatScreen({ words, onBack, speak, isOnline, s
   const [results, setResults] = useState([]);
   const [playing, setPlaying] = useState(false);
   const inputRefs = useRef([]);
+  const abortRef = useRef(null);
   const profile = loadUserProfile();
   const lang = getActiveLang();
 
   const nav = <BottomNav screen={screen} showWords={showWords} onNav={onNav} />;
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const load = useCallback(async () => {
     setPhase("loading");
     setError(false);
     setErrorMsg("");
     setStory(null);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      const s = await fetchStory(words, profile);
+      const s = await fetchStory(words, profile, controller.signal);
       setStory(s);
       setInputs(s.answers.map(() => ""));
       setResults([]);
       setPhase("listen");
     } catch (e) {
+      if (e.name === "AbortError") return;
       setErrorMsg(e?.message || "Ukjent feil");
       setError(true);
       setPhase("loading");
