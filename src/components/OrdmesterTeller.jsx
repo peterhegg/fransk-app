@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ORDMESTER_GOALS } from "../content.js";
-import { loadOrdmesterGoals, loadMasteryLog, touchMasteryCount, getMasteryMidpoint, todayStr } from "../utils.jsx";
+import { loadOrdmesterGoals, loadMasteryLog, touchMasteryCount, getMasteryMidpoint, todayStr, dateStr } from "../utils.jsx";
 
 function getGoals() {
   return loadOrdmesterGoals() || ORDMESTER_GOALS;
@@ -18,8 +18,7 @@ function MasteryGraph({ masteredCount }) {
 
   let lastKnown = null;
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(Date.now() - (6 - i) * 86400000);
-    const date = d.toISOString().split("T")[0];
+    const date = dateStr(-(6 - i));
     let count = null;
     if (date === today) {
       count = masteredCount;

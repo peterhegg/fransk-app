@@ -111,7 +111,7 @@ export function getQuizOptions(card, bank = [], isReverse = false) {
 // --- Date ---
 // Local calendar date (not UTC), so day boundaries match the user's actual
 // midnight instead of flipping at 01:00-02:00 Norwegian time.
-function dateStr(offsetDays = 0) {
+export function dateStr(offsetDays = 0) {
   const d = new Date(Date.now() + offsetDays * 86400000);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
