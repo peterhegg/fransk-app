@@ -50,14 +50,18 @@ async function recordCost(env, inputTokens, outputTokens) {
   const key = todayKey();
   const spent = parseFloat((await env.RATE_LIMIT_KV.get(key)) || "0");
   const cost = inputTokens * COST_PER_INPUT_TOKEN + outputTokens * COST_PER_OUTPUT_TOKEN;
-  await env.RATE_LIMIT_KV.put(key, String(spent + cost), { expirationTtl: 90000 });
+  // KV's free-tier daily write quota can be exhausted by normal traffic — a
+  // put() failure here must not crash the response that already succeeded.
+  try { await env.RATE_LIMIT_KV.put(key, String(spent + cost), { expirationTtl: 90000 }); } catch {}
 }
 
 async function checkRateLimit(env, ip) {
   const key = `rl:${ip}`;
   const count = parseInt((await env.RATE_LIMIT_KV.get(key)) || "0");
   if (count >= RATE_LIMIT_PER_MINUTE) return false;
-  await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 60 });
+  // If the KV write quota is exhausted, fail open (allow the request)
+  // instead of throwing and turning every call into a CORS-less 500.
+  try { await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 60 }); } catch {}
   return true;
 }
 
@@ -65,7 +69,7 @@ async function checkDailyIPLimit(env, ip) {
   const key = `daily:${ip}:${osloDateStr()}`;
   const count = parseInt((await env.RATE_LIMIT_KV.get(key)) || "0");
   if (count >= DAILY_IP_LIMIT) return false;
-  await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 90000 });
+  try { await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 90000 }); } catch {}
   return true;
 }
 
@@ -252,7 +256,11 @@ async function handlePushSubscribe(body, env, corsHeaders) {
     return new Response("Bad subscription", { status: 400, headers: corsHeaders });
   }
   const key = `push:sub:${b64urlEncode(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(body.endpoint))))}`;
-  await env.RATE_LIMIT_KV.put(key, JSON.stringify(body), { expirationTtl: 60 * 60 * 24 * 90 });
+  try {
+    await env.RATE_LIMIT_KV.put(key, JSON.stringify(body), { expirationTtl: 60 * 60 * 24 * 90 });
+  } catch {
+    return new Response(JSON.stringify({ error: "Storage unavailable" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
   return new Response("OK", { status: 200, headers: corsHeaders });
 }
 
@@ -310,7 +318,11 @@ async function handleWidgetSync(body, env, corsHeaders) {
     dagensDone: !!dagensDone,
     updatedAt: Date.now(),
   };
-  await env.RATE_LIMIT_KV.put(`widget:${uuid}`, JSON.stringify(data), { expirationTtl: 60 * 60 * 24 * 14 });
+  try {
+    await env.RATE_LIMIT_KV.put(`widget:${uuid}`, JSON.stringify(data), { expirationTtl: 60 * 60 * 24 * 14 });
+  } catch {
+    return new Response(JSON.stringify({ error: "Storage unavailable" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
   return new Response("OK", { status: 200, headers: corsHeaders });
 }
 
