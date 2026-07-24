@@ -91,6 +91,12 @@ export default function App() {
   // --- Shared data ---
   const [words, setWords] = useState(loadWords);
   const [grammarWords, setGrammarWords] = useState(loadGrammarWords);
+  // Group-filtered pools for the Øv exercises. Falls back to the full list when
+  // the selected group has no words. Screens still receive the full setWords —
+  // its functional updates map over the complete previous array, so filtering
+  // the displayed pool never drops words from the bank.
+  const gloseWords = (() => { const p = gloseGroup ? words.filter(w => (w.goal || "core") === gloseGroup) : words; return p.length ? p : words; })();
+  const gramWords = (() => { const p = gramGroup ? grammarWords.filter(w => w.topicId === gramGroup) : grammarWords; return p.length ? p : grammarWords; })();
   const [streak, setStreak] = useState(() => loadStreak().current);
   const [sessionMsgs, setSessionMsgs] = useState(() => { try { const s = JSON.parse(localStorage.getItem("fransk-session-msgs") || "{}"); return s.date === todayStr() ? (s.count || 0) : 0; } catch { return 0; } });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -941,84 +947,84 @@ export default function App() {
   if (screen === "ordoversettelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <TranslationExerciseScreen title="Ordoversettelse" icon={<TranslateIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <TranslationExerciseScreen title="Ordoversettelse" icon={<TranslateIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={gloseWords} setWords={setWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
   if (screen === "flervalg") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <MultipleChoiceOnlyScreen title="Flervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={words} setWords={setWords} onBack={backToHub} onFinish={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <MultipleChoiceOnlyScreen title="Flervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen ord i ordbanken ennå. Gjør Dagens øvelse – glose for å lære dine første ord." words={gloseWords} setWords={setWords} onBack={backToHub} onFinish={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
   if (screen === "si-ordet") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <SayWordScreen words={words} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+      <SayWordScreen words={gloseWords} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "oversett-grammatikken") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <TranslationExerciseScreen title="Oversett grammatikken" icon={<TranslateIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <TranslationExerciseScreen title="Oversett grammatikken" icon={<TranslateIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={gramWords} setWords={setGrammarWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
   if (screen === "grammatikk-flervalg") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <MultipleChoiceOnlyScreen title="Grammatikkflervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={grammarWords} setWords={setGrammarWords} onBack={backToHub} onFinish={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <MultipleChoiceOnlyScreen title="Grammatikkflervalg" icon={<MultiChoiceIcon />} emptyMsg="Ingen grammatikk lært ennå. Gjør Daglig grammatikk for å låse opp." words={gramWords} setWords={setGrammarWords} onBack={backToHub} onFinish={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
   if (screen === "oversett-setningen") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <SentenceTranslationScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+      <SentenceTranslationScreen words={gloseWords} grammarWords={gramWords} isOnline={isOnline} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "si-setningen") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <SaySentenceScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+      <SaySentenceScreen words={gloseWords} grammarWords={gramWords} isOnline={isOnline} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "generert-flervalg") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <GenerertFlervalgScreen words={words} grammarWords={grammarWords} isOnline={isOnline} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+      <GenerertFlervalgScreen words={gloseWords} grammarWords={gramWords} isOnline={isOnline} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
     </>
   );
 
   if (screen === "dagens-rettelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <DagensRettelseScreen words={words} setWords={setWords} worstWords={loadWorstWords(5, 10)} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <DagensRettelseScreen words={gloseWords} setWords={setWords} worstWords={loadWorstWords(5, 10)} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
   if (screen === "artikkel-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <ArticleExerciseScreen words={words} grammarWords={grammarWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
+      <ArticleExerciseScreen words={gloseWords} grammarWords={gramWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} {...navProps} />
     </>
   );
 
   if (screen === "bøying-ovelse") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <ConjugationExerciseScreen words={words} grammarWords={grammarWords} setWords={setWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} isOnline={isOnline} {...navProps} />
+      <ConjugationExerciseScreen words={gloseWords} grammarWords={gramWords} setWords={setWords} onBack={backToHub} speak={speak} speaking={speaking} autoPlay={autoPlay} onToggleAutoPlay={toggleAutoPlay} isOnline={isOnline} {...navProps} />
     </>
   );
 
   if (screen === "boyningstabell") return (
     <>
       {showExitDialog && <ExitDialog phraseIdx={exitPhraseIdx} onStay={() => { setShowExitDialog(false); window.history.pushState({ fransNav: true }, "", window.location.pathname + window.location.search + "#nav"); }} onExit={() => { exitIntentRef.current = true; setShowExitDialog(false); window.history.back(); }} />}
-      <BoyningsTabellScreen words={words} grammarWords={grammarWords} onBack={backToHub} speak={speak} {...navProps} />
+      <BoyningsTabellScreen words={gloseWords} grammarWords={gramWords} onBack={backToHub} speak={speak} {...navProps} />
     </>
   );
 
@@ -1030,27 +1036,27 @@ export default function App() {
   );
 
   if (screen === "memory-match") return (
-    <MemoryMatchScreen words={[...words, ...grammarWords]} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+    <MemoryMatchScreen words={[...gloseWords, ...gramWords]} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
   );
 
   if (screen === "tidspress") return (
-    <TidspressScreen words={[...words, ...grammarWords]} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+    <TidspressScreen words={[...gloseWords, ...gramWords]} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
   );
 
   if (screen === "lyttedetektiv") return (
-    <LyttedetektivScreen words={words} grammarWords={grammarWords} onBack={backToHub} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
+    <LyttedetektivScreen words={gloseWords} grammarWords={gramWords} onBack={backToHub} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
   );
 
   if (screen === "bygg-setningen") return (
-    <ByggSetningenScreen words={words} grammarWords={grammarWords} onBack={backToHub} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
+    <ByggSetningenScreen words={gloseWords} grammarWords={gramWords} onBack={backToHub} speak={speak} speaking={speaking} isOnline={isOnline} {...navProps} />
   );
 
   if (screen === "kategorisortering") return (
-    <KategorisorteringScreen words={words} grammarWords={grammarWords} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+    <KategorisorteringScreen words={gloseWords} grammarWords={gramWords} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
   );
 
   if (screen === "ordstokken") return (
-    <OrdstokkenScreen words={words} grammarWords={grammarWords} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
+    <OrdstokkenScreen words={gloseWords} grammarWords={gramWords} onBack={backToHub} speak={speak} speaking={speaking} {...navProps} />
   );
 
   if (screen === "rollespill") return (
@@ -1058,11 +1064,11 @@ export default function App() {
   );
 
   if (screen === "kryssord") return (
-    <KryssordScreen words={words} onBack={backToHub} isOnline={isOnline} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
+    <KryssordScreen words={gloseWords} onBack={backToHub} isOnline={isOnline} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "historiediktat") return (
-    <HistoriediktatScreen words={words} onBack={backToHub} speak={speak} isOnline={isOnline} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
+    <HistoriediktatScreen words={gloseWords} onBack={backToHub} speak={speak} isOnline={isOnline} screen={screen} showWords={showWords} onNav={handleNav} onGameComplete={maybeTouchStreak} />
   );
 
   if (screen === "sudoku") return (
