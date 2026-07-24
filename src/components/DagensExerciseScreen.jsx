@@ -120,7 +120,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
           )}
         </div>
 
-        <div style={{ fontSize: 11, color: "var(--text-subtle)", textAlign: "center", width: "100%" }}>Runde {round} av {exerciseRounds}</div>
+        {exerciseRounds > 1 && <div style={{ fontSize: 11, color: "var(--text-subtle)", textAlign: "center", width: "100%" }}>Runde {round} av {exerciseRounds}</div>}
 
         {!checked && (
           <button onClick={skip}
@@ -180,6 +180,11 @@ export default function DagensExerciseScreen({
   const [mestretDone, setMestretDone] = useState(false);
   useEffect(() => { setFireworksDone(false); setTierPopDone(false); setMestretDone(false); }, [card?.fr, card?.reverse]);
 
+  // Grammar topics step through the theory card first, then the same learn-by-typing
+  // walkthrough the glose flow uses, so the pairs are taught before they are tested.
+  const [topicIntroDone, setTopicIntroDone] = useState(false);
+  useEffect(() => { setTopicIntroDone(false); }, [topic?.id, phase]);
+
   useEffect(() => {
     if (autoPlay && card?.fr && !card.reverse) {
       const t = setTimeout(() => speak(card.fr), 400);
@@ -212,6 +217,10 @@ export default function DagensExerciseScreen({
     <DagensIntroPhase words={dailyWords} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={exerciseRounds} autoPlay={autoPlay} onToggleAutoPlay={onToggleAutoPlay} onSkipWord={onSkipWord} />
   );
 
+  if (phase === 0 && topic && topicIntroDone) return (
+    <DagensIntroPhase words={topic.pairs} speak={speak} speaking={speaking} onDone={onStartExercise} icon={icon} title={title} onBack={onBack} screen={screen} showWords={showWords} onNav={onNav} exerciseRounds={1} autoPlay={autoPlay} onToggleAutoPlay={onToggleAutoPlay} />
+  );
+
   if (phase === 0 && topic) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       {navBar}
@@ -231,9 +240,9 @@ export default function DagensExerciseScreen({
           ))}
           {topic.pairs.length > 3 && <div style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 6, textAlign: "center" }}>+ {topic.pairs.length - 3} til</div>}
         </div>
-        <button onClick={onStartExercise} className="btn-shine"
+        <button onClick={() => setTopicIntroDone(true)} className="btn-shine"
           style={{ background: "var(--cream)", border: "none", borderRadius: 14, color: "var(--bg)", fontFamily: "var(--font-body)", fontWeight: "500", fontSize: 16, padding: "16px 48px", cursor: "pointer", marginTop: 8, boxShadow: "0 4px 16px rgba(230,211,168,0.12)" }}>
-          Start øvelsen →
+          Lær ordene →
         </button>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
