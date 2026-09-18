@@ -5,6 +5,8 @@ const BACKUP_VERSION = 1;
 // Device-level keys that must not travel between devices.
 const EXCLUDED_KEYS = new Set(["fransk-widget-uuid", "fransk-push-enabled"]);
 
+const isExcluded = (k) => EXCLUDED_KEYS.has(k) || k.endsWith("sprakappen-error-log");
+
 function localDateStr() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");
@@ -16,7 +18,7 @@ export function exportBackup() {
   const data = {};
   for (let i = 0; i < rawStorage.length; i++) {
     const k = rawStorage.key(i);
-    if (k && !EXCLUDED_KEYS.has(k)) data[k] = rawStorage.getItem(k);
+    if (k && !isExcluded(k)) data[k] = rawStorage.getItem(k);
   }
   const payload = { app: BACKUP_APP, version: BACKUP_VERSION, exportedAt: new Date().toISOString(), data };
   const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
@@ -40,7 +42,7 @@ export function parseBackup(text) {
   }
   const entries = Object.entries(parsed.data);
   if (entries.some(([, v]) => typeof v !== "string")) throw new Error("not-a-backup");
-  return Object.fromEntries(entries.filter(([k]) => !EXCLUDED_KEYS.has(k)));
+  return Object.fromEntries(entries.filter(([k]) => !isExcluded(k)));
 }
 
 export function restoreBackup(data) {

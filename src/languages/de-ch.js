@@ -5,6 +5,7 @@
 // so every exercise screen works unchanged.
 //
 // HARD RULE everywhere: never ß — always "ss" (Strasse, Fussball, gross).
+import { capKnownWords } from "./promptUtils.js";
 import { VOCAB_CAT_ORDER } from "../constants.js";
 import { DE_STATIC_VOCAB } from "../de_static_vocab.js";
 import { DE_VOCAB_CAT_MAP } from "../de_vocab_cat_map.js";
@@ -184,7 +185,7 @@ FRI: Svar fritt på spørsmål om tysk. Kan spille sveitseren ${teacher} hvis el
 }
 
 export function vocabGenPrompt(activeGoal, knownWords) {
-  return `Generate 10 new Swiss Standard German (Schweizer Hochdeutsch) vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. CRITICAL: never use ß — always write "ss" (Strasse, Fussball, gross). Prefer Swiss everyday words (Helvetisms) where natural: Velo, Natel, Billett, Perron, Glace, Poulet, Rüebli, Gipfeli, Zmorge/Zmittag/Znacht, Spital, parkieren. Do NOT include these already-known words: ${[...knownWords].join(", ")}. Return a JSON array only — no markdown. Nouns: use the BASE FORM capitalised, WITHOUT article (e.g. "Hund" not "der Hund"); put the article in forms. For each word include inflected forms. Format: [{"fr":"Hund","no":"hunden","p":"hund","forms":[["der Hund","n"],["die Hunde","np"]]},{"fr":"machen","no":"å gjøre","p":"makhən","forms":[["ich mache","pr"],["wir machen","pr"],["sie machen","pr"],["ich habe gemacht","pc"],["ich machte","imp"],["mach!","impv"],["gemacht","pp"]]}]. Codes: pr=Präsens, pc=Perfekt, imp=Präteritum, f=Futur, impv=Imperativ, pp=Partizip, n=Nomen, np=Nomen Plural. Use phonetic spelling in Norwegian (ü→y, ö→ø, ä→æ, z→ts, w→v, sch→sj, ch→kh/kj, ei→ai). Fixed phrases or adverbs: forms:[].`;
+  return `Generate 10 new Swiss Standard German (Schweizer Hochdeutsch) vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. CRITICAL: never use ß — always write "ss" (Strasse, Fussball, gross). Prefer Swiss everyday words (Helvetisms) where natural: Velo, Natel, Billett, Perron, Glace, Poulet, Rüebli, Gipfeli, Zmorge/Zmittag/Znacht, Spital, parkieren. Do NOT include these already-known words: ${capKnownWords(knownWords)}. Return a JSON array only — no markdown. Nouns: use the BASE FORM capitalised, WITHOUT article (e.g. "Hund" not "der Hund"); put the article in forms. For each word include inflected forms. Format: [{"fr":"Hund","no":"hunden","p":"hund","forms":[["der Hund","n"],["die Hunde","np"]]},{"fr":"machen","no":"å gjøre","p":"makhən","forms":[["ich mache","pr"],["wir machen","pr"],["sie machen","pr"],["ich habe gemacht","pc"],["ich machte","imp"],["mach!","impv"],["gemacht","pp"]]}]. Codes: pr=Präsens, pc=Perfekt, imp=Präteritum, f=Futur, impv=Imperativ, pp=Partizip, n=Nomen, np=Nomen Plural. Use phonetic spelling in Norwegian (ü→y, ö→ø, ä→æ, z→ts, w→v, sch→sj, ch→kh/kj, ei→ai). Fixed phrases or adverbs: forms:[].`;
 }
 
 const deCH = {

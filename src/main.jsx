@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./design-system.css";
 import App from "./App.jsx";
+import ErrorBoundary, { installGlobalErrorLog } from "./components/ErrorBoundary.jsx";
 import { loadActiveLangId } from "./languages/index.js";
 
 // Theme the document for the active language (CSS [data-lang="…"]).
@@ -33,8 +34,12 @@ if ("serviceWorker" in navigator) {
 // Ask the browser not to evict localStorage under storage pressure.
 try { navigator.storage?.persist?.(); } catch {}
 
+installGlobalErrorLog();
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );

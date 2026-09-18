@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
 import { tutorVisible } from "../hooks/useTutorPrefs.js";
-import { usePushSubscription } from "../hooks/usePushSubscription.js";
+import { usePushSubscription, syncPushSubscription } from "../hooks/usePushSubscription.js";
 import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
 import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, speechLocale, dateLocale, greeting, brand, modeImages as MODE_IMAGES, goalImages } from "../content.js";
@@ -582,7 +582,7 @@ function BackupSection() {
 function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggleTutorVisibility }) {
   const [profile, setProfile] = useState(() => loadUserProfile());
   const set = (k, v) => setProfile(p => ({ ...p, [k]: v }));
-  const { enabled: pushEnabled, loading: pushLoading, supported: pushSupported, toggle: togglePush } = usePushSubscription();
+  const { enabled: pushEnabled, loading: pushLoading, supported: pushSupported, error: pushError, toggle: togglePush } = usePushSubscription();
 
   return (
     <SheetModal onClose={onClose}>
@@ -622,6 +622,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
                 <div style={{ position: "absolute", top: 3, left: pushEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
               </button>
             </div>
+            {pushError && <div role="alert" style={{ fontSize: 12, color: "var(--color-error)", marginTop: 8 }}>{pushError}</div>}
             <div style={{ marginTop: 10 }}>
               <div style={{ fontSize: 11, color: "var(--text-subtle)", marginBottom: 6 }}>Tidspunkt</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -737,7 +738,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
       </div>
 
       <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 8 }}>
-        <button onClick={() => { saveUserProfile(profile); onSave(profile); }}
+        <button onClick={() => { saveUserProfile(profile); syncPushSubscription(); onSave(profile); }}
           style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre profil
         </button>

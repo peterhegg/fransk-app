@@ -389,7 +389,7 @@ export default function App() {
           signal: controller.signal,
           body: JSON.stringify({
             model: "claude-haiku-4-5-20251001",
-            max_tokens: 400,
+            max_tokens: 1500,
             system: "You are a vocabulary generator. Respond only with a valid JSON array, no markdown.",
             messages: [{
               role: "user",

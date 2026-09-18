@@ -54,8 +54,8 @@ const VOICE_SYSTEMS = { fr: VOICE_SYSTEM, "de-CH": VOICE_SYSTEM_DE };
 
 // Oslo-local calendar date, not UTC — otherwise the daily budget/IP limit
 // resets at 01:00-02:00 Norwegian time instead of local midnight.
-function osloDateStr() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Oslo" }).format(new Date());
+function osloDateStr(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Oslo" }).format(date);
 }
 
 function todayKey() {
@@ -244,7 +244,8 @@ async function encryptPushPayload(payloadObj, sub) {
   const cek = await hkdf(prkKey, salt, "Content-Encoding: aes128gcm\x00", 16);
   const nonce = await hkdf(prkKey, salt, "Content-Encoding: nonce\x00", 12);
 
-  const record = concat(new Uint8Array([0, 0]), payloadBytes, new Uint8Array([2]));
+  // RFC 8188 aes128gcm: plaintext followed by the 0x02 last-record delimiter.
+  const record = concat(payloadBytes, new Uint8Array([2]));
   const aesKey = await crypto.subtle.importKey("raw", cek, { name: "AES-GCM" }, false, ["encrypt"]);
   const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, record));
 
@@ -272,13 +273,35 @@ async function sendPush(sub, payload, env) {
   });
 }
 
+// Only real push services may be stored — otherwise the hourly cron would POST
+// to attacker-chosen hosts.
+const PUSH_HOSTS = [
+  /(^|\.)googleapis\.com$/,
+  /(^|\.)push\.services\.mozilla\.com$/,
+  /(^|\.)push\.apple\.com$/,
+  /(^|\.)notify\.windows\.com$/,
+];
+function isPushEndpoint(endpoint) {
+  try {
+    const u = new URL(endpoint);
+    return u.protocol === "https:" && PUSH_HOSTS.some(r => r.test(u.hostname));
+  } catch { return false; }
+}
+
 async function handlePushSubscribe(body, env, corsHeaders) {
-  if (!body?.endpoint || !body?.keys?.p256dh || !body?.keys?.auth) {
+  if (!body?.endpoint || !body?.keys?.p256dh || !body?.keys?.auth || !isPushEndpoint(body.endpoint)) {
     return new Response("Bad subscription", { status: 400, headers: corsHeaders });
   }
-  const key = `push:sub:${b64urlEncode(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(body.endpoint))))}`;
+  const sub = {
+    endpoint: body.endpoint,
+    keys: { p256dh: String(body.keys.p256dh), auth: String(body.keys.auth) },
+    scheduledTime: /^([01]\d|2[0-3]):00$/.test(body.scheduledTime) ? body.scheduledTime : "20:00",
+    widgetUuid: /^[a-f0-9]{24}$/.test(body.widgetUuid) ? body.widgetUuid : null,
+    brand: typeof body.brand === "string" ? body.brand.slice(0, 30) : "",
+  };
+  const key = `push:sub:${b64urlEncode(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sub.endpoint))))}`;
   try {
-    await env.RATE_LIMIT_KV.put(key, JSON.stringify(body), { expirationTtl: 60 * 60 * 24 * 90 });
+    await env.RATE_LIMIT_KV.put(key, JSON.stringify(sub), { expirationTtl: 60 * 60 * 24 * 90 });
   } catch {
     return new Response(JSON.stringify({ error: "Storage unavailable" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
@@ -302,27 +325,42 @@ function currentOsloHourLabel() {
   return `${hh}:00`;
 }
 
+async function goalReachedToday(env, widgetUuid) {
+  if (!widgetUuid) return false;
+  try {
+    const raw = await env.RATE_LIMIT_KV.get(`widget:${widgetUuid}`);
+    if (!raw) return false;
+    const w = JSON.parse(raw);
+    return osloDateStr(new Date(w.updatedAt)) === osloDateStr() && w.todayAnswers >= w.dailyGoal;
+  } catch { return false; }
+}
+
 async function sendStreakReminders(env) {
   if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) return;
   const nowLabel = currentOsloHourLabel();
-  const list = await env.RATE_LIMIT_KV.list({ prefix: "push:sub:" });
-  const payload = {
-    title: "L'Atelier",
-    body: "Dagens øvelse venter — quelques minutes suffit.",
-    icon: "/fransk-app/icon-192.png",
-  };
-  for (const key of list.keys) {
-    const raw = await env.RATE_LIMIT_KV.get(key.name);
-    if (!raw) continue;
-    try {
-      const sub = JSON.parse(raw);
-      if ((sub.scheduledTime || "20:00") !== nowLabel) continue;
-      const res = await sendPush(sub, payload, env);
-      if (res.status === 404 || res.status === 410) await env.RATE_LIMIT_KV.delete(key.name);
-    } catch (e) {
-      console.error("Push failed for", key.name, e);
+  let cursor;
+  do {
+    const list = await env.RATE_LIMIT_KV.list({ prefix: "push:sub:", cursor });
+    for (const key of list.keys) {
+      const raw = await env.RATE_LIMIT_KV.get(key.name);
+      if (!raw) continue;
+      try {
+        const sub = JSON.parse(raw);
+        if ((sub.scheduledTime || "20:00") !== nowLabel) continue;
+        if (await goalReachedToday(env, sub.widgetUuid)) continue;
+        const payload = {
+          title: sub.brand || "L'Atelier",
+          body: "Dagens øvelse venter — bare noen minutter holder.",
+          icon: "/fransk-app/icon-192.png",
+        };
+        const res = await sendPush(sub, payload, env);
+        if (res.status === 404 || res.status === 410) await env.RATE_LIMIT_KV.delete(key.name);
+      } catch (e) {
+        console.error("Push failed for", key.name, e);
+      }
     }
-  }
+    cursor = list.list_complete ? undefined : list.cursor;
+  } while (cursor);
 }
 
 // ── Widget ────────────────────────────────────────────────────────────────────

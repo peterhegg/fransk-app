@@ -3,6 +3,7 @@
 // (vocab, grammar, goals) are still defined in constants.js and re-used here,
 // so this is a zero-behaviour-change refactor. A future language owns its own
 // data files; fr keeps re-using constants until a later cleanup phase.
+import { capKnownWords } from "./promptUtils.js";
 import {
   SYSTEM_PROMPT,
   BOOK_EXCERPTS,
@@ -49,7 +50,7 @@ FRI: Svar fritt på spørsmål om fransk. Kan spille ${p.teacherName} (${teacher
 // AI vocab generation prompt — was hardcoded inline in App.jsx.
 // Extracted here so each language can phrase its own generation rules.
 export function vocabGenPrompt(activeGoal, knownWords) {
-  return `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${[...knownWords].join(", ")}. Return a JSON array only — no markdown. Use BASE FORM without article for nouns (e.g. "maison" not "la maison"). For each word include its inflected forms. Format: [{"fr":"maison","no":"huset","p":"mæzå","forms":[["la maison","n"],["les maisons","np"]]},{"fr":"parler","no":"å snakke","p":"parlæ","forms":[["je parle","pr"],["nous parlons","pr"],["ils parlent","pr"],["j'ai parlé","pc"],["je parlais","imp"],["je parlerai","f"],["parle","impv"],["parlé","pp"]]}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Adjectives: include adj-f/adj-mp/adj-fp forms. Fixed phrases or adverbs: forms:[].`;
+  return `Generate 10 new French vocabulary words for a Norwegian A1/A2 learner with dyslexia. Current learning topic: "${activeGoal.label}" — ${activeGoal.desc}. The learner is also reading Houellebecq and a book about Paris cultural life in the 1920s. Do NOT include these already-known words: ${capKnownWords(knownWords)}. Return a JSON array only — no markdown. Use BASE FORM without article for nouns (e.g. "maison" not "la maison"). For each word include its inflected forms. Format: [{"fr":"maison","no":"huset","p":"mæzå","forms":[["la maison","n"],["les maisons","np"]]},{"fr":"parler","no":"å snakke","p":"parlæ","forms":[["je parle","pr"],["nous parlons","pr"],["ils parlent","pr"],["j'ai parlé","pc"],["je parlais","imp"],["je parlerai","f"],["parle","impv"],["parlé","pp"]]}]. Use phonetic spelling in Norwegian (e.g. bonjour → bånsjur). Adjectives: include adj-f/adj-mp/adj-fp forms. Fixed phrases or adverbs: forms:[].`;
 }
 
 const fr = {
