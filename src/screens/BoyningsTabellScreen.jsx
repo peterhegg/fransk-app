@@ -160,7 +160,7 @@ export default function BoyningsTabellScreen({ words, grammarWords = [], onBack,
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
         <div style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
           <div style={{ fontSize: 15, fontWeight: 500 }}>Bøyningstabellen</div>
           <div style={{ width: 70 }} />
         </div>
@@ -182,7 +182,7 @@ export default function BoyningsTabellScreen({ words, grammarWords = [], onBack,
       {/* Header */}
       <div style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
           <div style={{ fontSize: 15, fontWeight: 500, color: "var(--text)" }}>Bøyningstabellen</div>
           <div style={{ width: 70 }} />
         </div>

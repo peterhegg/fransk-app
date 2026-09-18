@@ -1,6 +1,6 @@
+import { proxyFetch } from "../api.js";
 import { speak as ttsSpeak, stop as ttsStop } from "../tts.js";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { getActiveLang } from "../languages/index.js";
 import { loadUserProfile, getActiveGoal, loadGoalOrder, logDailyAnswer, logSentenceAnswer, logGameSession } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
@@ -40,16 +40,11 @@ Rules:
 - blanked words must be exactly as they appear in the story`;
 
   for (let attempt = 0; attempt < 2; attempt++) {
-    const res = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-      signal,
-      body: JSON.stringify({
+    const res = await proxyFetch({
         max_tokens: 900,
         system,
         messages: [{ role: "user", content: prompt }],
-      }),
-    });
+      });
     const data = await res.json();
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${data.error || data.message || JSON.stringify(data)}`);
     const text = data.content?.find(b => b.type === "text")?.text || "";

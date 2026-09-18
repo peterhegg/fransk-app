@@ -1,5 +1,5 @@
 import "./storage-namespace.js"; // MUST be first — namespaces localStorage before any app module reads it
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { MotionConfig } from "framer-motion";
 import "./design-system.css";
@@ -56,7 +56,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorBoundary>
       <MotionConfig reducedMotion="user">
-        <App />
+        <Suspense fallback={<div style={{ minHeight: "100dvh", background: "var(--app-bg, var(--bg))" }} />}>
+          <App />
+        </Suspense>
       </MotionConfig>
     </ErrorBoundary>
   </React.StrictMode>

@@ -1,5 +1,5 @@
+import { proxyFetch } from "../api.js";
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { loadUserProfile, logGameSession, logDailyAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, CountPill, GameResult, LoadingState, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
@@ -82,16 +82,11 @@ export default function RollespillScreen({ words, onBack, speak, screen, showWor
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    const res = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-      signal: controller.signal,
-      body: JSON.stringify({
+    const res = await proxyFetch({
         max_tokens: 600,
         system: systemPrompt(sc, profile, words, lang),
         messages: history,
-      }),
-    });
+      }, { signal: controller.signal });
     const data = await res.json();
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${data.error || data.message || JSON.stringify(data)}`);
     const text = data.content?.find(b => b.type === "text")?.text || "";

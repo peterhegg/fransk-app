@@ -8,8 +8,13 @@ const MAX_SYSTEM_LENGTH = 6000;
 const RATE_LIMIT_PER_MINUTE = 20;
 const DAILY_IP_LIMIT = 200;
 
-const COST_PER_INPUT_TOKEN = 3 / 1_000_000;
-const COST_PER_OUTPUT_TOKEN = 15 / 1_000_000;
+// USD per token, by model. Unknown models are priced like Sonnet (worst case).
+const PRICING = {
+  "claude-haiku-4-5-20251001": { input: 1 / 1_000_000, output: 5 / 1_000_000 },
+  "claude-sonnet-4-6": { input: 3 / 1_000_000, output: 15 / 1_000_000 },
+};
+const DEFAULT_PRICING = PRICING["claude-sonnet-4-6"];
+const UPSTREAM_TIMEOUT_MS = 25000;
 const DAILY_BUDGET_USD = 1.00;
 
 const VOICE_SYSTEM = `Tu es un partenaire de conversation française chaleureux et encourageant.
@@ -62,39 +67,79 @@ function todayKey() {
   return `budget:${osloDateStr()}`;
 }
 
+// KV reads can throw (quota, outage). Treat that as "no value" so a KV problem
+// degrades limits instead of turning every request into a 500.
+async function kvGet(env, key) {
+  try { return await env.RATE_LIMIT_KV.get(key); } catch { return null; }
+}
+
 async function checkBudget(env) {
-  const spent = parseFloat((await env.RATE_LIMIT_KV.get(todayKey())) || "0");
+  const spent = parseFloat((await kvGet(env, todayKey())) || "0");
   return spent < DAILY_BUDGET_USD;
 }
 
-async function recordCost(env, inputTokens, outputTokens) {
+async function recordCost(env, model, inputTokens, outputTokens) {
   const key = todayKey();
-  const spent = parseFloat((await env.RATE_LIMIT_KV.get(key)) || "0");
-  const cost = inputTokens * COST_PER_INPUT_TOKEN + outputTokens * COST_PER_OUTPUT_TOKEN;
+  const spent = parseFloat((await kvGet(env, key)) || "0");
+  const price = PRICING[model] || DEFAULT_PRICING;
+  const cost = inputTokens * price.input + outputTokens * price.output;
   // KV's free-tier daily write quota can be exhausted by normal traffic — a
   // put() failure here must not crash the response that already succeeded.
   try { await env.RATE_LIMIT_KV.put(key, String(spent + cost), { expirationTtl: 90000 }); } catch {}
 }
 
+// One bucket per IP per minute. A fixed window (unlike a TTL refreshed on every
+// request) resets on schedule even under steady use.
 async function checkRateLimit(env, ip) {
-  const key = `rl:${ip}`;
-  const count = parseInt((await env.RATE_LIMIT_KV.get(key)) || "0");
+  const key = `rl:${ip}:${Math.floor(Date.now() / 60000)}`;
+  const count = parseInt((await kvGet(env, key)) || "0");
   if (count >= RATE_LIMIT_PER_MINUTE) return false;
   // If the KV write quota is exhausted, fail open (allow the request)
   // instead of throwing and turning every call into a CORS-less 500.
-  try { await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 60 }); } catch {}
+  try { await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 120 }); } catch {}
   return true;
 }
 
 async function checkDailyIPLimit(env, ip) {
   const key = `daily:${ip}:${osloDateStr()}`;
-  const count = parseInt((await env.RATE_LIMIT_KV.get(key)) || "0");
+  const count = parseInt((await kvGet(env, key)) || "0");
   if (count >= DAILY_IP_LIMIT) return false;
   try { await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: 90000 }); } catch {}
   return true;
 }
 
-async function handleVoice(body, env, corsHeaders) {
+// IPv6 clients can rotate freely inside their /64, so key limits on the prefix.
+function clientKey(ip) {
+  return ip.includes(":") ? ip.split(":").slice(0, 4).join(":") : ip;
+}
+
+// Anthropic call with a timeout and one retry on overload/5xx.
+async function callAnthropic(env, payload) {
+  const attempt = () => fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+  });
+  let res;
+  try {
+    res = await attempt();
+    if (res.status === 529 || res.status === 503 || res.status === 502) {
+      await new Promise(r => setTimeout(r, 600));
+      res = await attempt();
+    }
+  } catch {
+    // network error or timeout → single retry
+    res = await attempt();
+  }
+  return res;
+}
+
+async function handleVoice(body, env, ctx, corsHeaders) {
   const { history, userMessage, language } = body;
 
   if (!userMessage || typeof userMessage !== "string" || !userMessage.trim()) {
@@ -104,6 +149,7 @@ async function handleVoice(body, env, corsHeaders) {
   const safeHistory = Array.isArray(history)
     ? history
         .slice(-18)
+        .filter(m => m && typeof m === "object")
         .map(m => ({
           role: m.role === "user" ? "user" : "assistant",
           content: typeof m.content === "string" ? m.content.slice(0, 500) : "",
@@ -118,19 +164,11 @@ async function handleVoice(body, env, corsHeaders) {
 
   let response;
   try {
-    response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: LOCKED_MODEL,
-        max_tokens: 400,
-        system: VOICE_SYSTEMS[language] || VOICE_SYSTEM,
-        messages,
-      }),
+    response = await callAnthropic(env, {
+      model: LOCKED_MODEL,
+      max_tokens: 400,
+      system: VOICE_SYSTEMS[language] || VOICE_SYSTEM,
+      messages,
     });
   } catch {
     return new Response(JSON.stringify({ error: "Service unavailable" }), {
@@ -159,7 +197,7 @@ async function handleVoice(body, env, corsHeaders) {
   }
 
   if (data.usage) {
-    await recordCost(env, data.usage.input_tokens ?? 0, data.usage.output_tokens ?? 0);
+    ctx.waitUntil(recordCost(env, LOCKED_MODEL, data.usage.input_tokens ?? 0, data.usage.output_tokens ?? 0));
   }
 
   const rawText = data.content?.[0]?.text || "";
@@ -468,7 +506,23 @@ export default {
     await sendStreakReminders(env);
   },
 
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
+    try {
+      return await handleRequest(request, env, ctx);
+    } catch (e) {
+      // Last-resort guard: never return a bare CORS-less 500 to the browser.
+      console.error("Unhandled error", e);
+      const origin = request.headers.get("Origin") || "";
+      const allowed = [PROD_ORIGIN, env.DEV_ORIGIN].filter(Boolean).includes(origin);
+      return new Response(JSON.stringify({ error: "Internal error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...(allowed ? { "Access-Control-Allow-Origin": origin } : {}) },
+      });
+    }
+  },
+};
+
+async function handleRequest(request, env, ctx) {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
@@ -489,7 +543,8 @@ export default {
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "POST",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Max-Age": "86400",
       "Access-Control-Allow-Headers": "Content-Type, X-App-Token",
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
@@ -529,7 +584,7 @@ export default {
       });
     }
 
-    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    const ip = clientKey(request.headers.get("CF-Connecting-IP") || "unknown");
     if (!await checkRateLimit(env, ip)) {
       return new Response(JSON.stringify({ error: "Too Many Requests" }), {
         status: 429,
@@ -545,7 +600,7 @@ export default {
     }
 
     if (pathname === "/voice") {
-      return handleVoice(body, env, corsHeaders);
+      return handleVoice(body, env, ctx, corsHeaders);
     }
 
     // Default: general Claude proxy
@@ -559,7 +614,7 @@ export default {
         ? body.system.slice(0, MAX_SYSTEM_LENGTH)
         : "",
       messages: Array.isArray(body.messages)
-        ? body.messages.slice(-MAX_MESSAGES).map(m => ({
+        ? body.messages.slice(-MAX_MESSAGES).filter(m => m && typeof m === "object").map(m => ({
             role: m.role === "user" ? "user" : "assistant",
             content: typeof m.content === "string"
               ? m.content.slice(0, MAX_CONTENT_LENGTH)
@@ -574,15 +629,7 @@ export default {
 
     let response;
     try {
-      response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify(safeBody),
-      });
+      response = await callAnthropic(env, safeBody);
     } catch {
       return new Response(JSON.stringify({ error: "Service unavailable" }), {
         status: 502,
@@ -608,12 +655,11 @@ export default {
     }
 
     if (data.usage) {
-      await recordCost(env, data.usage.input_tokens ?? 0, data.usage.output_tokens ?? 0);
+      ctx.waitUntil(recordCost(env, safeBody.model, data.usage.input_tokens ?? 0, data.usage.output_tokens ?? 0));
     }
 
     return new Response(JSON.stringify(data), {
       status: response.status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  },
-};
+}

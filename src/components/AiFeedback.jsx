@@ -1,5 +1,5 @@
+import { proxyFetch } from "../api.js";
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 
 // Reusable "request explanation on wrong answer" button + result display.
 // Used by every text-answer exercise (vocab, grammar, sentence games) so the
@@ -23,17 +23,12 @@ export default function AiFeedback({ isOnline, resetKey, buildPrompt, label = "ð
     const controller = new AbortController();
     abortRef.current = controller;
     setLoading(true);
-    fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-      signal: controller.signal,
-      body: JSON.stringify({
+    proxyFetch({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 240,
         system: "Respond only with a valid JSON object, no markdown.",
         messages: [{ role: "user", content: buildPrompt() }],
-      }),
-    })
+      }, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         const text = data.content?.find(b => b.type === "text")?.text || "";

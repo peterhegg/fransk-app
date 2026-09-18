@@ -18,7 +18,9 @@ export default defineConfig({
       manifest: {
         name: "L'Atelier",
         short_name: "L'Atelier",
-        description: "Lær fransk på din måte",
+        description: "Lær fransk og sveitsertysk på din måte",
+        id: "/fransk-app/",
+        categories: ["education"],
         lang: "no",
         theme_color: "#2e6be6",
         background_color: "#091526",

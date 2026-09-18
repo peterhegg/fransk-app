@@ -1,5 +1,6 @@
+import { proxyFetch, apiErrorText } from "../api.js";
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN, SESSION_KEY } from "../constants.js";
+import { SESSION_KEY } from "../constants.js";
 import { BOOK_EXCERPTS } from "../content.js";
 import { todayStr, renderMessage, extractSuggestions, stripSuggestions, parseLearnLine, buildSystemPrompt, loadUserProfile, getActiveGoal, loadGoalOrder } from "../utils.jsx";
 import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
@@ -83,21 +84,14 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch(PROXY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        signal: controller.signal,
-        body: JSON.stringify({
+      const res = await proxyFetch({
           model: "claude-sonnet-4-6",
           max_tokens: 800,
           system: SYSTEM_PROMPT + wordCtx + `\nModus: ${mode?.label?.toUpperCase()}`,
           messages: next.map(m => ({ role: m.role, content: m.content })),
-        }),
-      });
+        }, { signal: controller.signal });
       const data = await res.json();
-      const budgetHit = data.error?.message?.toLowerCase().includes("budget") || data.error?.message?.toLowerCase().includes("daily");
-      const reply = data.content?.find(b => b.type === "text")?.text ||
-        (budgetHit ? "Daglig grense er nådd. Appen åpner igjen ved midnatt (UTC)." : data.error ? `Feil: ${data.error.message}` : "Noe gikk galt.");
+      const reply = data.content?.find(b => b.type === "text")?.text || apiErrorText(data, res.status);
       if (mode?.id === "teksthjelp" && text) {
         setRecentTexts(prev => {
           const n2 = [text, ...prev.filter(t => t !== text)].slice(0, 5);
@@ -122,7 +116,7 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 84 + keyboardOffset }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16 }}>
           <span style={{ color: "var(--cream)" }}>{mode?.icon}</span><span>{mode?.label}</span>
         </div>

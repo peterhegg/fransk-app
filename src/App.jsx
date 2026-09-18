@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { proxyFetch } from "./api.js";
+import { useState, useRef, useEffect, lazy } from "react";
 import {
   MODES, EXIT_PHRASES,
   DAGENS_GLOSE_KEY, WORDS_KEY, SR_INTERVALS, SESSION_SCREEN_KEY, MASTERY_POINTS, MASTERY_LABELS,
-  PROXY_URL, APP_TOKEN,
-} from "./constants.js";
+  PROXY_URL, APP_TOKEN} from "./constants.js";
 import {
   loadWords, saveWords, loadGrammarWords, saveGrammarWords,
   loadGrammarProgress, saveGrammarProgress,
@@ -15,8 +15,7 @@ import {
   loadGeneratedVocab, saveGeneratedVocab, needsNewVocab, getReplacementGloseWord,
   getActiveGoal, loadGoalOrder, selectExerciseWords,
   loadUserProfile, saveUserProfile, getWordTier, loadActivityLog, loadWorstWords,
-  checkStreakBroken, getOrCreateWidgetUUID,
-} from "./utils.jsx";
+  checkStreakBroken, getOrCreateWidgetUUID} from "./utils.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import ExitDialog from "./components/ExitDialog.jsx";
 import DagensExerciseScreen from "./components/DagensExerciseScreen.jsx";
@@ -30,31 +29,34 @@ import WordsScreen from "./screens/WordsScreen.jsx";
 import BankScreen from "./screens/BankScreen.jsx";
 import GrammatikkbankenScreen from "./screens/GrammatikkbankenScreen.jsx";
 import ChatScreen from "./screens/ChatScreen.jsx";
-import VoiceScreen from "./screens/VoiceScreen.jsx";
-import SayWordScreen from "./screens/SayWordScreen.jsx";
-import SentenceTranslationScreen from "./screens/SentenceTranslationScreen.jsx";
-import SaySentenceScreen from "./screens/SaySentenceScreen.jsx";
-import GenerertFlervalgScreen from "./screens/GenerertFlervalgScreen.jsx";
 import DagensRettelseScreen from "./screens/DagensRettelseScreen.jsx";
-import { ArticleExerciseScreen, ConjugationExerciseScreen } from "./screens/FormExerciseScreen.jsx";
-import BoyningsTabellScreen from "./screens/BoyningsTabellScreen.jsx";
-import GrammatikkTeoriScreen from "./screens/GrammatikkTeoriScreen.jsx";
-import MemoryMatchScreen from "./screens/MemoryMatchScreen.jsx";
-import TidspressScreen from "./screens/TidspressScreen.jsx";
-import LyttedetektivScreen from "./screens/LyttedetektivScreen.jsx";
-import ByggSetningenScreen from "./screens/ByggSetningenScreen.jsx";
-import KategorisorteringScreen from "./screens/KategorisorteringScreen.jsx";
-import OrdstokkenScreen from "./screens/OrdstokkenScreen.jsx";
-import RollespillScreen from "./screens/RollespillScreen.jsx";
-import KryssordScreen from "./screens/KryssordScreen.jsx";
-import HistoriediktatScreen from "./screens/HistoriediktatScreen.jsx";
-import SudokuScreen from "./screens/SudokuScreen.jsx";
 import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs, KEY as TUTOR_PREFS_KEY } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
 import { useLang } from "./languages/index.js";
 import { vocabGenPrompt } from "./content.js";
 import { speak as ttsSpeak, stop as ttsStop, subscribeSpeaking, isSpeakingText } from "./tts.js";
+
+// Rarely-used screens/games are code-split; <Suspense> lives in main.jsx.
+const VoiceScreen = lazy(() => import("./screens/VoiceScreen.jsx"));
+const SayWordScreen = lazy(() => import("./screens/SayWordScreen.jsx"));
+const SentenceTranslationScreen = lazy(() => import("./screens/SentenceTranslationScreen.jsx"));
+const SaySentenceScreen = lazy(() => import("./screens/SaySentenceScreen.jsx"));
+const GenerertFlervalgScreen = lazy(() => import("./screens/GenerertFlervalgScreen.jsx"));
+const BoyningsTabellScreen = lazy(() => import("./screens/BoyningsTabellScreen.jsx"));
+const GrammatikkTeoriScreen = lazy(() => import("./screens/GrammatikkTeoriScreen.jsx"));
+const MemoryMatchScreen = lazy(() => import("./screens/MemoryMatchScreen.jsx"));
+const TidspressScreen = lazy(() => import("./screens/TidspressScreen.jsx"));
+const LyttedetektivScreen = lazy(() => import("./screens/LyttedetektivScreen.jsx"));
+const ByggSetningenScreen = lazy(() => import("./screens/ByggSetningenScreen.jsx"));
+const KategorisorteringScreen = lazy(() => import("./screens/KategorisorteringScreen.jsx"));
+const OrdstokkenScreen = lazy(() => import("./screens/OrdstokkenScreen.jsx"));
+const RollespillScreen = lazy(() => import("./screens/RollespillScreen.jsx"));
+const KryssordScreen = lazy(() => import("./screens/KryssordScreen.jsx"));
+const HistoriediktatScreen = lazy(() => import("./screens/HistoriediktatScreen.jsx"));
+const SudokuScreen = lazy(() => import("./screens/SudokuScreen.jsx"));
+const ArticleExerciseScreen = lazy(() => import("./screens/FormExerciseScreen.jsx").then(m => ({ default: m.ArticleExerciseScreen })));
+const ConjugationExerciseScreen = lazy(() => import("./screens/FormExerciseScreen.jsx").then(m => ({ default: m.ConjugationExerciseScreen })));
 
 function TranslateIcon() {
   return (
@@ -357,11 +359,7 @@ export default function App() {
       const timeoutId = setTimeout(() => controller.abort(), 15000);
       try {
         const knownFr = new Set([...words.map(w => w.fr), ...currentGenVocab.map(v => v.fr)]);
-        const res = await fetch(PROXY_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-          signal: controller.signal,
-          body: JSON.stringify({
+        const res = await proxyFetch({
             model: "claude-haiku-4-5-20251001",
             max_tokens: 1500,
             system: "You are a vocabulary generator. Respond only with a valid JSON array, no markdown.",
@@ -369,8 +367,7 @@ export default function App() {
               role: "user",
               content: vocabGenPrompt(activeGoal, knownFr),
             }],
-          }),
-        });
+          }, { signal: controller.signal });
         const data = await res.json();
         const text = data.content?.find(b => b.type === "text")?.text || "";
         const match = text.match(/\[[\s\S]*\]/);

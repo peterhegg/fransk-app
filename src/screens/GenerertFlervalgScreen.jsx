@@ -1,6 +1,6 @@
+import { proxyFetch } from "../api.js";
 import { SpeakButton } from "../components/AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, loadUserProfile } from "../utils.jsx";
 import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
@@ -89,17 +89,12 @@ export default function GenerertFlervalgScreen({
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch(PROXY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        signal: controller.signal,
-        body: JSON.stringify({
+      const res = await proxyFetch({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 2500,
           system: `You are a ${getActiveLang().nameEn} exercise generator. Respond only with a valid JSON array, no markdown.`,
           messages: [{ role: "user", content: prompt }],
-        }),
-      });
+        }, { signal: controller.signal });
       const data = await res.json();
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\[[\s\S]*\]/);
@@ -151,7 +146,7 @@ export default function GenerertFlervalgScreen({
 
   const navBar = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
         <FlervalgIcon /> Generert flervalg
       </div>
@@ -186,7 +181,7 @@ export default function GenerertFlervalgScreen({
             <button onClick={() => { setError(""); setLoading(true); fetchQuestions(); }}
               style={{ background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>Prøv igjen</button>
           )}
-          <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+          <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
         </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />

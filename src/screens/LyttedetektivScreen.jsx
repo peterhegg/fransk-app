@@ -1,6 +1,6 @@
+import { proxyFetch } from "../api.js";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { shuffle, getQuizOptions, logGameSession, loadUserProfile } from "../utils.jsx";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, GameResult, LoadingState, OptionButton, AudioButton, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
@@ -45,17 +45,12 @@ wrong: ["De hørte musikk ute.", "Han løp raskt hjem.", "Vi spiste middag i gå
 Svar KUN med JSON-array, ingen markdown:
 [{"fr":"...","no":"...","wrong":["...","...","..."]}]`;
 
-  const res = await fetch(PROXY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-    signal,
-    body: JSON.stringify({
+  const res = await proxyFetch({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1200,
       system: `You are a ${lang.nameEn} language teacher. Respond only with a valid JSON array, no markdown.`,
       messages: [{ role: "user", content: prompt }],
-    }),
-  });
+    });
   const data = await res.json();
   const text = data.content?.find(b => b.type === "text")?.text || "";
   const match = text.match(/\[[\s\S]*\]/);

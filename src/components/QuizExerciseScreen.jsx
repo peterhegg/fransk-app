@@ -1,6 +1,6 @@
+import { proxyFetch } from "../api.js";
 import { AutoPlayToggle, SpeakButton } from "./AudioControls.jsx";
 import { useRef, useState, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { GRAMMAR_TOPICS, langCode } from "../content.js";
 import { loadUserProfile } from "../utils.jsx";
 import BottomNav from "./BottomNav.jsx";
@@ -45,12 +45,7 @@ export default function QuizExerciseScreen({
       ? `grammatikkøvelse (tema: ${card.topicId})`
       : `gloseøvelse (ord: ${card.fr} = ${card.no})`;
     const prompt = `Norsk ${lvl}-elev svarte ${result === "close" ? "nesten riktig" : "galt"} på en ${context}.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt — for akkurat disse ordene. Gi én huskeregel knyttet direkte til akkurat dette ordet.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
-    fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-      signal: controller.signal,
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 220, system: "Respond only with a valid JSON object, no markdown.", messages: [{ role: "user", content: prompt }] }),
-    }).then(r => r.json()).then(data => {
+    proxyFetch({ model: "claude-haiku-4-5-20251001", max_tokens: 220, system: "Respond only with a valid JSON object, no markdown.", messages: [{ role: "user", content: prompt }] }, { signal: controller.signal }).then(r => r.json()).then(data => {
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\{[\s\S]*?\}/);
       if (match) setAiHint(JSON.parse(match[0]));
@@ -83,7 +78,7 @@ export default function QuizExerciseScreen({
   if (!card) return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--cream)" }}>{icon}</span>{title}</div>
         <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>
@@ -99,7 +94,7 @@ export default function QuizExerciseScreen({
     <>
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><span style={{ color: "var(--cream)" }}>{icon}</span>{title}</div>
         <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
       </div>

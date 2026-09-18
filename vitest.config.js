@@ -4,5 +4,5 @@ import { defineConfig } from "vitest/config";
 process.env.TZ = "Europe/Oslo";
 
 export default defineConfig({
-  test: { environment: "jsdom", include: ["src/**/*.test.{js,jsx}"], setupFiles: ["src/test-setup.js"] },
+  test: { environment: "jsdom", include: ["src/**/*.test.{js,jsx}", "*.test.js"], setupFiles: ["src/test-setup.js"] },
 });

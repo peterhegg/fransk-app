@@ -1,11 +1,11 @@
+import { proxyFetch } from "../api.js";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   checkQuizAnswer, applyAnswerToWord, incrementAnswerCount, clearWordError,
   logDailyAnswer, logWordAnswer, touchStreak,
-  shuffle,
-} from "../utils.jsx";
-import { MASTERY_POINTS, PROXY_URL, APP_TOKEN } from "../constants.js";
+  shuffle} from "../utils.jsx";
+import { MASTERY_POINTS, PROXY_URL} from "../constants.js";
 import { langCode } from "../content.js";
 import BottomNav from "../components/BottomNav.jsx";
 import PointsBadge, { Fireworks, TierPop, ConfettiBurst } from "../components/PointsBadge.jsx";
@@ -82,12 +82,7 @@ export default function DagensRettelseScreen({
     const prompt = wasWrong
       ? `Norsk A1/A2-elev svarte galt på et franskkort.\nSpørsmål: ${question}\nEleven svarte: "${input}"\nRiktig svar: "${correct}"\n\nForklar på norsk (1-2 korte setninger) SPESIFIKT hva som er galt. Gi én huskeregel knyttet direkte til akkurat dette ordet.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`
       : `Norsk A1/A2-elev lærte seg et franskt ord riktig: ${card.fr} = ${card.no}.\n\nGi én kort huskeregel på norsk som hjelper eleven å huske akkurat dette ordet. Ingen forklaring, bare huskeregelen.\nSvar KUN som JSON: {"forklaring":"","huskeregel":"..."}`;
-    fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-      signal: controller.signal,
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 180, system: "Respond only with a valid JSON object, no markdown.", messages: [{ role: "user", content: prompt }] }),
-    }).then(r => r.json()).then(data => {
+    proxyFetch({ model: "claude-haiku-4-5-20251001", max_tokens: 180, system: "Respond only with a valid JSON object, no markdown.", messages: [{ role: "user", content: prompt }] }, { signal: controller.signal }).then(r => r.json()).then(data => {
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\{[\s\S]*?\}/);
       if (match) setAiHint(JSON.parse(match[0]));
@@ -130,7 +125,7 @@ export default function DagensRettelseScreen({
 
   const navBar = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
         <span style={{ color: "var(--color-error)" }}>{ICON}</span> Dagens rettelse
       </div>

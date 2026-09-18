@@ -1,6 +1,6 @@
+import { proxyFetch } from "../api.js";
 import { SpeakButton } from "../components/AudioControls.jsx";
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, logDailyAnswer, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
 import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
@@ -124,17 +124,12 @@ export default function SentenceTranslationScreen({
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch(PROXY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        signal: controller.signal,
-        body: JSON.stringify({
+      const res = await proxyFetch({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 600,
           system: `You are a ${getActiveLang().nameEn} sentence generator. Respond only with a valid JSON array, no markdown.`,
           messages: [{ role: "user", content: prompt }],
-        }),
-      });
+        }, { signal: controller.signal });
       const data = await res.json();
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\[[\s\S]*\]/);
@@ -167,11 +162,7 @@ export default function SentenceTranslationScreen({
     setAiHintLoading(true);
     setAiHint(null);
     try {
-      const res = await fetch(PROXY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        signal: controller.signal,
-        body: JSON.stringify({
+      const res = await proxyFetch({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 250,
           system: `You are a ${lang.nameEn} tutor. Respond only with a valid JSON object, no markdown.`,
@@ -179,8 +170,7 @@ export default function SentenceTranslationScreen({
             const profile = loadUserProfile();
             return `Norsk ${profile.level || "A1/A2"}-elev oversatte en setning feil.\nNorsk: "${noSentence}"\nKorrekt ${lang.label.toLowerCase()}: "${frSentence}"\nEleven svarte: "${userInput}"${wordDiff ? `\nFeil: ${wordDiff}` : ""}\n\nForklar på norsk (2 korte setninger) SPESIFIKT hva som er galt for akkurat disse ordene — ikke generelle regler. Gi én huskeregel knyttet til akkurat disse ordene/strukturen i denne setningen.\nSvar KUN som JSON: {"forklaring":"...","huskeregel":"..."}`;
           })() }],
-        }),
-      });
+        }, { signal: controller.signal });
       const data = await res.json();
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\{[\s\S]*?\}/);
@@ -231,7 +221,7 @@ export default function SentenceTranslationScreen({
             : error === "offline" ? "Ingen internettforbindelse — Claude er ikke tilgjengelig."
             : "Kunne ikke hente setninger. Prøv igjen."}
         </div>
-        <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
@@ -270,7 +260,7 @@ export default function SentenceTranslationScreen({
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}>
           <SentenceIcon /> Oversett setningen
         </div>
@@ -386,7 +376,7 @@ function AiHintBlock({ loading, hint }) {
 function Header({ onBack }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><SentenceIcon /> Oversett setningen</div>
       <div style={{ width: 60 }} />
     </div>

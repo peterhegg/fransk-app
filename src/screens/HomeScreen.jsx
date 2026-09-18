@@ -133,6 +133,12 @@ function SheetModal({ onClose, children, style = {} }) {
   }, []);
 
   useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
     const onMove = (e) => {
@@ -166,6 +172,8 @@ function SheetModal({ onClose, children, style = {} }) {
       <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.4)", backdropFilter: "blur(4px)" }} onClick={onClose} />
       <div
         ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         style={{

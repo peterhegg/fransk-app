@@ -1,6 +1,6 @@
+import { proxyFetch } from "../api.js";
 import { useState, useRef, useEffect } from "react";
 import { shuffle, logGameSession, logSentenceAnswer, loadUserProfile } from "../utils.jsx";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { getActiveLang } from "../languages/index.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { GameHeader, GameProgress, GameResult, LoadingState, Chip, Dock, PrimaryButton, GhostButton } from "../components/GameUI.jsx";
@@ -35,16 +35,11 @@ JSON only, no markdown:
 [{"no":"Norwegian sentence","fr":"${lang.nameEn} sentence","distractors":["wrong1","wrong2","wrong3"]}]`;
 
   const attempt = async () => {
-    const res = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-      signal,
-      body: JSON.stringify({
+    const res = await proxyFetch({
         max_tokens: 1000,
         system: "Respond only with a valid JSON array. No markdown, no explanation.",
         messages: [{ role: "user", content: prompt }],
-      }),
-    });
+      });
     const data = await res.json();
     const text = data.content?.find(b => b.type === "text")?.text || "";
     const match = text.match(/\[[\s\S]*\]/);

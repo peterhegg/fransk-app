@@ -116,7 +116,7 @@ export function ArticleExerciseScreen({ words, grammarWords = [], onBack, speak,
 
   const navBar = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       <span style={{ color: "var(--text)", fontSize: 15 }}>⬡ Artikkeltest</span>
       <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
     </div>
@@ -257,7 +257,7 @@ export function ConjugationExerciseScreen({ words, grammarWords = [], setWords, 
 
   const navBar = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       <span style={{ color: "var(--text)", fontSize: 15 }}>⬡ Bøyingstest</span>
       <AutoPlayToggle autoPlay={autoPlay} onToggle={onToggleAutoPlay} />
     </div>

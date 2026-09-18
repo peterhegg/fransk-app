@@ -1,7 +1,7 @@
+import { proxyFetch } from "../api.js";
 import { useState, useRef } from "react";
 import BottomNav from "../components/BottomNav.jsx";
 import { TutorAnimated } from "../components/Tutor/Tutor.jsx";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 
 // ─── Lesson data ─────────────────────────────────────────────────────────────
 
@@ -643,10 +643,7 @@ function InlineAsk({ lesson, tutorName, isOnline }) {
     setExchanges(prev => [...prev, { q, a: null }]);
     setLoading(true);
     try {
-      const res = await fetch(PROXY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        body: JSON.stringify({
+      const res = await proxyFetch({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 600,
           system: `Du er ${tutorName}, en vennlig og tålmodig fransktutor. Eleven leser om «${lesson.title}» (${lesson.subtitle}) i læringsappen sin. Svar på norsk, kort og pedagogisk, maks 4-5 setninger. Sammenlign gjerne med norsk der det er naturlig. Ikke bruk fagterminologi uten å forklare den. Eleven har dysleksi og er A1/A2-nivå.`,
@@ -657,8 +654,7 @@ function InlineAsk({ lesson, tutorName, isOnline }) {
               { role: "assistant", content: e.a },
             ])
             .concat([{ role: "user", content: q }]),
-        }),
-      });
+        });
       const data = await res.json();
       const text = data.content?.find(b => b.type === "text")?.text || "Beklager, noe gikk galt.";
       setExchanges(prev => prev.map((e, i) => i === prev.length - 1 ? { ...e, a: text } : e));
@@ -795,7 +791,7 @@ export default function GrammatikkTeoriScreen({ onBack, tutorPrefs, isOnline, sc
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 66 }}>
       <div style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+          <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
           <div style={{ fontSize: 15, fontWeight: 500 }}>Grammatikkteori</div>
           <div style={{ width: 70 }} />
         </div>

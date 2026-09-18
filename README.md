@@ -1,142 +1,60 @@
-# Mon Français
+# L'Atelier (Språkappen)
 
-Personlig franskopplæringsapp bygget med React og Claude AI. Tilpasset norske nybegynnere med dysleksi som ønsker å lære seg fransk gjennom naturlig eksponering og praktisk bruk.
-
----
+Personlig språkapp for én norsk elev (A1/A2, dysleksi): **fransk** og **sveitsertysk** (Schweizer Hochdeutsch). React + Vite, installerbar PWA, AI-tutor via Claude.
 
 ## Arkitektur
 
 ```
-Nettleser (GitHub Pages) → Cloudflare Worker → Anthropic API
+Nettleser (GitHub Pages, PWA) → Cloudflare Worker (fransk-proxy) → Anthropic API
+                                        └─ KV: rate limits, push-abonnement, widget-data
 ```
 
-API-nøkkelen ligger aldri i frontend-koden. Den er lagret som en secret i Cloudflare Workers og eksponeres aldri i nettleseren.
+- Ingen backend utover Worker. API-nøkkelen ligger kun som Worker-secret.
+- Brukerdata (ord, fremgang, profil) ligger i `localStorage`, adskilt per språk (`src/storage-namespace.js`). Ta **sikkerhetskopi** i Brukerprofil → «Lagre kopi».
+- Tale bruker nettleserens Web Speech API (`src/tts.js`, `src/hooks/useVoiceRecognition.jsx`).
 
----
-
-## Funksjoner
-
-- **Glosekort** med automatisk lagring av ord du lærer
-- **Samtaleøvelse** med en virtuell franskmann (Pierre)
-- **Lesehjelp** for setninger fra dine egne franske bøker
-- **Fri modus** for spørsmål om grammatikk, uttale og kultur
-- Fonetisk uttale på norsk for alle nye ord
-- Ordsamling som huskes mellom besøk via localStorage
-- Fungerer som PWA og kan legges til på hjemskjermen
-
----
-
-## Kom i gang
-
-### Krav
-
-- Node.js 18 eller nyere
-- En Anthropic API-nøkkel (hentes på [console.anthropic.com](https://console.anthropic.com))
-- En gratis [Cloudflare](https://cloudflare.com)-konto
-
-### Installasjon
+## Kommandoer
 
 ```bash
-git clone https://github.com/peterhegg/fransk-app.git
-cd fransk-app
-npm install
+npm run dev      # utviklingsserver
+npm run build    # produksjonsbygg
+npm run lint     # ESLint
+npm test         # vitest (app + Worker)
 ```
 
-### 1. Deploy Cloudflare Worker
+## Miljøvariabler og secrets
 
-```bash
-npm install -g wrangler
-wrangler login
-wrangler deploy cloudflare-worker.js --name fransk-proxy
-wrangler secret put ANTHROPIC_API_KEY
-```
+| Navn | Hvor | Bruk |
+|---|---|---|
+| `VITE_PROXY_URL` | `.env` / GitHub secret | Worker-URL |
+| `VITE_APP_TOKEN` | `.env` / GitHub secret | Delt token sendt til Worker (ligger i bundle, ikke en ekte hemmelighet) |
+| `VITE_VAPID_PUBLIC_KEY` | `.env` / GitHub secret | Web Push |
+| `ANTHROPIC_API_KEY`, `CLIENT_TOKEN`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Worker secrets (`wrangler secret put`) | Server-side |
 
-Wrangler vil spørre om API-nøkkelen din. Den lagres kryptert i Cloudflare.
+Se `.env.example`. Sett også en **spend limit** i Anthropic Console.
 
-Noter URL-en du får tilbake, f.eks.:
-```
-https://fransk-proxy.DITTBRUKERNAVN.workers.dev
-```
+## Deploy
 
-### 2. Kjør lokalt
+- **App:** push til `main` → GitHub Actions (lint, test, bygg) → GitHub Pages.
+- **Worker:** `wrangler login` og `wrangler deploy` (bruker `wrangler.toml`). Valgfritt: sett repo-variabel `WORKER_AUTO_DEPLOY=true` og secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` for automatisk deploy (`.github/workflows/deploy-worker.yml`).
 
-Lag en `.env`-fil:
-
-```bash
-cp .env.example .env
-```
-
-Åpne `.env` og lim inn Worker-URL-en:
+## Struktur
 
 ```
-VITE_PROXY_URL=https://fransk-proxy.DITTBRUKERNAVN.workers.dev
+src/
+  App.jsx, main.jsx      rot, routing, feilgrense
+  api.js                 proxyFetch mot Worker (token, timeout)
+  tts.js                 felles tekst-til-tale
+  backup.js              JSON-backup/restore
+  utils.jsx              ord, poeng, repetisjon, streak, dato
+  languages/             fr.js, de-ch.js (språkmoduler)
+  screens/, components/  skjermer og øvelser (sjeldne skjermer er lazy)
+  hooks/                 tale, samtale, push, tema
+cloudflare-worker.js     proxy, /voice, push, widget
 ```
 
-Start utviklingsserver:
+## Kjente begrensninger
 
-```bash
-npm run dev
-```
-
-Åpne [http://localhost:5173/fransk-app/](http://localhost:5173/fransk-app/)
-
----
-
-## Deploy til GitHub Pages
-
-### Første gang
-
-1. Lag et nytt repo på GitHub med navn `fransk-app`
-2. Legg til Worker-URL-en som en GitHub Secret:
-   - Settings > Secrets and variables > Actions
-   - New repository secret: `VITE_PROXY_URL` = Worker-URL-en din
-3. Aktiver GitHub Pages:
-   - Settings > Pages
-   - Source: Deploy from a branch
-   - Branch: `gh-pages`
-
-### Oppdateringer
-
-Hver push til `main` deployer automatisk:
-
-```bash
-git add .
-git commit -m "oppdatering"
-git push
-```
-
-Appen er tilgjengelig på:
-
-```
-https://peterhegg.github.io/fransk-app/
-```
-
----
-
-## Legg til på hjemskjermen (Android)
-
-1. Åpne appen i Chrome
-2. Trykk på de tre prikkene øverst til høyre
-3. Velg «Legg til på startskjermen»
-
----
-
-## Teknologi
-
-- [React](https://react.dev)
-- [Vite](https://vitejs.dev)
-- [vite-plugin-pwa](https://vite-pwa-org.netlify.app)
-- [Cloudflare Workers](https://workers.cloudflare.com)
-- [Anthropic Claude API](https://docs.anthropic.com)
-
----
-
-## Claude Code-stil
-
-Claude bruker «huleboer»-språk i chat for å spare tokens — korte, direkte svar uten høflighetsfraser. Kvaliteten på arbeidet er den samme. Svar kan gis på engelsk når det sparer tokens ytterligere.
-
----
-
-## Personvern
-
-API-nøkkelen din ligger aldri i koden eller JS-bundles. Den er lagret kun i Cloudflare og brukes server-side. Ordlisten lagres lokalt i nettleseren din og sendes aldri noe sted.
+- Hele vokabularet (begge språk) ligger i hovedbundlen.
+- Delt app-token er ikke ekte autentisering; Worker beskyttes av rate limits og daglig budsjett.
+- Uttalevurdering sammenligner transkripsjon, den måler ikke uttale.

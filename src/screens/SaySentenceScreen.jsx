@@ -1,5 +1,5 @@
+import { proxyFetch } from "../api.js";
 import { useState, useRef, useEffect } from "react";
-import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, loadUserProfile, logDailyAnswer, logSentenceAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import { useVoiceRecognition, micErrorText } from "../hooks/useVoiceRecognition.jsx";
@@ -115,17 +115,12 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch(PROXY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN },
-        signal: controller.signal,
-        body: JSON.stringify({
+      const res = await proxyFetch({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 600,
           system: "You are a French sentence generator. Respond only with a valid JSON array, no markdown.",
           messages: [{ role: "user", content: prompt }],
-        }),
-      });
+        }, { signal: controller.signal });
       const data = await res.json();
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const match = text.match(/\[[\s\S]*\]/);
@@ -189,7 +184,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
 
   const header = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si setningen!</div>
       <div style={{ width: 60 }} />
     </div>
@@ -219,7 +214,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
             : error === "offline" ? "Ingen internettforbindelse — Claude er ikke tilgjengelig."
             : "Kunne ikke hente setninger. Prøv igjen."}
         </div>
-        <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "rgba(230,211,168,0.1)", border: "1px solid rgba(230,211,168,0.3)", borderRadius: 12, color: "var(--cream)", fontSize: 13, padding: "10px 20px", cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />
     </div>
@@ -258,7 +253,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "var(--app-bg)", fontFamily: "var(--font-body)", color: "var(--text)", paddingBottom: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Tilbake</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "var(--cream-deep)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)", minHeight: 44, padding: "0 8px" }}>← Tilbake</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text)" }}><MicIcon /> Si setningen!</div>
         <div style={{ fontSize: 11, color: "var(--text-subtle)", letterSpacing: 1 }}>{idx + 1}/{sentences.length}</div>
       </div>

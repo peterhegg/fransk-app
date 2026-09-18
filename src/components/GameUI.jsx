@@ -20,8 +20,8 @@ export function GameHeader({ onBack, backLabel = "Tilbake", title, icon, right }
     }}>
       <button onClick={onBack} className="press" style={{
         background: "none", border: "none", color: "var(--text-subtle)", fontSize: 14,
-        cursor: "pointer", fontFamily: "var(--font-body)", padding: "6px 4px",
-        minWidth: 64, textAlign: "left", whiteSpace: "nowrap",
+        cursor: "pointer", fontFamily: "var(--font-body)", padding: "0 4px",
+        minWidth: 64, minHeight: 44, textAlign: "left", whiteSpace: "nowrap",
       }}>← {backLabel}</button>
       <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
         {icon && <span style={{ fontSize: 17, lineHeight: 1 }}>{icon}</span>}
