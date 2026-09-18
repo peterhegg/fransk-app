@@ -1,11 +1,12 @@
+import { speak as ttsSpeak } from "../tts.js";
 import { useState, useRef, useEffect } from "react";
 import Tutor, { TutorAnimated } from "../components/Tutor/Tutor.jsx";
 import { tutorVisible } from "../hooks/useTutorPrefs.js";
 import { usePushSubscription, syncPushSubscription } from "../hooks/usePushSubscription.js";
 import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
-import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, speechLocale, dateLocale, greeting, brand, modeImages as MODE_IMAGES, goalImages } from "../content.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID } from "../utils.jsx";
+import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, dateLocale, greeting, brand, modeImages as MODE_IMAGES, goalImages } from "../content.js";
+import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID, applyReadingMode } from "../utils.jsx";
 import { PROXY_URL } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { IcoArrow, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
@@ -76,11 +77,7 @@ function frenchGreeting() {
 const getCat = (w) => w.cat || VOCAB_CAT_MAP[w.fr] || "Andre ord";
 
 function speakFr(text) {
-  window.speechSynthesis?.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = speechLocale;
-  utt.rate = 0.9;
-  window.speechSynthesis?.speak(utt);
+  ttsSpeak(text, { rate: 0.9 });
 }
 
 function MiniGraph({ days, onTap }) {
@@ -637,6 +634,17 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           </div>
         )}
 
+        <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>LESEVISNING</div>
+            <div style={{ fontSize: 13, color: "var(--text)", marginTop: 2 }}>Lesevennlig tekst (Lexend, mer luft)</div>
+          </div>
+          <button role="switch" aria-checked={!!profile.readingMode} aria-label="Lesevennlig tekst" onClick={() => set("readingMode", !profile.readingMode)}
+            style={{ width: 44, height: 26, borderRadius: 13, background: profile.readingMode ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", flexShrink: 0 }}>
+            <div style={{ position: "absolute", top: 3, left: profile.readingMode ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
+          </button>
+        </div>
+
         {[
           { label: "Navn", key: "name", type: "text", placeholder: "Ditt fornavn" },
           { label: "Lærernavn", key: "teacherName", type: "text", placeholder: "F.eks. Pierre" },
@@ -738,7 +746,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
       </div>
 
       <div style={{ padding: "12px 16px 40px", flexShrink: 0, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 8 }}>
-        <button onClick={() => { saveUserProfile(profile); syncPushSubscription(); onSave(profile); }}
+        <button onClick={() => { saveUserProfile(profile); applyReadingMode(profile.readingMode); syncPushSubscription(); onSave(profile); }}
           style={{ width: "100%", background: "var(--cream)", border: "none", borderRadius: 12, color: "var(--bg)", fontSize: 14, fontWeight: 600, padding: "12px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
           Lagre profil
         </button>

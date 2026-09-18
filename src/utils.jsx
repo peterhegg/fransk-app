@@ -653,11 +653,16 @@ export const DEFAULT_PROFILE = {
   dailyGoal: 150,
   sentenceGoal: 5,
   pushTime: "20:00",
+  readingMode: false,
 };
 
 export function loadUserProfile() {
   try { const s = localStorage.getItem(USER_PROFILE_KEY); return s ? { ...DEFAULT_PROFILE, ...JSON.parse(s) } : { ...DEFAULT_PROFILE }; }
   catch { return { ...DEFAULT_PROFILE }; }
+}
+
+export function applyReadingMode(on) {
+  document.documentElement.setAttribute("data-reading", on ? "easy" : "off");
 }
 
 export function saveUserProfile(profile) {

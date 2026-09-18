@@ -53,7 +53,8 @@ import OnboardingScreen from "./screens/OnboardingScreen.jsx";
 import { useTutorPrefs, loadTutorPrefs, KEY as TUTOR_PREFS_KEY } from "./hooks/useTutorPrefs.js";
 import StreakTaptModal, { wasStreakTaptShownToday } from "./components/StreakTaptModal.jsx";
 import { useLang } from "./languages/index.js";
-import { vocabGenPrompt, speechLocale, voicePrefix } from "./content.js";
+import { vocabGenPrompt } from "./content.js";
+import { speak as ttsSpeak, stop as ttsStop, subscribeSpeaking, isSpeakingText } from "./tts.js";
 
 function TranslateIcon() {
   return (
@@ -115,8 +116,6 @@ export default function App() {
 
   // --- Speech ---
   const [speaking, setSpeaking] = useState(false);
-  const speakingRef = useRef(false);
-  const voicesRef = useRef([]);
 
   // --- Exit dialog ---
   const [showExitDialog, _setShowExitDialog] = useState(false);
@@ -220,14 +219,8 @@ export default function App() {
     catch {}
   }, [screen, mode, bankScreen]);
 
-  // --- Speech synthesis preload ---
-  useEffect(() => {
-    if (!window.speechSynthesis) return;
-    const load = () => { voicesRef.current = window.speechSynthesis.getVoices(); };
-    load();
-    window.speechSynthesis.addEventListener("voiceschanged", load);
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", load);
-  }, []);
+  // --- Speaking state (from the shared TTS engine) ---
+  useEffect(() => subscribeSpeaking(setSpeaking), []);
 
   // --- Back button / exit dialog ---
   // Uses #nav hash sentinel. pushSentinel strips any existing hash first (replaceState)
@@ -314,29 +307,10 @@ export default function App() {
   }, []);
 
   // --- Speak ---
+  // Tapping the same text while it is playing stops it; any other text replaces it.
   const speak = (text, rate = 0.85) => {
-    if (!window.speechSynthesis) return;
-    if (speakingRef.current) {
-      window.speechSynthesis.cancel();
-      speakingRef.current = false; setSpeaking(false);
-      return;
-    }
-    const clean = text
-      .replace(/\*\*?(.+?)\*\*?/g, "$1")
-      .replace(/[✓✗][^:]*:/g, "")
-      .replace(/\n+/g, " ")
-      .trim();
-    if (!clean) return;
-    const utt = new SpeechSynthesisUtterance(clean);
-    utt.lang = speechLocale;
-    utt.rate = rate;
-    const voice = voicesRef.current.find(v => v.lang === speechLocale)
-               || voicesRef.current.find(v => v.lang.startsWith(voicePrefix));
-    if (voice) utt.voice = voice;
-    utt.onend = () => { speakingRef.current = false; setSpeaking(false); };
-    utt.onerror = () => { speakingRef.current = false; setSpeaking(false); };
-    speakingRef.current = true; setSpeaking(true);
-    window.speechSynthesis.speak(utt);
+    if (isSpeakingText(text)) { ttsStop(); return; }
+    ttsSpeak(text, { rate });
   };
 
   // --- Start modes ---

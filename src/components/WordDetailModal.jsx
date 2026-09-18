@@ -1,14 +1,11 @@
+import { speak as ttsSpeak } from "../tts.js";
 import { useState, useRef, useEffect } from "react";
 import { MASTERY_COLORS, MASTERY_LABELS, MASTERY_POINTS } from "../constants.js";
-import { VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS, speechLocale, formLabels } from "../content.js";
+import { VOCAB_CAT_ORDER, VOCAB_CAT_MAP, GRAMMAR_TOPICS, formLabels } from "../content.js";
 import { getWordTier } from "../utils.jsx";
 
 function speakFr(text) {
-  window.speechSynthesis?.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = speechLocale;
-  utt.rate = 0.9;
-  window.speechSynthesis?.speak(utt);
+  ttsSpeak(text, { rate: 0.9 });
 }
 
 // French defaults; the active language may override (e.g. German tenses).
