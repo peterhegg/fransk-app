@@ -17,6 +17,7 @@ import "@fontsource/spectral/latin-400-italic.css";
 import "@fontsource/spectral/latin-500-italic.css";
 import "@fontsource-variable/lexend/wght.css";
 import App from "./App.jsx";
+import { installFeedbackAnnouncer } from "./a11y-live.js";
 import ErrorBoundary, { installGlobalErrorLog } from "./components/ErrorBoundary.jsx";
 import { loadActiveLangId } from "./languages/index.js";
 import { loadUserProfile, applyReadingMode } from "./utils.jsx";
@@ -51,6 +52,7 @@ if ("serviceWorker" in navigator) {
 try { navigator.storage?.persist?.(); } catch {}
 
 installGlobalErrorLog();
+installFeedbackAnnouncer();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
