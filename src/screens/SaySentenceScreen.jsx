@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { shuffle, loadUserProfile, logDailyAnswer, logSentenceAnswer } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
-import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
+import { useVoiceRecognition, micErrorText } from "../hooks/useVoiceRecognition.jsx";
 
 function levelInstructions(level) {
   const l = level || "A1/A2";
@@ -90,7 +90,7 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
   const [history, setHistory] = useState([]);
   const hasSpoken = useRef(false);
   const abortRef = useRef(null);
-  const { status, startListening } = useVoiceRecognition();
+  const { status, error: micError, startListening } = useVoiceRecognition();
 
   const current = sentences[idx] || null;
 
@@ -149,7 +149,9 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
     setHeard("");
     const wordCount = current.fr.trim().split(/\s+/).length;
     const timeoutMs = Math.max(12000, wordCount * 2000 + 6000);
-    startListening((transcript) => {
+    startListening((transcript, meta) => {
+      // Mic/engine failure or silence is not a wrong answer — don't score it.
+      if (meta?.error) return;
       const firstAlt = transcript.split("|")[0];
       setHeard(firstAlt);
       const { matched } = matchSentence(transcript, current.fr);
@@ -312,6 +314,10 @@ export default function SaySentenceScreen({ words, grammarWords, isOnline, onBac
               </button>
             </div>
           </div>
+        )}
+
+        {micError && !isListening && result !== "correct" && (
+          <div role="alert" style={{ fontSize: 13, color: "var(--text-subtle)", textAlign: "center", maxWidth: 360 }}>{micErrorText(micError)}</div>
         )}
 
         {/* Action buttons */}

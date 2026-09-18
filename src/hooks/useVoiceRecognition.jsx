@@ -1,8 +1,28 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { speechLocale } from "../content.js";
+
+const ERROR_TEXT = {
+  "not-allowed": "Mikrofontilgang er blokkert. Tillat mikrofon i nettleserinnstillingene.",
+  "service-not-allowed": "Mikrofontilgang er blokkert. Tillat mikrofon i nettleserinnstillingene.",
+  "audio-capture": "Fant ingen mikrofon.",
+  network: "Ingen kontakt med talegjenkjenningen. Sjekk nettet og prøv igjen.",
+  "no-speech": "Ingenting ble fanget opp — si det litt høyere.",
+  unsupported: "Talegjenkjenning støttes ikke i denne nettleseren.",
+};
+
+export function micErrorText(code) {
+  return code ? (ERROR_TEXT[code] || "Talegjenkjenning feilet. Prøv igjen.") : "";
+}
+
+function detach(r) {
+  if (!r) return;
+  r.onresult = r.onstart = r.onerror = r.onend = null;
+  try { r.abort(); } catch {}
+}
 
 export function useVoiceRecognition() {
   const [status, setStatus] = useState("idle");
+  const [error, setError] = useState(null);
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
   const silenceTimerRef = useRef(null);
@@ -16,7 +36,11 @@ export function useVoiceRecognition() {
     silenceMs = 2000,
   } = {}) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { setStatus("unsupported"); return; }
+    if (!SR) { setStatus("unsupported"); setError("unsupported"); return; }
+
+    detach(recognitionRef.current);
+    setError(null);
+    let errorCode = null;
 
     const r = new SR();
     r.lang = speechLocale;
@@ -76,7 +100,7 @@ export function useVoiceRecognition() {
     r.onerror = (e) => {
       clearTimeout(timerRef.current);
       clearTimeout(silenceTimerRef.current);
-      if (e.error !== "aborted") setStatus("idle");
+      if (e.error !== "aborted") { errorCode = e.error; setStatus("idle"); }
     };
 
     r.onend = () => {
@@ -86,11 +110,19 @@ export function useVoiceRecognition() {
       const result = accumulateFinals
         ? (accumulatedFinals.join(" ") || bestInterim)
         : (finalTranscript || bestInterim);
-      onResult(result);
+      const code = errorCode || (result.trim() ? null : "no-speech");
+      setError(code);
+      onResult(result, { error: code });
     };
 
     recognitionRef.current = r;
-    r.start();
+    try {
+      r.start();
+    } catch {
+      recognitionRef.current = null;
+      setStatus("idle");
+      setError("audio-capture");
+    }
   }, []);
 
   const stopListening = useCallback(() => {
@@ -99,5 +131,12 @@ export function useVoiceRecognition() {
     recognitionRef.current?.stop();
   }, []);
 
-  return { status, startListening, stopListening };
+  // Release the mic on unmount without firing onResult into a dead screen.
+  useEffect(() => () => {
+    clearTimeout(timerRef.current);
+    clearTimeout(silenceTimerRef.current);
+    detach(recognitionRef.current);
+  }, []);
+
+  return { status, error, startListening, stopListening };
 }

@@ -24,6 +24,12 @@ const GLOBAL_KEYS = new Set([
   "fransk-user-profile",  // name, dysleksi, daily goal, push time, etc.
 ]);
 
+// Un-namespaced handle to the real Storage, captured before the proxy below
+// replaces window.localStorage. Backup/restore needs raw keys for every language.
+export const rawStorage = (() => {
+  try { return typeof window !== "undefined" ? window.localStorage : null; } catch { return null; }
+})();
+
 const langId = loadActiveLangId();
 
 if (langId !== DEFAULT_LANG && typeof window !== "undefined" && window.localStorage) {

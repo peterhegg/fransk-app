@@ -197,10 +197,10 @@ export default function ChatScreen({ mode, words, setWords, isOnline, speak, spe
                 <div style={{ color: "var(--accent, #5a9af0)" }}>
                   <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="thinking" accessory="pen" crop="bust" size={120} title={`${tutorPrefs.tutorName} tenker`} />
                 </div>
-                <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, color: "rgba(232,237,245,0.78)", lineHeight: 1.4 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, color: "var(--text)", lineHeight: 1.4 }}>
                   {tutorPrefs.tutorName} tenker.
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(232,237,245,0.5)", letterSpacing: 0.5, fontStyle: "italic" }}>
+                <div style={{ fontSize: 12, color: "var(--text-subtle)", letterSpacing: 0.5, fontStyle: "italic" }}>
                   slår opp i sine egne notater
                 </div>
               </>

@@ -248,7 +248,7 @@ export default function GrammatikkbankenScreen({ grammarWords, setGrammarWords, 
             style={{ background: copied ? "var(--color-success)" : "none", border: `1px solid ${copied ? "var(--color-success)" : "rgba(230,211,168,0.3)"}`, borderRadius: 8, color: copied ? "white" : "var(--cream-deep)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%", transition: "all 0.3s", fontWeight: copied ? "bold" : "normal" }}>
             {copied ? "✓ Kopiert!" : "Kopier grammatikklisten min"}
           </button>
-          <button onClick={onClearGrammar}
+          <button onClick={() => { if (window.confirm("Slette hele grammatikkbanken? Dette kan ikke angres.")) onClearGrammar?.(); }}
             style={{ background: "none", border: "1px solid rgba(225,112,85,0.4)", borderRadius: 8, color: "var(--color-error)", fontFamily: "var(--font-body)", fontSize: 13, padding: "10px 20px", cursor: "pointer", width: "100%" }}>
             Nullstill grammatikkbanken
           </button>

@@ -303,6 +303,7 @@ export default function WordsScreen({ words, setWords, onBack, onClearWords, scr
   };
 
   const clearWords = () => {
+    if (!window.confirm("Slette hele ordbanken? Dette kan ikke angres. Lag en sikkerhetskopi i profilen først.")) return;
     onClearWords?.();
   };
 

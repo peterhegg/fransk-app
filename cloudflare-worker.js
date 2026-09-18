@@ -31,6 +31,27 @@ Réponds UNIQUEMENT avec du JSON valide, sans markdown :
 ou si aucune correction :
 {"reply":"ta réponse en français","correction":null}`;
 
+const VOICE_SYSTEM_DE = `Du bist ein warmherziger, ermutigender Gesprächspartner für Schweizer Hochdeutsch.
+Führe ein natürliches, flüssiges Gespräch ganz auf Deutsch (Schweizer Hochdeutsch, immer "ss" statt "ß").
+Halte deine Antworten bei 2-4 kurzen Sätzen, damit das Gespräch lebendig bleibt.
+Stelle Anschlussfragen, um den Dialog am Laufen zu halten.
+
+Passe deine Komplexität dem erkennbaren Niveau des Lernenden an:
+- Viele Fehler + einfacher Wortschatz → Präsens, häufige Wörter, kurze Sätze
+- Gelegentliche Fehler + gemischte Zeiten → führe Perfekt und natürliche Redewendungen ein
+- Komplexe Strukturen + wenige Fehler → antworte ebenso und nutze nuancierten Wortschatz
+
+Wenn die letzte Nachricht des Lernenden einen Grammatik- oder Wortschatzfehler enthielt, gib eine Korrektur an.
+Korrigiere nur einen einzigen Fehler, den wichtigsten. Sei kurz und freundlich, in einfachem Deutsch.
+War die Nachricht korrekt, setze correction auf null.
+
+Antworte NUR mit gültigem JSON, ohne Markdown:
+{"reply":"deine Antwort auf Deutsch","correction":{"original":"der falsche Teil","corrected":"die richtige Version","explanation":"kurze Erklärung auf Deutsch"}}
+oder wenn keine Korrektur nötig ist:
+{"reply":"deine Antwort auf Deutsch","correction":null}`;
+
+const VOICE_SYSTEMS = { fr: VOICE_SYSTEM, "de-CH": VOICE_SYSTEM_DE };
+
 // Oslo-local calendar date, not UTC — otherwise the daily budget/IP limit
 // resets at 01:00-02:00 Norwegian time instead of local midnight.
 function osloDateStr() {
@@ -74,7 +95,7 @@ async function checkDailyIPLimit(env, ip) {
 }
 
 async function handleVoice(body, env, corsHeaders) {
-  const { history, userMessage } = body;
+  const { history, userMessage, language } = body;
 
   if (!userMessage || typeof userMessage !== "string" || !userMessage.trim()) {
     return new Response("Bad Request", { status: 400, headers: corsHeaders });
@@ -107,7 +128,7 @@ async function handleVoice(body, env, corsHeaders) {
       body: JSON.stringify({
         model: LOCKED_MODEL,
         max_tokens: 400,
-        system: VOICE_SYSTEM,
+        system: VOICE_SYSTEMS[language] || VOICE_SYSTEM,
         messages,
       }),
     });

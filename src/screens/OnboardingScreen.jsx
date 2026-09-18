@@ -69,13 +69,13 @@ export default function OnboardingScreen({ onDone }) {
         padding: "52px 20px 32px", overflowY: "auto", scrollbarWidth: "none",
       }}
     >
-      <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(232,237,245,0.5)", marginBottom: 6 }}>
+      <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 6 }}>
         {lang.brand} · LÆREREN DIN
       </div>
       <h1 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400, fontSize: 26, margin: "6px 0 4px", color: "var(--text)" }}>
         Hvem skal lære deg {lang.label.toLowerCase()}?
       </h1>
-      <div style={{ fontSize: 13, color: "rgba(232,237,245,0.6)", marginBottom: 22, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 13, color: "var(--text-subtle)", marginBottom: 22, lineHeight: 1.5 }}>
         Du kan endre dette når som helst i innstillinger.
       </div>
 
@@ -88,13 +88,13 @@ export default function OnboardingScreen({ onDone }) {
           <TutorAnimated persona={selected.persona} emotion="dignified" accessory={selected.persona === "henri" ? "pipe" : "book"} crop="bust" size={84} title={selected.label} key={selected.key} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 10, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>VALGT</div>
+          <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>VALGT</div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 22, margin: "4px 0", color: "var(--text)" }}>{selected.label}</div>
-          <div style={{ fontSize: 12, color: "rgba(232,237,245,0.6)", lineHeight: 1.5 }}>{selected.desc}</div>
+          <div style={{ fontSize: 12, color: "var(--text-subtle)", lineHeight: 1.5 }}>{selected.desc}</div>
         </div>
       </div>
 
-      <div style={{ fontSize: 10, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>HUN</div>
+      <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>HUN</div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         {NAMES_F.map(n => {
           const isSel = selected.key === n.key;
@@ -103,9 +103,9 @@ export default function OnboardingScreen({ onDone }) {
               flex: 1, padding: "10px 0 12px", borderRadius: 14, textAlign: "center", cursor: "pointer",
               background: isSel ? "rgba(90,154,240,0.18)" : "rgba(255,255,255,0.04)",
               border: `1px solid ${isSel ? "rgba(90,154,240,0.55)" : "rgba(255,255,255,0.10)"}`,
-              color: isSel ? "#7db0f5" : "rgba(232,237,245,0.78)",
+              color: isSel ? "var(--accent)" : "var(--text)",
             }}>
-              <div style={{ color: isSel ? "#7db0f5" : "rgba(232,237,245,0.55)", display: "flex", justifyContent: "center", marginBottom: 4 }}>
+              <div style={{ color: isSel ? "var(--accent)" : "var(--text-subtle)", display: "flex", justifyContent: "center", marginBottom: 4 }}>
                 <Tutor persona={fPersona} emotion="idle" crop="face" size={36} title="" />
               </div>
               <div style={{ fontSize: 12 }}>{n.label}</div>
@@ -114,7 +114,7 @@ export default function OnboardingScreen({ onDone }) {
         })}
       </div>
 
-      <div style={{ fontSize: 10, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>HAN</div>
+      <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>HAN</div>
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         {NAMES_M.map(n => {
           const isSel = selected.key === n.key;
@@ -123,9 +123,9 @@ export default function OnboardingScreen({ onDone }) {
               flex: 1, padding: "10px 0 12px", borderRadius: 14, textAlign: "center", cursor: "pointer",
               background: isSel ? "rgba(90,154,240,0.18)" : "rgba(255,255,255,0.04)",
               border: `1px solid ${isSel ? "rgba(90,154,240,0.55)" : "rgba(255,255,255,0.10)"}`,
-              color: isSel ? "#7db0f5" : "rgba(232,237,245,0.78)",
+              color: isSel ? "var(--accent)" : "var(--text)",
             }}>
-              <div style={{ color: isSel ? "#7db0f5" : "rgba(232,237,245,0.55)", display: "flex", justifyContent: "center", marginBottom: 4 }}>
+              <div style={{ color: isSel ? "var(--accent)" : "var(--text-subtle)", display: "flex", justifyContent: "center", marginBottom: 4 }}>
                 <Tutor persona={mPersona} emotion="idle" crop="face" size={36} title="" />
               </div>
               <div style={{ fontSize: 12 }}>{n.label}</div>

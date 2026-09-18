@@ -273,9 +273,19 @@ function runWordBankMigrations(words) {
   return result;
 }
 
-export function loadWords() {
+// Keep an unparseable value under a side key so a later save of the empty
+// fallback can't destroy the only copy of the user's data.
+function stashCorrupt(key, raw) {
   try {
-    const s = localStorage.getItem(WORDS_KEY);
+    const stashKey = key + "-corrupt-backup";
+    if (raw && !localStorage.getItem(stashKey)) localStorage.setItem(stashKey, raw);
+  } catch {}
+}
+
+export function loadWords() {
+  let s = null;
+  try {
+    s = localStorage.getItem(WORDS_KEY);
     if (s) {
       const arr = JSON.parse(s);
       const migrated = arr.map(migrateWord);
@@ -290,12 +300,13 @@ export function loadWords() {
       if (Array.isArray(arr)) return arr.map((w, i) => ({ id: Date.now() + i, fr: w, no: "", phonetic: "", level: 0, nextReview: Date.now(), added: Date.now() }));
     }
     return [];
-  } catch { return []; }
+  } catch { stashCorrupt(WORDS_KEY, s); return []; }
 }
 export function saveWords(w) { try { localStorage.setItem(WORDS_KEY, JSON.stringify(w)); } catch {} }
 
 export function loadGrammarWords() {
-  try { const s = localStorage.getItem(GRAMMAR_WORDS_KEY); return s ? JSON.parse(s) : []; } catch { return []; }
+  let s = null;
+  try { s = localStorage.getItem(GRAMMAR_WORDS_KEY); return s ? JSON.parse(s) : []; } catch { stashCorrupt(GRAMMAR_WORDS_KEY, s); return []; }
 }
 export function saveGrammarWords(w) { try { localStorage.setItem(GRAMMAR_WORDS_KEY, JSON.stringify(w)); } catch {} }
 

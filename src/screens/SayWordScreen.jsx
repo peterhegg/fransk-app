@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { shuffle, selectExerciseWords } from "../utils.jsx";
 import BottomNav from "../components/BottomNav.jsx";
-import { useVoiceRecognition } from "../hooks/useVoiceRecognition.jsx";
+import { useVoiceRecognition, micErrorText } from "../hooks/useVoiceRecognition.jsx";
 
 const FRENCH_ARTICLES = /^(l'|le |la |les |un |une |des )/;
 
@@ -63,7 +63,7 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
   const [result, setResult] = useState(null); // null | "correct" | "incorrect"
   const [heard, setHeard] = useState("");
   const hasSpoken = useRef(false);
-  const { status, startListening } = useVoiceRecognition();
+  const { status, error: micError, startListening } = useVoiceRecognition();
 
   const card = queue[idx] || null;
 
@@ -79,7 +79,9 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
     setHeard("");
     const bare = card.fr.replace(/^(l'|le |la |les |un |une |des )/i, "").trim();
     const isShort = bare.length <= 4;
-    startListening((transcript) => {
+    startListening((transcript, meta) => {
+      // Mic/engine failure or silence is not a wrong answer — don't score it.
+      if (meta?.error) return;
       setHeard(transcript.split("|")[0]);
       if (isGoodMatch(transcript, card)) {
         setResult("correct");
@@ -207,6 +209,10 @@ export default function SayWordScreen({ words, onBack, speak, speaking, screen, 
               </button>
             </div>
           </div>
+        )}
+
+        {micError && !isListening && result !== "correct" && (
+          <div role="alert" style={{ fontSize: 13, color: "var(--text-subtle)", textAlign: "center", maxWidth: 340 }}>{micErrorText(micError)}</div>
         )}
 
         {/* Action buttons */}

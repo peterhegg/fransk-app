@@ -3,6 +3,7 @@ import { useVoiceRecognition } from "./useVoiceRecognition.jsx";
 import { useSpeechSynthesis } from "./useSpeechSynthesis.jsx";
 import { PROXY_URL, APP_TOKEN } from "../constants.js";
 import { logVoiceSession } from "../utils.jsx";
+import { langCode } from "../content.js";
 
 const VOICE_URL = PROXY_URL ? `${PROXY_URL.replace(/\/$/, "")}/voice` : "/voice";
 
@@ -39,6 +40,7 @@ export function useConversation() {
         body: JSON.stringify({
           history: historyRef.current.slice(-20),
           userMessage,
+          language: langCode,
         }),
       });
 
@@ -80,7 +82,15 @@ export function useConversation() {
     if (isSpeaking) stopSpeaking();
     setCurrentCorrection(null);
     setStatus("listening");
-    startRec(sendToApi);
+    startRec((transcript, meta) => {
+      if (!transcript.trim()) {
+        // Nothing usable heard — don't send an empty turn to the API.
+        setStatus(meta?.error && meta.error !== "no-speech" ? "error" : "idle");
+        if (meta?.error && meta.error !== "no-speech") setTimeout(() => setStatus("idle"), 3000);
+        return;
+      }
+      sendToApi(transcript);
+    });
   }, [isSpeaking, stopSpeaking, startRec, sendToApi]);
 
   startListeningRef.current = startListening;

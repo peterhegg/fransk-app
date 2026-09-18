@@ -145,7 +145,7 @@ function DagensIntroPhase({ words, speak, speaking, onDone, icon, title, onBack,
               );
             })}
           </div>
-          <div style={{ fontSize: 10, color: "rgba(232,237,245,0.4)" }}>{idx + 1} av {allCards.length} totalt</div>
+          <div style={{ fontSize: 10, color: "var(--text-subtle)" }}>{idx + 1} av {allCards.length} totalt</div>
         </div>
       </div>
       <BottomNav screen={screen} showWords={showWords} onNav={onNav} />

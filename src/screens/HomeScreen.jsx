@@ -13,6 +13,7 @@ import OrdmesterTeller from "../components/OrdmesterTeller.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import LanguagePicker from "../components/LanguagePicker.jsx";
 import WordDetailModal from "../components/WordDetailModal.jsx";
+import { exportBackup, parseBackup, restoreBackup } from "../backup.js";
 
 // MODE_IMAGES now comes from the active language (imported above).
 
@@ -541,6 +542,43 @@ function WidgetUrlSection() {
   );
 }
 
+function BackupSection() {
+  const [msg, setMsg] = useState("");
+  const fileRef = useRef(null);
+  const btnStyle = { flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", color: "var(--text)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)" };
+
+  const handleExport = () => {
+    try { exportBackup(); setMsg("✓ Sikkerhetskopi lagret i nedlastinger"); }
+    catch { setMsg("Kunne ikke lage sikkerhetskopi"); }
+  };
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const data = parseBackup(await file.text());
+      if (!window.confirm(`Gjenopprette ${Object.keys(data).length} lagrede verdier? Dette overskriver nåværende ord og fremgang.`)) return;
+      restoreBackup(data);
+      window.location.reload();
+    } catch {
+      setMsg("Filen er ikke en gyldig sikkerhetskopi");
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Sikkerhetskopi</div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={handleExport} style={btnStyle}>⬇ Lagre kopi</button>
+        <button onClick={() => fileRef.current?.click()} style={btnStyle}>⬆ Gjenopprett</button>
+      </div>
+      <input ref={fileRef} type="file" accept="application/json,.json" onChange={handleFile} style={{ display: "none" }} />
+      {msg && <div role="status" style={{ fontSize: 12, color: "var(--text-subtle)", marginTop: 6 }}>{msg}</div>}
+    </div>
+  );
+}
+
 function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggleTutorVisibility }) {
   const [profile, setProfile] = useState(() => loadUserProfile());
   const set = (k, v) => setProfile(p => ({ ...p, [k]: v }));
@@ -561,7 +599,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
               <TutorAnimated persona={tutorPrefs.tutorPersona} emotion="dignified" accessory={tutorPrefs.tutorPersona === "henri" ? "pipe" : "book"} crop="bust" size={72} title={tutorPrefs.tutorName} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>LÆREREN DIN</div>
+              <div style={{ fontSize: 10, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>LÆREREN DIN</div>
               <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 18, margin: "2px 0" }}>{tutorPrefs.tutorName}</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
                 <button onClick={onChangeTutor} style={{ background: "none", border: "none", color: "#5a9af0", fontSize: 11, cursor: "pointer", padding: 0 }}>Endre →</button>
@@ -576,7 +614,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: "12px 14px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>PÅMINNELSER</div>
+                <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>PÅMINNELSER</div>
                 <div style={{ fontSize: 13, color: "var(--text)", marginTop: 2 }}>Daglig øvelsespåminnelse</div>
               </div>
               <button onClick={togglePush} disabled={pushLoading}
@@ -585,7 +623,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
               </button>
             </div>
             <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: 11, color: "rgba(232,237,245,0.5)", marginBottom: 6 }}>Tidspunkt</div>
+              <div style={{ fontSize: 11, color: "var(--text-subtle)", marginBottom: 6 }}>Tidspunkt</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {["07:00","08:00","12:00","17:00","18:00","19:00","20:00","21:00","22:00"].map(t => (
                   <button key={t} onClick={() => set("pushTime", t)}
@@ -704,6 +742,7 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           Lagre profil
         </button>
         <WidgetUrlSection />
+        <BackupSection />
       </div>
     </SheetModal>
   );
@@ -1120,7 +1159,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
                 <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.3, color: "var(--text)", marginBottom: 4 }}>
                   Bonsoir, igjen.
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(232,237,245,0.55)", lineHeight: 1.5 }}>
+                <div style={{ fontSize: 12, color: "var(--text-subtle)", lineHeight: 1.5 }}>
                   Det er {absenceDays} dager siden sist. Vi tar en mild start.
                 </div>
               </div>

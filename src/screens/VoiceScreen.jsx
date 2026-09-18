@@ -6,6 +6,11 @@ import CorrectionCard from "../components/CorrectionCard.jsx";
 import ConversationBubble from "../components/ConversationBubble.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
+import { getActiveLang } from "../languages/index.js";
+import { langCode } from "../content.js";
+
+const LANG_FLAG = getActiveLang().flag;
+const LANG_NAME = langCode === "fr" ? "fransk" : "tysk";
 
 const isSpeechSupported = !!(
   typeof window !== "undefined" &&
@@ -143,7 +148,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 44 }}>🇫🇷</div>
+            <div style={{ fontSize: 44 }}>{LANG_FLAG}</div>
             <div style={{
               fontSize: "var(--font-size-xl)",
               fontWeight: "var(--font-weight-semibold)",
@@ -158,7 +163,7 @@ export default function VoiceScreen({ onBack, screen, showWords, onNav }) {
               lineHeight: "var(--line-height-relaxed)",
               maxWidth: 270,
             }}>
-              Trykk på mikrofonen og si noe på fransk. Claude svarer på fransk og retter forsiktig én feil om gangen.
+              Trykk på mikrofonen og si noe på {LANG_NAME}. Claude svarer på {LANG_NAME} og retter forsiktig én feil om gangen.
             </div>
             {!isSpeechSupported && (
               <div style={{
