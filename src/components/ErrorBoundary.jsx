@@ -35,7 +35,7 @@ export default class ErrorBoundary extends Component {
   }
 
   copyDiagnostics = () => {
-    let text = "";
+    let text;
     try { text = localStorage.getItem(LOG_KEY) || String(this.state.error); } catch { text = String(this.state.error); }
     navigator.clipboard?.writeText(text).then(() => this.setState({ copied: true })).catch(() => {});
   };

@@ -11,6 +11,10 @@ export default defineConfig({
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.js",
+      injectManifest: {
+        // Latin-subset fonts only; other unicode-range subsets load on demand.
+        globPatterns: ["**/*.{js,css,html}", "**/*-latin-{300,400,500,600}-*.woff2", "**/*latin-wght-normal*.woff2"],
+      },
       manifest: {
         name: "L'Atelier",
         short_name: "L'Atelier",

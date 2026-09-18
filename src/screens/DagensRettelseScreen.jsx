@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  checkQuizAnswer, updateWordPoints, incrementAnswerCount, scheduleNext,
-  logDailyAnswer, logWordAnswer, loadAnswerCount, touchStreak, getWordTier,
+  checkQuizAnswer, applyAnswerToWord, incrementAnswerCount, clearWordError,
+  logDailyAnswer, logWordAnswer, touchStreak,
   shuffle,
 } from "../utils.jsx";
 import { MASTERY_POINTS, PROXY_URL, APP_TOKEN } from "../constants.js";
@@ -102,6 +102,15 @@ export default function DagensRettelseScreen({
     setStats(s => ({ correct: s.correct + (passed ? 1 : 0), wrong: s.wrong + (passed ? 0 : 1) }));
     setHistory(h => [...h, passed ? "correct" : "wrong"]);
     logDailyAnswer("rettelse");
+    // Credit the correction to the word bank so fixing a word actually counts.
+    const gc = incrementAnswerCount();
+    const word = words.find(w => w.fr === card.fr);
+    if (word) {
+      const updated = applyAnswerToWord(word, res, gc);
+      logWordAnswer(word.fr, word.no, word.phonetic, word.points || 0, updated.points || 0, res);
+      setWords(prev => prev.map(w => (w.fr === card.fr ? updated : w)));
+    }
+    if (res === "correct") clearWordError(card.fr);
   };
 
   const next = () => {

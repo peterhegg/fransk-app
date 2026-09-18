@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500;600&family=Spectral:ital,wght@0,400;1,400;1,500&family=Lexend:wght@300..600&display=swap');
-
 :root {
   /* ── Fonts ─────────────────────────────────────────────────────── */
   --font-display: 'Playfair Display', Georgia, serif;
@@ -498,9 +496,9 @@ body {
 
 /* ── Reading mode (dyslexia-friendly) — opt-in via profile ─────────────── */
 :root[data-reading="easy"] {
-  --font-display: 'Lexend', 'DM Sans', sans-serif;
-  --font-body: 'Lexend', 'DM Sans', sans-serif;
-  --font-serif: 'Lexend', 'DM Sans', sans-serif;
+  --font-display: 'Lexend Variable', 'DM Sans', sans-serif;
+  --font-body: 'Lexend Variable', 'DM Sans', sans-serif;
+  --font-serif: 'Lexend Variable', 'DM Sans', sans-serif;
 }
 :root[data-reading="easy"] body {
   letter-spacing: 0.03em;

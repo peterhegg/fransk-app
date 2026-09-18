@@ -1,17 +1,18 @@
 import { useEffect, useRef } from "react";
+import { todayStr } from "../utils.jsx";
 
 const SHOWN_KEY = "fransk-streak-tapt-shown";
 
 export function wasStreakTaptShownToday() {
   try {
     const s = JSON.parse(sessionStorage.getItem(SHOWN_KEY) || "null");
-    return s?.date === new Date().toISOString().split("T")[0];
+    return s?.date === todayStr();
   } catch { return false; }
 }
 
 export function markStreakTaptShown() {
   try {
-    sessionStorage.setItem(SHOWN_KEY, JSON.stringify({ date: new Date().toISOString().split("T")[0] }));
+    sessionStorage.setItem(SHOWN_KEY, JSON.stringify({ date: todayStr() }));
   } catch {}
 }
 

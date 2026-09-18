@@ -54,20 +54,44 @@ function levenshtein(a, b) {
   return dp[a.length][b.length];
 }
 
+// Accent-sensitive comparison: keeps diacritics (é/è, ä/a) that normalizeAnswer strips.
+function normalizeKeepAccents(s) {
+  return s.trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ");
+}
+
+// Accent slips count as "close" (not "correct") when answering in the target
+// language: always for non-French (ä/ö/ü change the word), and for French when
+// the profile has strictAccents on.
+function accentStrict(reverse) {
+  if (!reverse) return false;
+  return getActiveLang().id !== "fr" || !!loadUserProfile().strictAccents;
+}
+
 export function checkQuizAnswer(input, card, reverse = false) {
   const inp = normalizeAnswer(input);
   const field = reverse ? card.fr : card.no;
   const extraAccepted = reverse ? (card.frAccepted || []) : (card.noAccepted || []);
-  const variants = [...field.split(/\s*\/\s*/), ...extraAccepted].map(normalizeAnswer);
-  if (variants.some(v => v === inp)) return "correct";
+  const rawVariants = [...field.split(/\s*\/\s*/), ...extraAccepted];
+  const variants = rawVariants.map(normalizeAnswer);
   const inpStripped = stripParticles(inp);
-  if (inpStripped.length > 1 && variants.some(v => stripParticles(v) === inpStripped)) return "correct";
-  const minDist = Math.min(...variants.map(v =>
-    Math.min(levenshtein(inp, v), levenshtein(inpStripped, stripParticles(v)))
-  ));
-  const maxLen = Math.max(...variants.map(v => v.length));
-  const threshold = Math.max(2, Math.floor(maxLen / 4));
-  return minDist <= threshold ? "close" : "wrong";
+  let result;
+  if (variants.some(v => v === inp) || (inpStripped.length > 1 && variants.some(v => stripParticles(v) === inpStripped))) {
+    result = "correct";
+  } else {
+    const minDist = Math.min(...variants.map(v =>
+      Math.min(levenshtein(inp, v), levenshtein(inpStripped, stripParticles(v)))
+    ));
+    const maxLen = Math.max(...variants.map(v => v.length));
+    const threshold = Math.max(2, Math.floor(maxLen / 4));
+    result = minDist <= threshold ? "close" : "wrong";
+  }
+  if (result === "correct" && accentStrict(reverse)) {
+    const exact = normalizeKeepAccents(input);
+    const exactStripped = stripParticles(exact);
+    const same = rawVariants.map(normalizeKeepAccents).some(v => v === exact || stripParticles(v) === exactStripped);
+    if (!same) return "close";
+  }
+  return result;
 }
 
 export function shuffle(arr) {
@@ -112,7 +136,9 @@ export function getQuizOptions(card, bank = [], isReverse = false) {
 // Local calendar date (not UTC), so day boundaries match the user's actual
 // midnight instead of flipping at 01:00-02:00 Norwegian time.
 export function dateStr(offsetDays = 0) {
-  const d = new Date(Date.now() + offsetDays * 86400000);
+  // Calendar arithmetic, not +N*24h: a DST changeover day is 23 or 25 hours long.
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 export function todayStr() { return dateStr(0); }
@@ -436,6 +462,19 @@ export function updateWordPoints(word, result, globalCount, pointsPerCorrect = 1
   return { ...word, points: newPts, ...extra };
 }
 
+// Applies one answer to a word: points, mastery state and next review date.
+// Used by exercises that don't need the points-popup bookkeeping.
+export function applyAnswerToWord(word, result, globalCount) {
+  const updated = updateWordPoints(word, result, globalCount);
+  const { _srOverride, ...clean } = updated;
+  if (_srOverride) return { ...clean, ..._srOverride };
+  if (result !== "close" && (clean.points || 0) < MASTERY_POINTS) {
+    const { level, nextReview } = scheduleNext(word.level || 0, result === "correct");
+    return { ...clean, level, nextReview };
+  }
+  return clean;
+}
+
 export function getDue(words, globalCount) {
   const gc = globalCount ?? loadAnswerCount();
   return words.filter(w => {
@@ -453,9 +492,15 @@ export function getDue(words, globalCount) {
 export function selectExerciseWords(words, count = 20) {
   if (words.length <= count) return shuffle([...words]);
 
-  const tierA = shuffle(words.filter(w => (w.points || 0) < 8));
-  const tierB = shuffle(words.filter(w => (w.points || 0) >= 8 && (w.points || 0) < 18));
-  const tierC = shuffle(words.filter(w => (w.points || 0) >= 18));
+  // Within each tier, words that are due for review come first.
+  const due = new Set(getDue(words).map(w => w.id ?? w.fr));
+  const dueFirst = (list) => {
+    const shuffled = shuffle(list);
+    return [...shuffled.filter(w => due.has(w.id ?? w.fr)), ...shuffled.filter(w => !due.has(w.id ?? w.fr))];
+  };
+  const tierA = dueFirst(words.filter(w => (w.points || 0) < 8));
+  const tierB = dueFirst(words.filter(w => (w.points || 0) >= 8 && (w.points || 0) < 18));
+  const tierC = dueFirst(words.filter(w => (w.points || 0) >= 18));
 
   const target = Math.min(count, words.length);
   const picked = [];
@@ -583,11 +628,18 @@ export function logWordAnswer(fr, no, phonetic, pointsBefore, pointsAfter, resul
     entries.push({ fr, no, phonetic: phonetic || "", pointsBefore: pointsBefore || 0, pointsAfter: pointsAfter || 0, result });
     localStorage.setItem(TODAYS_ANSWERS_KEY, JSON.stringify({ date: today, entries }));
   } catch {}
-  if (result === "wrong") logWordError(fr, no, phonetic);
+  if (result === "wrong" || result === "close") logWordError(fr, no, phonetic);
 }
 
 // ─── Word error history (10-day rolling) ─────────────────────────────────────
 const WORD_ERRORS_KEY = "fransk-word-errors";
+
+export function clearWordError(fr) {
+  try {
+    const store = JSON.parse(localStorage.getItem(WORD_ERRORS_KEY) || "{}");
+    if (store[fr]) { delete store[fr]; localStorage.setItem(WORD_ERRORS_KEY, JSON.stringify(store)); }
+  } catch {}
+}
 
 function logWordError(fr, no, phonetic) {
   try {
@@ -654,6 +706,7 @@ export const DEFAULT_PROFILE = {
   sentenceGoal: 5,
   pushTime: "20:00",
   readingMode: false,
+  strictAccents: false,
 };
 
 export function loadUserProfile() {

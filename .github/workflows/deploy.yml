@@ -23,9 +23,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
       - run: npm ci
+      - name: Lint
+        run: npm run lint -- --quiet
+      - name: Unit tests
+        run: npm test
       - name: Validate required secrets
         run: |
           if [ -z "$VITE_PROXY_URL" ]; then
@@ -45,10 +49,13 @@ jobs:
           VITE_APP_TOKEN: ${{ secrets.VITE_APP_TOKEN }}
           VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
       - name: Verify build output
+        env:
+          VITE_PROXY_URL: ${{ secrets.VITE_PROXY_URL }}
         run: |
           test -f dist/sw.js
           test -f dist/manifest.webmanifest
-          grep -q 'https://' dist/index.html
+          # The proxy URL must have been inlined into the bundle
+          grep -rqF "$VITE_PROXY_URL" dist/assets
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

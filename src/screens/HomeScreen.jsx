@@ -6,7 +6,7 @@ import { usePushSubscription, syncPushSubscription } from "../hooks/usePushSubsc
 import OnboardingScreen from "./OnboardingScreen.jsx";
 import { MODES, DAGENS_GLOSE_KEY, MASTERY_LABELS, MASTERY_COLORS, MASTERY_POINTS } from "../constants.js";
 import { GRAMMAR_TOPICS, VOCAB_GOALS, VOCAB_CAT_ORDER, VOCAB_CAT_MAP, ORDMESTER_GOALS, dateLocale, greeting, brand, modeImages as MODE_IMAGES, goalImages } from "../content.js";
-import { todayStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID, applyReadingMode } from "../utils.jsx";
+import { todayStr, dateStr, getDue, loadGrammarProgress, getMasteredCount, loadAnswerCount, getWordTier, loadOrdmesterGoals, saveOrdmesterGoals, resetOrdmesterGoals, loadGoalOrder, saveGoalOrder, resetGoalOrder, loadActivityLog, loadTodaysWordAnswers, loadUserProfile, saveUserProfile, DEFAULT_PROFILE, getWordCountByGoal, loadBestStreak, loadStreak, loadWorstWords, getOrCreateWidgetUUID, applyReadingMode } from "../utils.jsx";
 import { PROXY_URL } from "../constants.js";
 import BottomNav from "../components/BottomNav.jsx";
 import { IcoArrow, IcoUser, IcoSearch, IcoMoon, IcoSun } from "../components/Icons.jsx";
@@ -330,8 +330,7 @@ function ActivityModal({ streak, onClose }) {
     if (chartRef.current) chartRef.current.scrollLeft = chartRef.current.scrollWidth;
   }, []);
   const days = Array.from({ length: 20 }, (_, i) => {
-    const d = new Date(Date.now() - (19 - i) * 86400000);
-    const date = d.toISOString().split("T")[0];
+    const date = dateStr(-(19 - i));
     return log.find(e => e.date === date) || { date, answers: 0, vocab: 0, grammar: 0, voice: 0 };
   });
   const maxAnswers = Math.max(...days.map(d => d.answers), 1);
@@ -642,6 +641,17 @@ function UserProfileModal({ onClose, onSave, tutorPrefs, onChangeTutor, onToggle
           <button role="switch" aria-checked={!!profile.readingMode} aria-label="Lesevennlig tekst" onClick={() => set("readingMode", !profile.readingMode)}
             style={{ width: 44, height: 26, borderRadius: 13, background: profile.readingMode ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", flexShrink: 0 }}>
             <div style={{ position: "absolute", top: 3, left: profile.readingMode ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
+          </button>
+        </div>
+
+        <div style={{ marginBottom: 18, background: "var(--bg)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", textTransform: "uppercase", letterSpacing: 0.5 }}>STAVING</div>
+            <div style={{ fontSize: 13, color: "var(--text)", marginTop: 2 }}>Aksenter må stemme (é ≠ e)</div>
+          </div>
+          <button role="switch" aria-checked={!!profile.strictAccents} aria-label="Aksenter må stemme" onClick={() => set("strictAccents", !profile.strictAccents)}
+            style={{ width: 44, height: 26, borderRadius: 13, background: profile.strictAccents ? "rgba(90,154,240,0.65)" : "var(--border)", border: "none", cursor: "pointer", position: "relative", flexShrink: 0 }}>
+            <div style={{ position: "absolute", top: 3, left: profile.strictAccents ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
           </button>
         </div>
 
@@ -1083,8 +1093,7 @@ export default function HomeScreen({ words, setWords, grammarWords, streak, sess
   const last7Days = (() => {
     const log = loadActivityLog();
     return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(Date.now() - (6 - i) * 86400000);
-      const date = d.toISOString().split("T")[0];
+      const date = dateStr(-(6 - i));
       return log.find(e => e.date === date) || { date, answers: 0 };
     });
   })();
