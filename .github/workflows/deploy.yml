@@ -56,7 +56,7 @@ jobs:
           test -f dist/manifest.webmanifest
           # The proxy URL must have been inlined into the bundle
           grep -rqF "$VITE_PROXY_URL" dist/assets
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: ./dist
       - id: deployment
